@@ -1,14 +1,22 @@
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
-import { Button } from './components/ui/button'
+import LandingPage from './components/screens/landingPage/landingPage'
+import AdminPanel from './components/screens/admin/adminPanel'
+import CustomersPanel from './components/screens/customers/customersPanel'
+import MechanicPanel from './components/screens/mechanic/mechanicPanel'
 
 function App() {
 
   return (
     <>
-<div className='flex flex-col items-center justify-center h-screen'>
-    <h1 className='text-4xl font-bold'>Hello World</h1>
-    <Button>Click me</Button>
-</div>
+      <div>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/customers" element={<CustomersPanel />} />
+          <Route path="/mechanic" element={<MechanicPanel />} />
+        </Routes>
+      </div>
     </>
   )
 }
