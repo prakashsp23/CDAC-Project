@@ -16,6 +16,12 @@ function LandingPage() {
                 <Link to="/mechanic">
                     <Button>Mechanic</Button>
                 </Link>
+                <Link to="/login">
+                    <Button>Login</Button>
+                </Link>
+                <Link to="/register">
+                    <Button>Register</Button>
+                </Link>
             </div>
         </div>
     )
