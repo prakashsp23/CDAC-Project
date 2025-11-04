@@ -2,12 +2,28 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { BrowserRouter} from 'react-router-dom'
-
+import { BrowserRouter, createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom'
+import { ThemeProvider } from './components/theme-provider.jsx'
+import LandingPage from './components/screens/landingPage/landingPage.jsx'
+import AdminPanel from './components/screens/admin/adminPanel.jsx'
+import CustomersPanel from './components/screens/customers/customersPanel.jsx'
+import MechanicPanel from './components/screens/mechanic/mechanicPanel.jsx'
+import { Toaster } from './components/ui/sonner.jsx'
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<App />}>
+      <Route index element={<LandingPage />} />
+      <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/customers" element={<CustomersPanel />} />
+      <Route path="/mechanic" element={<MechanicPanel />} />
+    </Route>
+  )
+);
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-    <App/>
-  </BrowserRouter>
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <Toaster/>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>,
 )
