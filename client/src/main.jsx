@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode,React } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
@@ -8,6 +8,8 @@ import LandingPage from './components/screens/landingPage/landingPage.jsx'
 import AdminPanel from './components/screens/admin/adminPanel.jsx'
 import CustomersPanel from './components/screens/customers/customersPanel.jsx'
 import MechanicPanel from './components/screens/mechanic/mechanicPanel.jsx'
+import Login from './components/screens/auth/login'
+import Register from './components/screens/auth/register'
 import { Toaster } from './components/ui/sonner.jsx'
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -16,6 +18,8 @@ const router = createBrowserRouter(
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="/customers" element={<CustomersPanel />} />
       <Route path="/mechanic" element={<MechanicPanel />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
     </Route>
   )
 );
