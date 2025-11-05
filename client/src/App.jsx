@@ -1,9 +1,6 @@
-import { Outlet, Route, Routes } from 'react-router-dom'
+import React from 'react'
+import { Outlet } from 'react-router-dom'
 import './App.css'
-import LandingPage from './components/screens/landingPage/landingPage'
-import AdminPanel from './components/screens/admin/adminPanel'
-import CustomersPanel from './components/screens/customers/customersPanel'
-import MechanicPanel from './components/screens/mechanic/mechanicPanel'
 import { ModeToggle } from './components/mode-toggle'
 
 function App() {
@@ -19,9 +16,9 @@ function App() {
         </Routes>
       </div> */}
       <header>
-        <ModeToggle/>
+        <ModeToggle />
       </header>
-      <main className='w-full mx-auto'>
+      <main className='w-full mx-auto -mt-10'>
         <Outlet />
       </main>
     </>
