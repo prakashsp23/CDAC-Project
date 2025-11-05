@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { validatePassword } from '../../../lib/password-validation'
 
 import { Button } from '../../ui/button'
 import {
@@ -15,38 +16,97 @@ import { Label } from '../../ui/label'
 import { toast } from 'sonner'
 
 function RegisterPage() {
+  // Form field states
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  
+  // Password states
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [loading, setLoading] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [passwordValidation, setPasswordValidation] = useState({ isValid: true, errors: [] })
+  
+  // UI states
+  const [loading, setLoading] = useState(false)
 
-  const validatePasswords = () => {
-    if (password !== confirmPassword) {
+  // Password validation handlers
+  const validatePasswordStrength = (password) => {
+    if (!password) {
+      setPasswordValidation({ isValid: true, errors: [] })
+      return
+    }
+    
+    const { isValid, errors } = validatePassword(password, name, email)
+    setPasswordValidation({ isValid, errors })
+    return { isValid, errors }
+  }
+
+  const validatePasswordMatch = (currentPassword, confirmValue) => {
+    if (!confirmValue) {
+      setPasswordError('')
+      return true
+    }
+
+    const doPasswordsMatch = currentPassword === confirmValue
+    if (!doPasswordsMatch) {
       setPasswordError('Passwords do not match')
+    } else {
+      setPasswordError('')
+    }
+    return doPasswordsMatch
+  }
+
+  // Form handlers
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value
+    setPassword(newPassword)
+    validatePasswordStrength(newPassword)
+    validatePasswordMatch(newPassword, confirmPassword)
+  }
+
+  const handleConfirmPasswordChange = (e) => {
+    const confirmValue = e.target.value
+    setConfirmPassword(confirmValue)
+    validatePasswordMatch(password, confirmValue)
+  }
+
+  const validateForm = () => {
+    const passwordsMatch = validatePasswordMatch(password, confirmPassword)
+    if (!passwordsMatch) {
       toast.error('Passwords do not match')
       return false
     }
-    setPasswordError('')
+
+    const { isValid, errors } = validatePasswordStrength(password)
+    if (!isValid) {
+      toast.error(errors[0])
+      return false
+    }
+
     return true
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!validatePasswords()) {
+    if (!validateForm()) {
       return
     }
 
     setLoading(true)
     const payload = { name, email, password, phone }
-    // TODO: call your registration API here
-    await new Promise((r) => setTimeout(r, 800))
-    console.log('register payload', payload)
-    setLoading(false)
-    toast.success('Registered successfully')
+    
+    try {
+      // TODO: call your registration API here
+      await new Promise((r) => setTimeout(r, 800))
+      console.log('register payload', payload)
+      toast.success('Registered successfully')
+    } catch (error) {
+      toast.error('Registration failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -95,9 +155,17 @@ function RegisterPage() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   placeholder="Choose a strong password"
+                  aria-invalid={!passwordValidation.isValid}
                 />
+                {passwordValidation.errors.length > 0 && (
+                  <ul className="text-sm text-destructive list-disc pl-4 mt-2">
+                    {passwordValidation.errors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -107,7 +175,7 @@ function RegisterPage() {
                   type="password"
                   required
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={handleConfirmPasswordChange}
                   placeholder="Confirm your password"
                   aria-invalid={passwordError ? "true" : undefined}
                 />
