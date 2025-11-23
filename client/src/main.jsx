@@ -8,9 +8,11 @@ import LandingPage from './components/screens/landingPage/landingPage.jsx'
 import AdminPanel from './components/screens/admin/adminPanel.jsx'
 import CustomersPanel from './components/screens/customers/customersPanel.jsx'
 import MechanicPanel from './components/screens/mechanic/mechanicPanel.jsx'
-import Login from './components/screens/auth/login'
-import Register from './components/screens/auth/register'
+import Login from './components/screens/auth/login.jsx'
+import Register from './components/screens/auth/register.jsx'
+import ProfilePage from './components/screens/ProfilePage.jsx'
 import { Toaster } from './components/ui/sonner.jsx'
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -20,6 +22,7 @@ const router = createBrowserRouter(
       <Route path="/mechanic" element={<MechanicPanel />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/profile" element={<ProfilePage />} />
     </Route>
   )
 );
