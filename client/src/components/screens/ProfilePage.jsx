@@ -19,6 +19,14 @@ import {
     FormLabel,
     FormMessage,
 } from '../ui/form'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+
 import { Input } from '../ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { getUserProfile } from '../../lib/auth'
@@ -227,19 +235,20 @@ export default function ProfilePage() {
                     </div>
                 </CardContent>
 
-                {showChangePassword && (
-                    <div
-                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                        onClick={() => setShowChangePassword(false)}
-                    >
-                        <div className="max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-                            <ForgotPasswordPage
-                                isModal={true}
-                                onClose={() => setShowChangePassword(false)}
-                            />
-                        </div>
-                    </div>
-                )}
+                <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                        <DialogTitle>Change Password</DialogTitle>
+                        </DialogHeader>
+                        <hr />
+
+                        <ForgotPasswordPage
+                        isModal={true}
+                        onClose={() => setShowChangePassword(false)}
+                        />
+                    </DialogContent>
+                </Dialog>
+
             </Card>
         </div>
     )
