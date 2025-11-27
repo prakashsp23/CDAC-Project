@@ -1,14 +1,13 @@
 import React from 'react'
 import AdminCard from './components/adminCard'
-
+import Dashboard from './Pages/Dashboard'
 function AdminPanel() {
   return (
     <>
-    <div className='flex flex-col h-screen items-center justify-center'>
-    <h1 className='text-2xl font-bold mb-16'>This is the admin panel</h1>
-    <div></div>
-    <AdminCard />
-    </div>
+      <div className='flex flex-col h-screen items-center justify-center'>
+        <div></div>
+        <Dashboard />
+      </div>
     </>
   )
 }
