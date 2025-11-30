@@ -85,7 +85,6 @@ export default function UniversalDisplay({
             <TableCell key={col.key}>{col.render ? col.render(item) : item[col.key]}</TableCell>
           ))
         ) : (
-          // fallback: show JSON
           <TableCell>{JSON.stringify(item)}</TableCell>
         )}
       </TableRow>

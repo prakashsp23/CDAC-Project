@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { getUserProfile } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import ForgotPasswordPage from '../screens/auth/ForgotPasswordPage'
+import ForgotPasswordPage from './auth/ForgotPasswordCard'
 
 // Validation schema
 const profileSchema = z.object({
