@@ -15,7 +15,11 @@ export default function ProtectedLayout() {
           <ModeToggle />
         </header>
         <main className="flex-1 overflow-auto">
-          <Outlet />
+          <div className="p-2 bg-muted h-full">
+            <div className="rounded-lg h-full w-full bg-background">
+              <Outlet />
+            </div>
+          </div>
         </main>
       </div>
     </SidebarProvider>

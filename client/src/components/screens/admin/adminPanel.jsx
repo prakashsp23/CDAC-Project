@@ -1,13 +1,11 @@
-import React from 'react'
-import AdminCard from './components/adminCard'
 import Dashboard from './Pages/Dashboard'
+import { Section } from '@/components/ui/section'
 function AdminPanel() {
   return (
     <>
-      <div className='flex flex-col h-screen items-center justify-center'>
-        <div></div>
+      <Section className='flex flex-col items-center justify-center'>
         <Dashboard />
-      </div>
+      </Section>
     </>
   )
 }
