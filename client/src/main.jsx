@@ -58,6 +58,8 @@ import MyVehicles from "./components/screens/customers/MyVehicles.jsx"
 import AllServicesPage from "./components/screens/customers/AllServicesPage.jsx"
 import FeedBackPage from "./components/screens/customers/ServiceFeedback.jsx"
 
+import Dashboard from "./components/screens/mechanic/components/dashboard.jsx"
+import WorkHistory from "./components/screens/mechanic/components/workhistory.jsx"
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -78,21 +80,15 @@ const router = createBrowserRouter(
           <Route path="vehicles" element={<MyVehicles />} />
           <Route path="feedback" element={<FeedBackPage />} />
         </Route>
-        <Route path="/mechanic" element={<MechanicPanel />} />
+        <Route path="/mechanic" element={<Outlet />} >
+            <Route index element={<Dashboard/>} />
+            <Route path="work-history" element={<WorkHistory />} />
+        </Route>
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
     </Route>,
   ),
 )
-
-// createRoot(document.getElementById("root")).render(
-//   <StrictMode>
-//     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-//       <Toaster />
-//       <RouterProvider router={router} />
-//     </ThemeProvider>
-//   </StrictMode>,
-// )
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

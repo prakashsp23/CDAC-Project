@@ -1,5 +1,6 @@
 import React from 'react'
 import MechanicCard from './components/mechanicCard'
+import { Outlet } from 'react-router-dom'
 import { Section } from '../../ui/section'
 
 function MechanicPanel() {

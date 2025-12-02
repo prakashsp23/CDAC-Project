@@ -24,6 +24,9 @@ const items = [
     title: "Mechanic Page",
     url: "/mechanic",
     icon: FileText,
+    children: [
+      { title: "Work History", url: "/mechanic/work-history", icon: Table },
+    ],
   },
   {
     title: "Customer Page",
