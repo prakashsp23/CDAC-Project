@@ -50,6 +50,9 @@ import ProfilePage from "./components/screens/ProfilePage.jsx"
 import { Toaster } from "./components/ui/sonner.jsx"
 import ProtectedLayout from "./components/layouts/ProtectedLayout.jsx"
 import AuthLayout from "./components/layouts/AuthLayout.jsx"
+// import { NuqsAdapter } from 'nuqs/adapters/react'
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v6'
+import CustomerTable from "./components/screens/customers/customerTable.jsx"
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -65,6 +68,7 @@ const router = createBrowserRouter(
       <Route element={<ProtectedLayout />}>
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/customers" element={<CustomersPanel />} />
+        <Route path="/customers/table" element={<CustomerTable />} />
         <Route path="/mechanic" element={<MechanicPanel />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
@@ -72,11 +76,22 @@ const router = createBrowserRouter(
   ),
 )
 
+// createRoot(document.getElementById("root")).render(
+//   <StrictMode>
+//     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+//       <Toaster />
+//       <RouterProvider router={router} />
+//     </ThemeProvider>
+//   </StrictMode>,
+// )
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <Toaster />
-      <RouterProvider router={router} />
+      <NuqsAdapter>
+        <RouterProvider router={router} />
+      </NuqsAdapter>
     </ThemeProvider>
   </StrictMode>,
 )
