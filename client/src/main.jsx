@@ -53,6 +53,12 @@ import AuthLayout from "./components/layouts/AuthLayout.jsx"
 // import { NuqsAdapter } from 'nuqs/adapters/react'
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6'
 import CustomerTable from "./components/screens/customers/customerTable.jsx"
+import CustomerDashboard from "./components/screens/customers/CustomerDashboard.jsx"
+import MyServicesPage from "./components/screens/customers/MyServicesPage.jsx"
+import MyVehicles from "./components/screens/customers/MyVehicles.jsx"
+import AllServicesPage from "./components/screens/customers/AllServicesPage.jsx"
+import FeedBackPage from "./components/screens/customers/ServiceFeedback.jsx"
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -64,11 +70,17 @@ const router = createBrowserRouter(
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* Protected Routes - with sidebar */}
       <Route element={<ProtectedLayout />}>
         <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/customers" element={<CustomersPanel />} />
-        <Route path="/customers/table" element={<CustomerTable />} />
+//         <Route path="/customers/table" element={<CustomerTable />} />
+        <Route path="/customers" element={<CustomersPanel />}>
+          <Route index element={<CustomerDashboard />} />
+          <Route path="table" element={<CustomerTable />} />
+          <Route path="allservices" element={<AllServicesPage />} />
+          <Route path="myservices" element={<MyServicesPage />} />
+          <Route path="vehicles" element={<MyVehicles />} />
+          <Route path="feedback" element={<FeedBackPage />} />
+        </Route>
         <Route path="/mechanic" element={<MechanicPanel />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>

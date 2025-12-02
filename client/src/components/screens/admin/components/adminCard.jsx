@@ -9,12 +9,7 @@ function AdminCard() {
                 <CardDescription>Description</CardDescription>
                 {/* <CardAction>Admin Action</CardAction> */}
             </CardHeader>
-            <CardContent>
-                <p>Content</p>
-            </CardContent>
-            <CardFooter>
-                <p> Footer</p>
-            </CardFooter>
+            {/* content and footer intentionally left empty for now */}
         </Card>
     )
 }
