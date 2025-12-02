@@ -1,4 +1,4 @@
-import { Home, BarChart3, FileText, Inbox, Users, User } from "lucide-react"
+import {  BarChart3, FileText, Inbox, Users, User, Table } from "lucide-react"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -31,6 +31,7 @@ const items = [
     icon: Users,
     // add sub-links here
     children: [
+      { title: "Customer Table", url: "/customers/table", icon: Table },
       { title: "My Services", url: "/customers/myservices", icon: Users },
       { title: "All Services", url: "/customers/allservices", icon: Users },
       { title: "My Vehicle", url: "/customers/vehicles", icon: User },
