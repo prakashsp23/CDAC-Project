@@ -7,6 +7,7 @@ import { TableRow, TableCell } from '../../ui/table'
 import StarRating from '../../ui/star-rating'
 import UniversalDisplay from '../../ui/universal-display'
 import { toast } from 'sonner'
+import ViewToggle from '../../ui/ViewToggle'
 
 export default function ServiceFeedback() {
   // mock completed services (in a real app fetch from API)
@@ -24,6 +25,7 @@ export default function ServiceFeedback() {
     { id: 2, service: 'Brake Repair', date: '2025-11-18', rating: 4, comment: 'Good service but took longer than expected', mechanicNotes: 'Replaced brake pads', images: [] },
     { id: 3, service: 'Exterior Detailing', date: '2025-10-30', rating: 5, comment: 'My car looks brand new!', mechanicNotes: 'Full wash, wax and polish', images: [] },
   ])
+  const [view, setView] = useState(() => window.localStorage.getItem('feedback-view') || 'grid');
 
   function submit() {
     if (!selectedService) return alert('Please select a completed service')
@@ -45,6 +47,11 @@ export default function ServiceFeedback() {
     setRating(0)
     setComment('')
     setSelectedService(completedServices[0]?.id ?? '')
+  }
+
+  function handleViewChange(newView) {
+    setView(newView);
+    window.localStorage.setItem('feedback-view', newView);
   }
 
   return (
@@ -96,9 +103,14 @@ export default function ServiceFeedback() {
         </CardContent>
       </Card>
 
-      <h2 className="text-xl font-semibold mb-4 mt-8">Your Feedback History</h2>
+      <div className="flex items-center justify-between mb-4 mt-8">
+        <h2 className="text-xl font-semibold">Your Feedback History</h2>
+        <ViewToggle view={view} onViewChange={handleViewChange} />
+      </div>
+      
       <UniversalDisplay
         items={feedbacks}
+        view={view}
         idKey="id"
         columns={[
           { key: 'service', title: 'Service' },

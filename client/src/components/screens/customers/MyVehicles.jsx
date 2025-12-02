@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 // navigation not needed here
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/card'
+import { Card, CardContent } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Dialog } from '../../ui/dialog'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from '../../ui/table'
+import { TableRow, TableCell } from '../../ui/table'
 import AddVehicle from './components/addVehicle';
 import BookService from './components/BookService'
+import UniversalDisplay from '../../ui/universal-display'
+import ViewToggle from '../../ui/ViewToggle'
 
 const MOCK_VEHICLES = [
   { id: 1, brand: 'Honda', model: 'CRV', registration: 'AB12CD3456', year: '2022' },
@@ -19,7 +21,8 @@ const SERVICES = [
 
 export default function MyVehicles() {
   const [vehicles, setVehicles] = useState(MOCK_VEHICLES)
-    const [openBooking, setOpenBooking] = useState(false)
+  const [openBooking, setOpenBooking] = useState(false)
+  const [view, setView] = useState(() => window.localStorage.getItem('my-vehicles-view') || 'grid');
 
   function handleDelete(id) {
     setVehicles(v => v.filter(x => x.id !== id))
@@ -29,6 +32,11 @@ export default function MyVehicles() {
     // placeholder - in real app call API
     setOpenBooking(false)
     alert('Booking confirmed')
+  }
+
+  function handleViewChange(newView) {
+    setView(newView);
+    window.localStorage.setItem('my-vehicles-view', newView);
   }
 
 return (
@@ -53,13 +61,27 @@ return (
                       }}
                     />
                 </Dialog>
+                <ViewToggle view={view} onViewChange={handleViewChange} />
             </div>
         </div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {vehicles.map(v => (
-                <Card key={v.id} className="flex flex-col transition-all hover:shadow-md hover:border-primary/20">
+        <UniversalDisplay
+            items={vehicles}
+            idKey="id"
+            view={view}
+            onViewChange={handleViewChange}
+            showViewToggle={false}
+            perRow={3}
+            columns={[
+                { key: 'id', title: 'Vehicle ID' },
+                { key: 'brand', title: 'Brand' },
+                { key: 'model', title: 'Model' },
+                { key: 'registration', title: 'Registration No.' },
+                { key: 'year', title: 'Year' },
+                { key: 'actions', title: 'Actions' },
+            ]}
+            renderCard={(v) => (
+                 <Card key={v.id} className="flex flex-col transition-all hover:shadow-md hover:border-primary/20 h-full">
                     <CardContent className="p-4 flex flex-col flex-grow">
                         <div className="flex items-start gap-4">
                             <div className="w-12 h-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center">
@@ -78,50 +100,23 @@ return (
                         </div>
                     </CardContent>
                 </Card>
-            ))}
-        </div>
-
-        {/* Table */}
-        <Card>
-            <CardHeader>
-                <CardTitle>Vehicle Overview</CardTitle>
-                <CardDescription>A list of all your registered vehicles.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4">
-                <div className="overflow-auto">
-                    <Table>
-                        <TableCaption>All registered vehicles</TableCaption>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Vehicle ID</TableHead>
-                                <TableHead>Brand</TableHead>
-                                <TableHead>Model</TableHead>
-                                <TableHead>Registration No.</TableHead>
-                                <TableHead>Year</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {vehicles.map(v => (
-                                <TableRow key={v.id}>
-                                    <TableCell>#{String(v.id).padStart(3, '0')}</TableCell>
-                                    <TableCell className="font-medium">{v.brand}</TableCell>
-                                    <TableCell>{v.model}</TableCell>
-                                    <TableCell className="text-muted-foreground">{v.registration}</TableCell>
-                                    <TableCell className="text-muted-foreground">{v.year}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Button size="sm" onClick={() => setOpenBooking(true)}>Book Service</Button>
-                                            <Button size="sm" variant="outline" onClick={() => handleDelete(v.id)}>Delete</Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+            )}
+            renderRow={(v) => (
+                <TableRow key={v.id}>
+                    <TableCell>#{String(v.id).padStart(3, '0')}</TableCell>
+                    <TableCell className="font-medium">{v.brand}</TableCell>
+                    <TableCell>{v.model}</TableCell>
+                    <TableCell className="text-muted-foreground">{v.registration}</TableCell>
+                    <TableCell className="text-muted-foreground">{v.year}</TableCell>
+                    <TableCell className="text-left">
+                        <div className="flex items-center justify-start gap-2">
+                            <Button size="sm" onClick={() => setOpenBooking(true)}>Book Service</Button>
+                            <Button size="sm" variant="outline" onClick={() => handleDelete(v.id)}>Delete</Button>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            )}
+        />
     </div>
 )
 }

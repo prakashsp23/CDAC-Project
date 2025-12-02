@@ -3,15 +3,32 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '../../ui/card'
 import { Button } from '../../ui/button'
 import BookService from './components/BookService'
+import iconData from '../../../assets/icon.json'
+
+const iconMap = iconData.icons.reduce((acc, icon) => {
+  acc[icon.id] = icon.svg;
+  return acc;
+}, {});
+
+const serviceToIconMap = {
+  'Oil Change': 'oil-change',
+  'Tire Rotation': 'tire',
+  'Exterior Detailing': 'car-wash',
+  'Brake Inspection': 'brakes',
+  'Brake Repair': 'brakes',
+  'Battery Check': 'battery',
+  'Battery Replacement': 'battery',
+  'AC Service': 'wrench', // Using a generic wrench for AC
+};
 
 const SERVICES = [
-  { id: 1, name: 'Oil Change', desc: 'Full synthetic oil with filter replacement'},
+  { id: 1, name: 'Oil Change', desc: 'Full synthetic oil with filter replacement' },
   { id: 2, name: 'Tire Rotation', desc: 'Rotate and balance tires' },
   { id: 3, name: 'Exterior Detailing', desc: 'Wash, wax and polish' },
   { id: 4, name: 'Brake Inspection', desc: 'Full brake system check' },
   { id: 5, name: 'Battery Check', desc: 'Battery test and replacement' },
-  { id: 6, name: 'AC Service', desc: 'Recharge and sanitize AC' },
-]
+  { id: 6, 'name': 'AC Service', 'desc': 'Recharge and sanitize AC' },
+].map(s => ({ ...s, svg: iconMap[serviceToIconMap[s.name]] }));
 
 const VEHICLES = [
   { id: 1, brand: 'Honda', model: 'CRV', registration: 'AB12CD3456', year: '2022' },
@@ -22,18 +39,19 @@ const APPOINTMENTS = [
   { id: 1, service: 'Brake Repair', car: '2022 Honda CRV', date: '2025-11-20', status: 'in-progress' },
   { id: 2, service: 'Oil Change', car: '2020 Toyota Corolla', date: '2025-11-18', status: 'awaiting-approval' },
   { id: 3, service: 'Battery Replacement', car: '2022 Honda CRV', date: '2025-11-10', status: 'completed' },
-]
+].map(a => ({ ...a, svg: iconMap[serviceToIconMap[a.service]] }));
+
+const SvgIcon = ({ svgString, ...props }) => {
+  return <div {...props} dangerouslySetInnerHTML={{ __html: svgString }} />;
+};
 
 function ServiceCard({ s, onBook }) {
   return (
     <Card className="rounded-[14px]">
       <CardContent className="px-3 py-2">
         <div className="flex items-start gap-2"> {/* reduced gap */}
-          <div className="w-12 h-12 rounded-md bg-card border border-input flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-card-foreground">
-              <path d="M4 12h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4 7h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className="w-12 h-12 rounded-md bg-muted/50 border flex items-center justify-center text-primary">
+            {s.svg ? <SvgIcon svgString={s.svg} className="w-7 h-7" /> : <div className="w-7 h-7 bg-muted rounded-sm" />}
           </div>
 
           <div className="flex-1">
@@ -58,10 +76,8 @@ function AppointmentCard({ a }) {
     <Card className="rounded-[12px]">
       <CardContent className="px-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-md bg-card border border-input flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-card-foreground">
-              <path d="M3 12h18" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className="w-10 h-10 rounded-md bg-muted/50 border flex items-center justify-center text-primary">
+            {a.svg ? <SvgIcon svgString={a.svg} className="w-6 h-6" /> : <div className="w-6 h-6 bg-muted rounded-sm" />}
           </div>
           <div>
             <div className="text-sm font-medium text-card-foreground">{a.service}</div>
