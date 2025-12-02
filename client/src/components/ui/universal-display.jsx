@@ -85,7 +85,6 @@ export default function UniversalDisplay({
             <TableCell key={col.key}>{col.render ? col.render(item) : item[col.key]}</TableCell>
           ))
         ) : (
-          // fallback: show JSON
           <TableCell>{JSON.stringify(item)}</TableCell>
         )}
       </TableRow>
@@ -94,31 +93,6 @@ export default function UniversalDisplay({
 
   return (
     <div>
-      {showViewToggle && (
-        <div className="flex items-center justify-end gap-2 mb-2">
-          <div className="inline-flex rounded-lg bg-muted border border-transparent shadow-inner">
-            <button
-              aria-label="Grid view"
-              aria-pressed={effectiveView === 'grid'}
-              onClick={() => setEffectiveView('grid')}
-              className={`px-3 py-1 text-sm font-medium rounded-l-lg transition-colors ${effectiveView === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h7v7H3V3zM14 3h7v7h-7V3zM3 14h7v7H3v-7zM14 14h7v7h-7v-7z" />
-              </svg>
-            </button>
-            <button
-              aria-label="Table view"
-              aria-pressed={effectiveView === 'table'}
-              onClick={() => setEffectiveView('table')}
-              className={`px-3 py-1 text-sm font-medium rounded-r-lg transition-colors ${effectiveView === 'table' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
       {effectiveView === 'grid' ? (
         <div className={`grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-${perRow}`}>
           {items.map(item => (
