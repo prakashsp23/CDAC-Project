@@ -20,6 +20,11 @@ const items = [
     url: "/admin",
     icon: BarChart3,
     children: [
+      {
+        title: "Service Requests",
+        url: "/admin/service-requests",
+        icon: FileText,
+      },
       { title: "Feedback", url: "/admin/feedback", icon: Inbox },
     ],
   },

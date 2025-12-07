@@ -43,6 +43,7 @@ import { ThemeProvider } from "./components/theme-provider.jsx"
 import LandingPage from "./components/screens/landingPage/landingPage.jsx"
 import AdminPanel from "./components/screens/admin/adminPanel.jsx"
 import FeedbackPage from "./components/screens/admin/Pages/Feedback.jsx"
+import ServiceRequestsTable from "./components/screens/admin/Pages/ServiceRequests.jsx"
 
 import MechanicPanel from "./components/screens/mechanic/mechanicPanel.jsx"
 import Login from "./components/screens/auth/login.jsx"
@@ -75,6 +76,7 @@ const router = createBrowserRouter(
       <Route element={<ProtectedLayout />}>
         <Route path="/admin" element={<Outlet />}>
           <Route index element={<AdminPanel />} />
+          <Route path="service-requests" element={<ServiceRequestsTable />} />
           <Route path="feedback" element={<FeedbackPage />} />
         </Route>
         <Route path="/customers" element={<Outlet />}>
