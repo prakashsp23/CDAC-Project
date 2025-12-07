@@ -38,8 +38,8 @@ function Dashboard() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Title + subtitle */}
+     <div className="flex flex-col gap-6 px-8 py-6">
+    {/* Title + subtitle */}
       <div>
         <h1 className="text-2xl font-semibold">Dashboard Overview</h1>
         <p className="text-sm text-slate-500">
@@ -76,7 +76,7 @@ function Dashboard() {
 
 function SummaryCard({ label, value, trend }) {
   return (
-    <Card>
+<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardContent className="py-4 flex flex-col gap-2">
         <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
           {label}
@@ -94,7 +94,7 @@ function QuickStatsCard({ stats }) {
   const { activeMechanics, pendingRequests, avgRating } = stats;
 
   return (
-    <Card>
+<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle className="text-base">Quick Stats</CardTitle>
       </CardHeader>
@@ -113,7 +113,7 @@ function QuickStatsCard({ stats }) {
 
 function UnassignedRequestsCard({ requests }) {
   return (
-    <Card>
+<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Unassigned Service Requests </CardTitle>
       </CardHeader>

@@ -1,13 +1,13 @@
-import Dashboard from './Pages/Dashboard'
-import { Section } from '@/components/ui/section'
+import React from "react";
+import Dashboard from "./Pages/Dashboard";
+import { Section } from "@/components/ui/section";
+
 function AdminPanel() {
   return (
-    <>
-      <Section className='flex flex-col items-center justify-center'>
-        <Dashboard />
-      </Section>
-    </>
-  )
+    <Section className="flex flex-col px-8 py-6">
+      <Dashboard />
+    </Section>
+  );
 }
 
-export default AdminPanel
+export default AdminPanel;
