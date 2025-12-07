@@ -1,13 +1,15 @@
 import React from 'react'
 import MechanicCard from './components/mechanicCard'
+import { Outlet } from 'react-router-dom'
+import { Section } from '../../ui/section'
 
 function MechanicPanel() {
   return (
     <>
-    <div className='flex flex-col h-screen items-center justify-center'>
+    <Section className='flex flex-col items-center justify-center'>
     <h1 className='text-2xl font-bold mb-16'>This is the mechanic panel</h1>
     <MechanicCard />
-    </div>
+    </Section>
     </>
   )
 }

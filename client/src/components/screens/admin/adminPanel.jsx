@@ -1,17 +1,13 @@
-import React from 'react'
-import AdminCard from './components/adminCard'
-import Dashboard from './Pages/Dashboard'
-import MechanicsPage from './Pages/MechanicsPage/MechanicsPage'
+import React from "react";
+import Dashboard from "./Pages/Dashboard";
+import { Section } from "@/components/ui/section";
+
 function AdminPanel() {
   return (
-    <>
-      <div className="flex flex-col min-h-screen">
-        <div></div>
-        <MechanicsPage />
-        {/* <Dashboard /> */}
-        </div>
-    </>
-  )
+    <Section className="flex flex-col px-8 py-6">
+      <Dashboard />
+    </Section>
+  );
 }
 
-export default AdminPanel
+export default AdminPanel;
