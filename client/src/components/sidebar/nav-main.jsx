@@ -20,6 +20,7 @@ const items = [
     url: "/admin",
     icon: BarChart3,
     children: [
+      { title: "Mechanics", url: "/admin/mechanics", icon: Users },
       {
         title: "Service Requests",
         url: "/admin/service-requests",
