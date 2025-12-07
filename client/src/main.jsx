@@ -42,6 +42,8 @@ import { createBrowserRouter, createRoutesFromElements, Outlet, Route, RouterPro
 import { ThemeProvider } from "./components/theme-provider.jsx"
 import LandingPage from "./components/screens/landingPage/landingPage.jsx"
 import AdminPanel from "./components/screens/admin/adminPanel.jsx"
+import FeedbackPage from "./components/screens/admin/Pages/Feedback.jsx"
+
 import MechanicPanel from "./components/screens/mechanic/mechanicPanel.jsx"
 import Login from "./components/screens/auth/login.jsx"
 import Register from "./components/screens/auth/register.jsx"
@@ -71,7 +73,10 @@ const router = createBrowserRouter(
         <Route path="/register" element={<Register />} />
       </Route>
       <Route element={<ProtectedLayout />}>
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin" element={<Outlet />}>
+          <Route index element={<AdminPanel />} />
+          <Route path="feedback" element={<FeedbackPage />} />
+        </Route>
         <Route path="/customers" element={<Outlet />}>
           <Route index element={<CustomerDashboard />} />
           <Route path="table" element={<CustomerTable />} />

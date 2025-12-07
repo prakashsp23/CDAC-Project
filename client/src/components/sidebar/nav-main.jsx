@@ -19,6 +19,9 @@ const items = [
     title: "Admin Page",
     url: "/admin",
     icon: BarChart3,
+    children: [
+      { title: "Feedback", url: "/admin/feedback", icon: Inbox },
+    ],
   },
   {
     title: "Mechanic Page",
