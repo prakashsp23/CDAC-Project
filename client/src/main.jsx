@@ -60,6 +60,8 @@ import FeedBackPage from "./components/screens/customers/ServiceFeedback.jsx"
 
 import Dashboard from "./components/screens/mechanic/components/dashboard.jsx"
 import WorkHistory from "./components/screens/mechanic/components/workhistory.jsx"
+import AssignedJobs from "./components/screens/mechanic/components/AssignedJobs.jsx"
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -83,6 +85,7 @@ const router = createBrowserRouter(
         <Route path="/mechanic" element={<Outlet />} >
             <Route index element={<Dashboard/>} />
             <Route path="work-history" element={<WorkHistory />} />
+            <Route path="assigned-jobs" element={<AssignedJobs />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />
       </Route>

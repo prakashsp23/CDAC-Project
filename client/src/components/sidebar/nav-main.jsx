@@ -26,6 +26,7 @@ const items = [
     icon: FileText,
     children: [
       { title: "Work History", url: "/mechanic/work-history", icon: Table },
+      { title: "Assigned Jobs", url: "/mechanic/assigned-jobs", icon: Users },
     ],
   },
   {

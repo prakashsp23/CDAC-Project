@@ -1,6 +1,6 @@
 import React from "react";
-import { Eye } from "lucide-react";
 import StarRating from "../../../ui/star-rating";
+
 export default function WorkHistory() {
   const completedJobs = [
     {
@@ -38,17 +38,15 @@ export default function WorkHistory() {
   ];
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="py-6 px-8 w-[90%] mx-auto space-y-8">
 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Work History</h1>
-          <p className="text-gray-500 text-sm">
-            Review your completed service records
-          </p>
+          <p className="text-muted-foreground text-sm">Review your completed service records</p>
         </div>
 
-        <div className="flex items-center gap-6 text-sm whitespace-nowrap">
+          <div className="flex items-center gap-6 text-sm whitespace-nowrap">
           <span>
             Average Rating: <span className="font-semibold">4.8 ⭐</span>
           </span>
@@ -62,25 +60,21 @@ export default function WorkHistory() {
         <table className="w-full text-sm border-collapse">
 
           <thead>
-            <tr className="border-b bg-gray-100">
+            <tr className="border-b bg-muted/20">
               <th className="text-left p-3">Job ID</th>
               <th className="text-left p-3">Vehicle</th>
               <th className="text-left p-3">Service Done</th>
               <th className="text-left p-3">Date Completed</th>
               <th className="text-left p-3">Rating</th>
               <th className="text-left p-3">Feedback</th>
-              <th className="text-left p-3">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {completedJobs.map((job, index) => (
-              <tr
-                key={index}
-                className="border-b hover:bg-gray-50 transition"
-              >
+              <tr key={index} className="border-b hover:bg-muted/10 transition">
                 <td className="p-3 whitespace-nowrap">
-                  <span className="px-2 py-1 bg-gray-100 border rounded text-sm font-semibold whitespace-nowrap">
+                  <span className="px-2 py-1 bg-muted/50 border rounded text-sm font-semibold whitespace-nowrap">
                     {job.jobId}
                   </span>
                 </td>
@@ -94,12 +88,6 @@ export default function WorkHistory() {
                 </td>
 
                 <td className="p-3">{job.feedback}</td>
-
-                <td className="p-3 whitespace-nowrap">
-                  <button className="flex items-center gap-1 text-blue-600 text-sm hover:underline">
-                    <Eye className="w-4 h-4" /> View
-                  </button>
-                </td>
 
               </tr>
             ))}
