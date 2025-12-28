@@ -105,9 +105,9 @@ export default function UniversalDisplay({
         <div className="bg-card rounded-md shadow-sm border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow >
                 {columns.length > 0 ? columns.map(col => (
-                  <TableHead key={col.key}>{col.title}</TableHead>
+                  <TableHead key={col.key} >{col.title}</TableHead>
                 )) : <TableHead >Data</TableHead>}
               </TableRow>
             </TableHeader>

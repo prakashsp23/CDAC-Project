@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../ui/dialog'
 import { Button } from '../../../ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../../ui/select'
@@ -86,9 +87,7 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
                 <DropdownMenuTrigger asChild>
                   <button className="w-full rounded-md border border-input px-3 py-2 bg-card text-card-foreground flex items-center justify-between">
                     <span>{form.date ? new Date(form.date).toLocaleDateString() : 'Select date'}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
 
