@@ -47,8 +47,7 @@ function LoginPage() {
     try {
       const response = await loginUser(data)
       toast.success('Signed in successfully')
-      navigate('/dashboard')
-      return response
+      response.role === 'ADMIN' ? navigate('/admin') : response.role === 'CUSTOMER' ? navigate('/customers') : navigate('/mechanic')
     } catch (err) {
       console.error('Login failed:', err)
       toast.error(err.message || 'Invalid email or password')

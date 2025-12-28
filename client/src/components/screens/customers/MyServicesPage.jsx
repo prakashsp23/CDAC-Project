@@ -1,41 +1,61 @@
-import React from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Button } from '../../ui/button'
 import { TableRow, TableCell } from '../../ui/table'
 import UniversalDisplay from '../../ui/universal-display'
 import { useNavigate } from 'react-router-dom'
 import ViewToggle from '../../ui/ViewToggle'
-
-const SERVICES = [
-  { id: 1, name: 'Oil Change' , date: '2025-11-20', status: 'Completed',desc:'Full synthetic oil with filter replacement',car:'2022 Honda CRV' },
-  { id: 2, name: 'Tire Rotation', date: '2025-11-22', status: 'Pending',desc:'Rotate and balance tires',car:'2020 Toyota Corolla' },
-  { id: 3, name: 'Brake Repair', date: '2025-11-25', status: 'In Progress', desc:'Brake system repair and replacement',car:'2021 Ford Escape' },
-  { id: 4, name: 'Exterior Detailing', date: '2025-10-30', status: 'Completed', desc:'Wash, wax and polish',car:'2019 BMW X3' },
-  { id: 5, name: 'Battery Check', date: '2025-11-10', status: 'Awaiting Approval', desc:'Battery test and replacement',car:'2018 Audi A4' },
-  { id: 6, name: 'AC Service', date: '2025-11-12', status: 'Pending', desc:'Recharge and sanitize AC',car:'2017 Mercedes C-Class' },
-]
+import { getUserServiceHistory } from '../../../services/mockDataService'
+import { toast } from 'sonner'
 
 export default function MyServicesPage() {
   const navigate = useNavigate()
-  const [filter, setFilter] = React.useState('All')
-  const [viewLocal, setViewLocal] = React.useState(() => window.localStorage.getItem('univ_view') || 'grid')
+  const [filter, setFilter] = useState('All')
+  const [viewLocal, setViewLocal] = useState(() => window.localStorage.getItem('univ_view') || 'grid')
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const counts = React.useMemo(() => {
-    const c = { All: SERVICES.length, Ongoing: 0, Completed: 0, Cancelled: 0 }
-    SERVICES.forEach(s => {
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const history = await getUserServiceHistory(1);
+        setServices(history.map(s => ({
+          id: s.service_id,
+          name: s.service_name,
+          date: s.created_at ? s.created_at.split('T')[0] : 'N/A',
+          status: s.status === 'ONGOING' ? 'In Progress' : (s.status === 'REQUESTED' ? 'Pending' : (s.status === 'COMPLETED' ? 'Completed' : 'Cancelled')),
+          desc: s.description,
+          car: s.car_details
+        })));
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to load service history");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const counts = useMemo(() => {
+    const c = { All: services.length, Ongoing: 0, Completed: 0, Cancelled: 0 }
+    services.forEach(s => {
       if (s.status === 'In Progress' || s.status === 'Pending' || s.status === 'Awaiting Approval') c.Ongoing++
       if (s.status === 'Completed') c.Completed++
       if (s.status === 'Cancelled') c.Cancelled++
     })
     return c
-  }, [])
+  }, [services])
 
-  const filtered = React.useMemo(() => {
-    if (filter === 'All') return SERVICES
-    if (filter === 'Ongoing') return SERVICES.filter(s => s.status === 'In Progress' || s.status === 'Pending' || s.status === 'Awaiting Approval')
-    if (filter === 'Completed') return SERVICES.filter(s => s.status === 'Completed')
-    if (filter === 'Cancelled') return SERVICES.filter(s => s.status === 'Cancelled')
-    return SERVICES
-  }, [filter])
+  const filtered = useMemo(() => {
+    if (filter === 'All') return services
+    if (filter === 'Ongoing') return services.filter(s => s.status === 'In Progress' || s.status === 'Pending' || s.status === 'Awaiting Approval')
+    if (filter === 'Completed') return services.filter(s => s.status === 'Completed')
+    if (filter === 'Cancelled') return services.filter(s => s.status === 'Cancelled')
+    return services
+  }, [filter, services])
+
+  if (loading) return <div className="p-8">Loading history...</div>;
 
   return (
     <div className="p-6 w-[90%] mx-auto">
@@ -51,19 +71,19 @@ export default function MyServicesPage() {
       {/* Filters and View Toggle */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          {['All','Ongoing','Completed','Cancelled'].map(key => (
+          {['All', 'Ongoing', 'Completed', 'Cancelled'].map(key => (
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={`text-sm inline-flex items-center gap-2 px-3 py-1 rounded-md font-medium transition-colors ${filter===key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent'}`}>
+              className={`text-sm inline-flex items-center gap-2 px-3 py-1 rounded-md font-medium transition-colors ${filter === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent'}`}>
               <span>{key}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter===key ? 'bg-primary-foreground/20' : 'bg-background'}`}>{counts[key] ?? 0}</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === key ? 'bg-primary-foreground/20' : 'bg-background'}`}>{counts[key] ?? 0}</span>
             </button>
           ))}
         </div>
         <ViewToggle view={viewLocal} onViewChange={setViewLocal} />
       </div>
-      
+
       {/* Display Area */}
       <UniversalDisplay
         items={filtered}

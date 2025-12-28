@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from '../../ui/select'
@@ -8,51 +8,72 @@ import StarRating from '../../ui/star-rating'
 import UniversalDisplay from '../../ui/universal-display'
 import { toast } from 'sonner'
 import ViewToggle from '../../ui/ViewToggle'
+import { getUserFeedbacks, getCompletedServicesForFeedback, submitFeedback } from '../../../services/mockDataService'
 
 export default function ServiceFeedback() {
-  // mock completed services (in a real app fetch from API)
-  const completedServices = [
-    { id: 'svc-1', name: 'Oil Change', date: '2025-11-20' },
-    { id: 'svc-2', name: 'Brake Repair', date: '2025-11-18' },
-    { id: 'svc-3', name: 'Exterior Detailing', date: '2025-10-30' },
-  ]
+  const [completedServices, setCompletedServices] = useState([])
+  const [feedbacks, setFeedbacks] = useState([])
 
-  const [selectedService, setSelectedService] = useState(completedServices[0]?.id ?? '')
+  const [selectedService, setSelectedService] = useState('')
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
-  const [feedbacks, setFeedbacks] = useState([
-    { id: 1, service: 'Oil Change', date: '2025-11-20', rating: 5, comment: 'Quick and clean job', mechanicNotes: 'Changed oil and filter', images: [] },
-    { id: 2, service: 'Brake Repair', date: '2025-11-18', rating: 4, comment: 'Good service but took longer than expected', mechanicNotes: 'Replaced brake pads', images: [] },
-    { id: 3, service: 'Exterior Detailing', date: '2025-10-30', rating: 5, comment: 'My car looks brand new!', mechanicNotes: 'Full wash, wax and polish', images: [] },
-  ])
+  const [loading, setLoading] = useState(true)
+
   const [view, setView] = useState(() => window.localStorage.getItem('feedback-view') || 'grid');
 
-  function submit() {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const servicesData = await getCompletedServicesForFeedback(1);
+      setCompletedServices(servicesData);
+
+      if (servicesData.length > 0 && !selectedService) {
+        setSelectedService(String(servicesData[0].id));
+      }
+
+      const feedbacksData = await getUserFeedbacks(1);
+      setFeedbacks(feedbacksData);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load feedback data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function handleSubmit() {
     if (!selectedService) return alert('Please select a completed service')
     if (!rating) return alert('Please provide a rating')
 
-    const svc = completedServices.find(s => s.id === selectedService)
-    const entry = {
-      id: Date.now(),
-      service: svc?.name || 'Service',
-      date: svc?.date || new Date().toISOString().slice(0,10),
-      rating,
-      comment,
-      mechanicNotes: '',
-      images: [],
+    try {
+      await submitFeedback({
+        serviceId: selectedService,
+        rating,
+        comment
+      });
+      toast.success("Feedback recorded successfully");
+
+      setRating(0);
+      setComment('');
+      setSelectedService('');
+
+      loadData(); // Reload to update lists
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to submit feedback");
     }
-    setFeedbacks(f => [entry, ...f])
-    if(entry) toast.success("Feedback has been recorded!")
-    // reset form
-    setRating(0)
-    setComment('')
-    setSelectedService(completedServices[0]?.id ?? '')
   }
 
   function handleViewChange(newView) {
     setView(newView);
     window.localStorage.setItem('feedback-view', newView);
   }
+
+  if (loading) return <div className="p-8">Loading feedback...</div>;
 
   return (
     <div className="py-6 px-8 w-[90%] mx-auto">
@@ -73,14 +94,14 @@ export default function ServiceFeedback() {
                 <label className="text-sm font-medium text-muted-foreground pb-2 block">Completed Service</label>
                 <Select value={selectedService} onValueChange={v => setSelectedService(v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a service" />
+                    <SelectValue placeholder={completedServices.length > 0 ? "Select a service" : "No services to review"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Recent Services</SelectLabel>
-                      {completedServices.map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.name} — {s.date}</SelectItem>
-                      ))}
+                      {completedServices.length > 0 ? completedServices.map(s => (
+                        <SelectItem key={s.id} value={String(s.id)}>{s.name} — {s.date}</SelectItem>
+                      )) : <SelectItem value="none" disabled>No pending reviews</SelectItem>}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -96,8 +117,8 @@ export default function ServiceFeedback() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setRating(0); setComment(''); setSelectedService(completedServices[0]?.id ?? '') }}>Cancel</Button>
-              <Button onClick={submit} className="bg-black text-white">Submit Feedback</Button>
+              <Button variant="ghost" onClick={() => { setRating(0); setComment(''); }}>Cancel</Button>
+              <Button onClick={handleSubmit} className="bg-black text-white" disabled={!selectedService || completedServices.length === 0}>Submit Feedback</Button>
             </div>
           </div>
         </CardContent>
@@ -107,7 +128,7 @@ export default function ServiceFeedback() {
         <h2 className="text-xl font-semibold">Your Feedback History</h2>
         <ViewToggle view={view} onViewChange={handleViewChange} />
       </div>
-      
+
       <UniversalDisplay
         items={feedbacks}
         view={view}

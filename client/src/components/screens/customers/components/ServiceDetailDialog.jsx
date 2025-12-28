@@ -15,7 +15,7 @@ const SvgIcon = ({ svgString, ...props }) => {
   return <div {...props} dangerouslySetInnerHTML={{ __html: svgString }} />;
 };
 
-export default function ServiceDetailDialog({ service, open, onOpenChange }) {
+export default function ServiceDetailDialog({ service, open, onOpenChange, vehicles, services, onConfirm }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [currentService, setCurrentService] = useState(service);
 
@@ -42,7 +42,7 @@ export default function ServiceDetailDialog({ service, open, onOpenChange }) {
           <DialogHeader className="py-4">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 text-primary flex-shrink-0 flex items-center justify-center bg-muted/50 rounded-lg">
-                <SvgIcon svgString={currentService.svg} className="w-10 h-10" />
+                <span className="text-2xl font-bold">🛠️</span>
               </div>
               <div className="flex-grow">
                 <DialogTitle className="text-xl font-bold">{currentService.name}</DialogTitle>
@@ -74,6 +74,9 @@ export default function ServiceDetailDialog({ service, open, onOpenChange }) {
         open={isBookingOpen}
         onOpenChange={setIsBookingOpen}
         defaultServiceName={currentService.name}
+        vehicles={vehicles} // Pass vehicles
+        services={services} // Pass services
+        onConfirm={onConfirm} // Pass confirm handler
       />
     </>
   );

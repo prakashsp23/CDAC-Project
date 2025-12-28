@@ -30,7 +30,7 @@ const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(8, ' Password must be at least 8 characters')
     .max(20, 'Password must not exceed 20 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
@@ -57,27 +57,26 @@ function RegisterPage() {
   })
 
   const navigate = useNavigate()
-  
+
   const onSubmit = async (data) => {
     try {
       // Remove confirmPassword from the data we send to the API
       const { confirmPassword, ...registrationData } = data
-      
-      
+
+
       // Call the registration API
       const response = await registerUser(registrationData)
-      
+
       toast.success('Registration successful!')
-      
-      // Navigate to the dashboard (or login page if you prefer)
-      navigate('/dashboard')
-      
+
+      navigate('/login')
+
       return response
     } catch (err) {
       console.error('Registration failed:', err)
-      
+
       toast.error(err.message || 'Registration failed. Please try again.')
-      
+
       if (err.message?.toLowerCase().includes('email')) {
         form.setFocus('email')
       }
@@ -170,9 +169,9 @@ function RegisterPage() {
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full mt-4" 
+              <Button
+                type="submit"
+                className="w-full mt-4"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? 'Registering…' : 'Register'}
