@@ -1,6 +1,6 @@
-package com.backend.service;
+package com.backend.service.AuthService;
 
-import com.backend.dtos.RegisterRequest;
+import com.backend.dtos.AuthDTOs.RegisterRequest;
 import com.backend.entity.User;
 
 import java.util.Optional;

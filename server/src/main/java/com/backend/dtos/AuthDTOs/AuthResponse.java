@@ -1,4 +1,4 @@
-package com.backend.dtos;
+package com.backend.dtos.AuthDTOs;
 
 import com.backend.entity.Role;
 import lombok.AllArgsConstructor;
