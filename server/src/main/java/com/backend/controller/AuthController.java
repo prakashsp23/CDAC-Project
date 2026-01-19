@@ -37,9 +37,11 @@ public class AuthController {
                 SecurityContextHolder.getContext()
                                 .setAuthentication(authentication);
 
-                String token = jwtService.generateToken(request.getEmail());
                 // Extract role from authenticated user
                 User user = authService.getUserByEmail(request.getEmail());
+                String token = jwtService.generateToken(user);
+                // System.out.println(token);
+                // System.out.println(jwtService.extractUserId(token));
                 String role = user.getRole().name(); // ADMIN / MECHANIC / CUSTOMER
                 return new AuthResponse(
                                 token,
