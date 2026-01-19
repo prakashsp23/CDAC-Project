@@ -12,19 +12,19 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET =
-            "THIS_IS_A_VERY_SECURE_SECRET_KEY_FOR_JWT_256_BITS";
+    private static final String SECRET = "THIS_IS_A_VERY_SECURE_SECRET_KEY_FOR_JWT_256_BITS";
 
-    private static final long EXPIRATION =
-            1000 * 60 * 60 * 24; // 24 hours
+    private static final long EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String username) {
+    // public String generateToken(String username) {
+    public String generateToken(com.backend.entity.User user) {
         return Jwts.builder()
-                .subject(username)
+                .subject(user.getEmail())
+                .claim("userId", user.getUserId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getSigningKey())
@@ -32,20 +32,30 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        Jws<Claims> claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token);
+        return extractAllClaims(token).getSubject();
+    }
 
-        return claims.getPayload().getSubject();
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
     }
 
     public boolean isTokenValid(String token) {
         try {
-            extractUsername(token);
-            return true;
+            return extractUsername(token) != null && !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
