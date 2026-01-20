@@ -1,6 +1,7 @@
 package com.backend.security.config;
 
 import com.backend.security.jwt.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,16 +18,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity //to enable spring web security
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource;
-
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          CorsConfigurationSource corsConfigurationSource) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.corsConfigurationSource = corsConfigurationSource;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
