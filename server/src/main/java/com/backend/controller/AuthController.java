@@ -3,13 +3,11 @@ package com.backend.controller;
 import com.backend.dtos.AuthDTOs.AuthRequest;
 import com.backend.dtos.AuthDTOs.AuthResponse;
 import com.backend.dtos.AuthDTOs.RegisterRequest;
-import com.backend.entity.Role;
 import com.backend.entity.User;
 import com.backend.security.jwt.JwtService;
 import com.backend.service.AuthService.AuthService;
 
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -18,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@AllArgsConstructor
+@RequiredArgsConstructor
 
 public class AuthController {
 
@@ -27,9 +25,9 @@ public class AuthController {
         private final AuthService authService;
 
         @PostMapping("/login")
-        public AuthResponse login(@RequestBody AuthRequest request) {
-
-                Authentication authentication = authenticationManager.authenticate(
+        public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+                try{
+                    Authentication authentication = authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
                                                 request.getEmail(),
                                                 request.getPassword()));
@@ -43,9 +41,13 @@ public class AuthController {
                 // System.out.println(token);
                 // System.out.println(jwtService.extractUserId(token));
                 String role = user.getRole().name(); // ADMIN / MECHANIC / CUSTOMER
-                return new AuthResponse(
+                return ResponseEntity.ok(new AuthResponse(
                                 token,
-                                role);
+                                role));
+                } catch (BadCredentialsException e) {
+                        return ResponseEntity.badRequest().body("Invalid Email or Password");
+                }
+                
         }
 
         @PostMapping("/register")
