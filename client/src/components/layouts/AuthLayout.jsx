@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom"
-import { ModeToggle } from "../mode-toggle"
+// import { ModeToggle } from "../mode-toggle"
 
 export default function AuthLayout() {
   return (

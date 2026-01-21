@@ -29,7 +29,7 @@ import {
 
 import { Input } from '../ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { getUserProfile } from '../../lib/auth'
+import { useGetCurrentUser } from '../../query/queries'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import ForgotPasswordPage from './auth/ForgotPasswordCard'

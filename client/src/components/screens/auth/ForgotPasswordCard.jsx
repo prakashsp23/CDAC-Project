@@ -1,11 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { Button } from '../../ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '../../ui/card'
 import {
   Form,
   FormControl,
@@ -15,12 +10,10 @@ import {
   FormMessage,
 } from '../../ui/form'
 import { Input } from '../../ui/input'
-import { Separator } from '../../ui/separator'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { changePassword } from '../../../lib/auth'
-import { toast } from 'sonner'
+import { useChangePasswordMutation } from '../../../query/queries'
 
 // Password validation schema
 const passwordSchema = z.string()
@@ -43,7 +36,6 @@ const changePasswordSchema = z.object({
 })
 export default function ForgotPasswordPage({ isModal = false, onClose = null }) {
   const [backendError, setBackendError] = useState("")
-  const [loading, setLoading] = useState(false)
 
   const form = useForm({
     resolver: zodResolver(changePasswordSchema),
@@ -54,33 +46,32 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
     },
   })
 
-  const onSubmit = async (data) => {
-    setBackendError("")
-    setLoading(true)
+  const { mutate: changePassword, isPending } = useChangePasswordMutation()
 
-    try {
-      const response = await changePassword({
+  const onSubmit = (data) => {
+    setBackendError("")
+
+    changePassword(
+      {
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
-      })
-
-      toast.success(response?.message || "Password changed successfully")
-      form.reset()
-
-      if (isModal && onClose) onClose()
-
-      return response
-    } catch (err) {
-      setBackendError(err.message || "Failed to change password")
-    } finally {
-      setLoading(false)
-    }
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+          if (isModal && onClose) onClose()
+        },
+        onError: (err) => {
+          setBackendError(err?.message || "Failed to change password")
+        },
+      }
+    )
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        
+
         {backendError && (
           <div className="text-sm text-destructive p-3 bg-destructive/10 rounded">
             {backendError}
@@ -98,7 +89,7 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
                 <Input
                   type="password"
                   placeholder="Enter your current password"
-                  disabled={loading}
+                  disabled={isPending}
                   {...field}
                 />
               </FormControl>
@@ -118,7 +109,7 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
                 <Input
                   type="password"
                   placeholder="Enter your new password"
-                  disabled={loading}
+                  disabled={isPending}
                   {...field}
                 />
               </FormControl>
@@ -138,7 +129,7 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
                 <Input
                   type="password"
                   placeholder="Confirm your new password"
-                  disabled={loading}
+                  disabled={isPending}
                   {...field}
                 />
               </FormControl>
@@ -149,8 +140,8 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
 
         {/* BUTTONS */}
         <div className="flex gap-2 pt-2">
-          <Button type="submit" className="flex-1" disabled={loading}>
-            {loading ? "Changing..." : "Change Password"}
+          <Button type="submit" className="flex-1" disabled={isPending}>
+            {isPending ? "Changing..." : "Change Password"}
           </Button>
 
           {isModal && onClose && (
@@ -159,7 +150,7 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
               variant="outline"
               className="flex-1"
               onClick={onClose}
-              disabled={loading}
+              disabled={isPending}
             >
               Cancel
             </Button>
@@ -168,4 +159,9 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
       </form>
     </Form>
   )
+}
+
+ForgotPasswordPage.propTypes = {
+  isModal: PropTypes.bool,
+  onClose: PropTypes.func,
 }

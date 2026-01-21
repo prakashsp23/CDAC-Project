@@ -10,9 +10,19 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../../components/ui/sidebar"
+import { logout } from "../../slices/authSlice"
+import { useNavigate } from "react-router-dom"
+import { useDispatch } from "react-redux"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const handleLogout = () => {
+    dispatch(logout())
+    console.log('Logged out')
+    navigate('/login')
+  }
 
   return (
     <SidebarMenu>
@@ -71,7 +81,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleLogout}>
               <LogOut className="size-4" />
               <span>Log out</span>
             </DropdownMenuItem>

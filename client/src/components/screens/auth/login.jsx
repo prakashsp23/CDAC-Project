@@ -1,9 +1,7 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { loginUser } from '../../../lib/auth'
 
 import { Button } from '../../ui/button'
 import {
@@ -23,7 +21,7 @@ import {
   FormMessage,
 } from '../../ui/form'
 import { Input } from '../../ui/input'
-import { toast } from 'sonner'
+import { useLoginMutation } from '../../../query/queries'
 
 // Validation schema
 const loginSchema = z.object({
@@ -34,7 +32,6 @@ const loginSchema = z.object({
 });
 
 function LoginPage() {
-  const navigate = useNavigate()
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -43,16 +40,30 @@ function LoginPage() {
     },
   })
 
-  const onSubmit = async (data) => {
-    try {
-      const response = await loginUser(data)
-      toast.success('Signed in successfully')
-      response.role === 'ADMIN' ? navigate('/admin') : response.role === 'CUSTOMER' ? navigate('/customers') : navigate('/mechanic')
-    } catch (err) {
-      console.error('Login failed:', err)
-      toast.error(err.message || 'Invalid email or password')
-      form.resetField('password')
-    }
+  // const { mutate, isPending } = useMutation({
+  //   mutationFn: loginUser,
+  //   onSuccess: (data) => {
+  //     const role = data?.user?.role?.toUpperCase?.()
+  //     dispatch(
+  //       loginSuccess({
+  //         user: { ...data.user, role },
+  //         token: data.token,
+  //       })
+  //     )
+  //     toast.success(data.message || 'Login successful')
+  //     if (role === 'ADMIN') navigate('/admin')
+  //     else if (role === 'CUSTOMER') navigate('/customers')
+  //     else if (role === 'MECHANIC') navigate('/mechanic')
+  //     else navigate('/')
+  //   },
+  //   onError: (err) => {
+  //     toast.error(err?.message || 'Invalid credentials')
+  //   },
+  // })
+  const { mutate, isPending } = useLoginMutation()
+
+  const onSubmit = (data) => {
+    mutate(data)
   }
 
   return (
@@ -107,9 +118,9 @@ function LoginPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={isPending}
               >
-                {form.formState.isSubmitting ? "Signing in…" : "Sign in"}
+                {isPending ? "Signing in…" : "Sign in"}
               </Button>
             </form>
           </Form>

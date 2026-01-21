@@ -1,9 +1,7 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { registerUser } from '../../../lib/auth'
 
 import { Button } from '../../ui/button'
 import {
@@ -23,7 +21,14 @@ import {
   FormMessage,
 } from '../../ui/form'
 import { Input } from '../../ui/input'
-import { toast } from 'sonner'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../ui/select'
+import { useRegisterMutation } from '../../../query/queries'
 
 // Validation schema
 const registerSchema = z.object({
@@ -38,7 +43,10 @@ const registerSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
     .refine(val => !val.includes(' '), 'Password must not contain spaces'),
   confirmPassword: z.string(),
-  phone: z.string().length(10, 'Phone number must be exactly 10 digits')
+  phone: z.string().length(10, 'Phone number must be exactly 10 digits'),
+  role: z.enum(['admin', 'customer', 'mechanic'], {
+    required_error: 'Please select a role',
+  })
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -53,34 +61,21 @@ function RegisterPage() {
       password: '',
       confirmPassword: '',
       phone: '',
+      role: undefined,
     },
   })
+  const { mutate, isPending } = useRegisterMutation()
 
-  const navigate = useNavigate()
-
-  const onSubmit = async (data) => {
-    try {
-      // Remove confirmPassword from the data we send to the API
-      const { confirmPassword, ...registrationData } = data
-
-
-      // Call the registration API
-      const response = await registerUser(registrationData)
-
-      toast.success('Registration successful!')
-
-      navigate('/login')
-
-      return response
-    } catch (err) {
-      console.error('Registration failed:', err)
-
-      toast.error(err.message || 'Registration failed. Please try again.')
-
-      if (err.message?.toLowerCase().includes('email')) {
-        form.setFocus('email')
-      }
+  const onSubmit = (data) => {
+    // Remove confirmPassword from the data we send to the API
+    const registrationData = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+      role: data.role,
     }
+    mutate(registrationData)
   }
 
   return (
@@ -169,12 +164,36 @@ function RegisterPage() {
                 )}
               />
 
+              {/* Role selection */}
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="mechanic">Mechanic</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button
                 type="submit"
                 className="w-full mt-4"
-                disabled={form.formState.isSubmitting}
+                disabled={isPending}
               >
-                {form.formState.isSubmitting ? 'Registering…' : 'Register'}
+                {isPending ? 'Registering…' : 'Register'}
               </Button>
             </form>
           </Form>
