@@ -10,17 +10,19 @@ const handleResponse = async (response) => {
 };
 
 // -- GET Data --
-
+//done
 export const getServiceCatalog = async () => {
   const response = await fetch(`${API_URL}/service_catalog`);
   return handleResponse(response);
 };
 
+//done
 export const getUserVehicles = async (userId) => {
   const response = await fetch(`${API_URL}/cars?user_id=${userId}&status=ACTIVE`);
   return handleResponse(response);
 };
 
+//done
 export const getUserAppointments = async (userId) => {
   // Parallel fetch for efficiency
   const [servicesRes, catalogRes, carsRes] = await Promise.all([
@@ -48,6 +50,7 @@ export const getUserAppointments = async (userId) => {
     });
 };
 
+//done partially
 export const getUserServiceHistory = async (userId) => {
   const [servicesRes, catalogRes, carsRes] = await Promise.all([
     fetch(`${API_URL}/services`),
@@ -75,6 +78,7 @@ export const getUserServiceHistory = async (userId) => {
     });
 };
 
+//done
 export const getUserFeedbacks = async (userId) => {
   const [feedbackRes, servicesRes, catalogRes, notesRes] = await Promise.all([
     fetch(`${API_URL}/feedback?user_id=${userId}`),
@@ -104,6 +108,7 @@ export const getUserFeedbacks = async (userId) => {
   });
 };
 
+//done
 export const getCompletedServicesForFeedback = async (userId) => {
   const [servicesRes, carsRes, catalogRes, feedbackRes] = await Promise.all([
     fetch(`${API_URL}/services?status=COMPLETED`),
@@ -134,7 +139,7 @@ export const getCompletedServicesForFeedback = async (userId) => {
 
 
 // -- POST / DELETE Actions (Persistence) --
-
+//done
 export const addVehicle = async (vehicleData) => {
   // We explicitly generate 'id' to fix json-server "Cannot read property 'id'" error.
   const allCars = await handleResponse(await fetch(`${API_URL}/cars`));
@@ -156,6 +161,7 @@ export const addVehicle = async (vehicleData) => {
   return handleResponse(response);
 };
 
+//done
 export const deleteVehicle = async (vehicleId) => {
   // Now we can rely on standard 'id' which matches 'car_id' mostly, but let's look up to be safe
   const cars = await handleResponse(await fetch(`${API_URL}/cars?car_id=${vehicleId}`));
