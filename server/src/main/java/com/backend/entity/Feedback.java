@@ -23,11 +23,10 @@ public class Feedback {
 
     @ManyToOne
     @JoinColumn(name = "service_id")
-    private Service service;
+    private Services service;
 
     private Integer rating;
     private String comments;
     private LocalDate date;
-    private LocalTime time;
     private String adminNote;
 }
