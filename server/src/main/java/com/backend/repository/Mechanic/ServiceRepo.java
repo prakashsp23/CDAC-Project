@@ -12,6 +12,8 @@ import com.backend.entity.ServiceStatus;
 @Repository
 public interface ServiceRepo extends JpaRepository<Services, Long> {
     List<Services> findByStatusAndMechanic_UserId(ServiceStatus status, Long mechanicId);
+    
+    List<Services> findByMechanic_UserIdAndStatus(Long mechanicId, ServiceStatus status);
         
 }
 
