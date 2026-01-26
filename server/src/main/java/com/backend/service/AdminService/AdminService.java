@@ -1,5 +1,6 @@
 package com.backend.service.AdminService;
 
+import com.backend.dtos.AdminDTOs.AdminFeedbackDTO;
 import com.backend.dtos.AdminDTOs.AdminServiceRequestDTO;
 import com.backend.dtos.AdminDTOs.MechanicDTO;
 
@@ -16,4 +17,6 @@ public interface AdminService {
 	void assignMechanic(Long serviceId, Long mechanicId);
 
 	void rejectService(Long serviceId, String reason);
+
+	List<AdminFeedbackDTO> getAllFeedback();
 }
