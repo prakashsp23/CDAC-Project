@@ -3,10 +3,12 @@ package com.backend.service.AdminService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.customException.ResourceNotFoundException;
+import com.backend.dtos.AdminDTOs.AdminServiceRequestDTO;
 import com.backend.dtos.AdminDTOs.MechanicDTO;
 import com.backend.entity.Role;
 import com.backend.entity.ServiceStatus;
@@ -17,43 +19,70 @@ import com.backend.repository.Admin.AdminServicesRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
-	
-	private final AdminServicesRepository adminServicesRepository;
-	private final UserRepository userRepository;
 
-	@Override
-	public List<Services> getAllServices() {
-		
-		return adminServicesRepository.findAll();
-	}
-	
-	@Override
-	public List<MechanicDTO> getAllMechanics() {
+    private final AdminServicesRepository adminServicesRepository;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
-	    return userRepository.findByRole(Role.MECHANIC)
-	        .stream()
-	        .map(user -> {
-	            MechanicDTO dto = new MechanicDTO();
-	            dto.setMechanicId(user.getUserId());
-	            dto.setName(user.getName());
-	            return dto;
-	        })
-	        .toList();
-	}
+    @Override
+    public List<AdminServiceRequestDTO> getAllServices() {
+        return adminServicesRepository.findAll()
+                .stream()
+                .map(service -> {
+                    AdminServiceRequestDTO dto = modelMapper.map(service, AdminServiceRequestDTO.class);
 
-	/* ================= ACCEPT SERVICE ================= */
+                    dto.setStatus(service.getStatus().name());
+
+                    dto.setCustomerName(
+                            service.getUser() != null ? service.getUser().getName() : null);
+
+                    dto.setCarBrand(
+                            service.getCar() != null ? service.getCar().getBrand() : null);
+
+                    dto.setCarModel(
+                            service.getCar() != null ? service.getCar().getModel() : null);
+
+                    dto.setServiceName(
+                            service.getCatalog() != null
+                                    ? service.getCatalog().getServiceName()
+                                    : null);
+
+                    dto.setMechanicName(
+                            service.getMechanic() != null
+                                    ? service.getMechanic().getName()
+                                    : "Unassigned");
+
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<MechanicDTO> getAllMechanics() {
+
+        return userRepository.findByRole(Role.MECHANIC)
+                .stream()
+                .map(user -> {
+                    MechanicDTO dto = new MechanicDTO();
+                    dto.setMechanicId(user.getUserId());
+                    dto.setName(user.getName());
+                    return dto;
+                })
+                .toList();
+    }
+
+    /* ================= ACCEPT SERVICE ================= */
     // NEW → PENDING
 
     @Override
     public void acceptService(Long serviceId) {
 
         Services service = adminServicesRepository.findById(serviceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         service.setStatus(ServiceStatus.PENDING);
 
@@ -67,10 +96,10 @@ public class AdminServiceImpl implements AdminService {
     public void assignMechanic(Long serviceId, Long mechanicId) {
 
         Services service = adminServicesRepository.findById(serviceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         User mechanic = userRepository.findById(mechanicId)
-            .orElseThrow(() -> new ResourceNotFoundException("Mechanic not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Mechanic not found"));
 
         // Optional safety check
         if (mechanic.getRole() != Role.MECHANIC) {
@@ -89,7 +118,7 @@ public class AdminServiceImpl implements AdminService {
     public void rejectService(Long serviceId, String reason) {
 
         Services service = adminServicesRepository.findById(serviceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         service.setStatus(ServiceStatus.CANCELLED);
         service.setCancelledByAdmin(true);
