@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Inbox, Users, User, Table } from "lucide-react";
+import { BarChart3, FileText, Inbox, Users, User, Table, Package } from "lucide-react";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -22,6 +22,12 @@ const navItems = [
     allowedRoles: ["ADMIN"],
   },
   { title: "Mechanics", url: "/admin/mechanics", icon: Users, allowedRoles: ["ADMIN"] },
+  {
+    title: "Parts",
+    url: "/admin/parts",
+    icon: Package,
+    allowedRoles: ["ADMIN"],
+  },
   {
     title: "Service Requests",
     url: "/admin/service-requests",
@@ -64,8 +70,8 @@ export function NavMain() {
               item.url === "#"
                 ? false
                 : item.url === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.url);
+                  ? location.pathname === "/"
+                  : location.pathname.startsWith(item.url);
 
             return (
               <SidebarMenuItem key={item.title}>
@@ -91,7 +97,7 @@ export function NavMain() {
                           child.url === "#"
                             ? false
                             : location.pathname === child.url ||
-                              location.pathname.startsWith(child.url);
+                            location.pathname.startsWith(child.url);
                         return (
                           <SidebarMenuItem key={child.title + child.url}>
                             <SidebarMenuButton asChild isActive={childActive}>
