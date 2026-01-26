@@ -17,4 +17,5 @@ public class Part {
     private String description;
     private Double unitPrice;
     private String status;
+    private Integer stockQuantity;
 }

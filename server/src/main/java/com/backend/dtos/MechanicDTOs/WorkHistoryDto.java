@@ -1,7 +1,5 @@
 package com.backend.dtos.MechanicDTOs;
 
-import org.springframework.cglib.core.Local;
-
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -12,11 +10,8 @@ public class WorkHistoryDto {
 
     private String vehicleName;
 
-    private String serviceDone;
+    private String serviceName;
 
     private LocalDate completionDate;
 
-    private Integer rating;
-
-    private String feedback;
 }
