@@ -89,5 +89,16 @@ public class AdminController {
 
         return ResponseEntity.ok("Service rejected successfully");
     }
+
+    @GetMapping("/feedback")
+    public ResponseEntity<?> getAllFeedback() {
+
+        Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        return ResponseEntity.ok(adminService.getAllFeedback());
+    }
 }
 
