@@ -25,15 +25,13 @@ public class UserDetailsImpl implements UserDetails {
     // Static factory method to create from User entity
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = List.of(
-            new SimpleGrantedAuthority("ROLE_" + user.getRole())
-        );
+                new SimpleGrantedAuthority("ROLE_" + user.getRole()));
 
         return new UserDetailsImpl(
-            user.getUserId(),
-            user.getEmail(),
-            user.getPassword(),
-            authorities
-        );
+                user.getUserId(),
+                user.getEmail(),
+                user.getPassword(),
+                authorities);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;  // Using email as username
+        return email; // Using email as username
     }
 
 }
