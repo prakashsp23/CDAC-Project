@@ -7,6 +7,7 @@ import com.backend.entity.User;
 import com.backend.security.jwt.JwtService;
 import com.backend.service.AuthService.AuthService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -25,7 +26,7 @@ public class AuthController {
         private final AuthService authService;
 
         @PostMapping("/login")
-        public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {
                 try{
                     Authentication authentication = authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
@@ -51,7 +52,7 @@ public class AuthController {
         }
 
         @PostMapping("/register")
-        public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
                 String message = authService.registerUser(request);
                 return ResponseEntity.ok(message);
         }
