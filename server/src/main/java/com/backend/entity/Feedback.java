@@ -7,15 +7,16 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "feedback")
+@AttributeOverride(name="id",column = @Column(name="feedback_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Feedback {
+public class Feedback extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long feedbackId;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long feedbackId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -27,6 +28,6 @@ public class Feedback {
 
     private Integer rating;
     private String comments;
-    private LocalDate date;
+//    private LocalDate date;
     private String adminNote;
 }

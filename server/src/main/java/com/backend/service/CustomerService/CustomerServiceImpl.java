@@ -1,11 +1,13 @@
 package com.backend.service.CustomerService;
 
+import com.backend.custom_exceptions.ResourceNotFoundException;
 import com.backend.dtos.CustomerDTOs.AddCar;
 import com.backend.dtos.CustomerDTOs.CarResponse;
 import com.backend.dtos.CustomerDTOs.CompletedServiceDto;
 import com.backend.dtos.CustomerDTOs.FeedbackHistoryDto;
 import com.backend.dtos.CustomerDTOs.FeedbackReq;
 import com.backend.dtos.CustomerDTOs.OngoingServiceDto;
+import com.backend.dtos.CustomerDTOs.UpdateCar;
 import com.backend.entity.Car;
 import com.backend.entity.Feedback;
 import com.backend.entity.ServiceCatalog;
@@ -15,7 +17,7 @@ import com.backend.repository.UserRepository;
 import com.backend.repository.Customer.CarRepository;
 import com.backend.repository.Customer.FeedbackRepository;
 import com.backend.repository.Customer.ServiceRepository;
-import com.backend.repository.Customer.scRepository;
+import com.backend.repository.Customer.ScRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.Date;
@@ -34,19 +36,19 @@ public class CustomerServiceImpl implements CustomerService {
     private final CarRepository carRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
-    private final scRepository scRepository;
+    private final ScRepository scRepository;
     private final FeedbackRepository feedbackRepository;
     private final ModelMapper modelMapper;
 
     @Override
     public List<Services> getMyServices(Long userId) {
-        return serviceRepository.findByUser_UserId(userId);
+        return serviceRepository.findByUser_Id(userId);
     }
 
     @Override
     public List<OngoingServiceDto> getOngoingService(Long userId) {
         List<Services> services = serviceRepository
-                .findByStatusInAndUser_UserId(List.of(ServiceStatus.ONGOING, ServiceStatus.PENDING), userId);
+                .findByStatusInAndUser_Id(List.of(ServiceStatus.ONGOING, ServiceStatus.PENDING), userId);
         List<OngoingServiceDto> ongoingServices = new ArrayList<>();
         for (Services service : services) {
             OngoingServiceDto dto = modelMapper.map(service, OngoingServiceDto.class);
@@ -75,39 +77,79 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CarResponse> getVehicle(Long userId) {
-        List<Car> cars = carRepository.findByOwner_UserId(userId);
+        List<Car> cars = carRepository.findByOwner_Id(userId);
         List<CarResponse> carResponses = new ArrayList<>();
         for (Car car : cars) {
             CarResponse carResponse = modelMapper.map(car, CarResponse.class);
+            // carResponse.setCarId(car.getId()); // Manually map id to carId
             carResponses.add(carResponse);
         }
         return carResponses;
     }
 
     @Override
-    public Car addCar(AddCar carData, Long userId) {
+    public CarResponse addCar(AddCar carData, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NullPointerException());
         Car car = modelMapper.map(carData, Car.class);
         car.setOwner(user);
-        return carRepository.save(car);
+        Car savedCar = carRepository.save(car);
+        return modelMapper.map(savedCar, CarResponse.class);
+    }
+
+    @Override
+    public CarResponse updateCar(Long carId, UpdateCar carData, Long userId) {
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id: " + carId));
+
+        if (car.getOwner() == null || !car.getOwner().getId().equals(userId)) {
+            throw new SecurityException("Unauthorized to update this vehicle");
+        }
+
+        // Update car fields
+        if (carData.getRegNumber() != null) {
+            car.setRegNumber(carData.getRegNumber());
+        }
+        if (carData.getBrand() != null) {
+            car.setBrand(carData.getBrand());
+        }
+        if (carData.getModel() != null) {
+            car.setModel(carData.getModel());
+        }
+        if (carData.getYear() != null) {
+            car.setYear(carData.getYear());
+        }
+
+        Car savedCar = carRepository.save(car);
+        CarResponse carResponse = modelMapper.map(savedCar, CarResponse.class);
+        // carResponse.setCarId(savedCar.getId()); // Manually map id to carId
+        return carResponse;
     }
 
     @Override
     public void deleteCar(Long carId, Long userId) {
         Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Car not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id: " + carId));
 
-        if (!car.getOwner().getUserId().equals(userId)) {
-            throw new SecurityException("Unauthorized to delete this car");
+        if (car.getOwner() == null || !car.getOwner().getId().equals(userId)) {
+            throw new SecurityException("Unauthorized to delete this vehicle");
         }
+
+        // Remove car from owner's collection if bidirectional (optional, for consistency)
+        // User owner = car.getOwner();
+        // if (owner != null) {
+        //     owner.getCars().remove(car);
+        // }
+
+        car.setOwner(null); // Remove owner before delete to avoid constraint issues
 
         carRepository.delete(car);
     }
 
+
     @Override
     public List<FeedbackHistoryDto> getMyFeedbacks(Long userId) {
-        List<Feedback> fb = feedbackRepository.findByUser_UserId(userId);
+        List<Feedback> fb = feedbackRepository.findByUser_Id(userId);
         List<FeedbackHistoryDto> fbh = new ArrayList<>();
         fb.forEach(f -> {
             FeedbackHistoryDto dto = modelMapper.map(f, FeedbackHistoryDto.class);
@@ -122,7 +164,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CompletedServiceDto> getCompletedServices(Long userId) {
         List<Services> services = serviceRepository
-                .findByStatusInAndUser_UserId(List.of(ServiceStatus.COMPLETED), userId);
+                .findByStatusInAndUser_Id(List.of(ServiceStatus.COMPLETED), userId);
         List<CompletedServiceDto> completedServices = new ArrayList<>();
         for (Services service : services) {
             CompletedServiceDto dto = modelMapper.map(service, CompletedServiceDto.class);
@@ -141,7 +183,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new NullPointerException()));
         feedback.setService(serviceRepository.findById(feedbackReq.getServiceId())
                 .orElseThrow(() -> new NullPointerException()));
-        feedback.setDate(LocalDate.now());
+        // feedback.setDate(LocalDate.now());
         feedbackRepository.save(feedback);
         return "Feedback Has Been Submitted Successfully";
     }

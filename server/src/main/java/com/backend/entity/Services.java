@@ -2,22 +2,25 @@ package com.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "services")
+@AttributeOverride(name="id",column = @Column(name="service_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Services {
+// @ToString(exclude = {"serviceParts", "feedbacks", "mechanicNotes"})
+public class Services extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long serviceId;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long serviceId;
 
     @ManyToOne
     @JoinColumn(name = "catalog_id")
@@ -35,8 +38,8 @@ public class Services {
     @JoinColumn(name = "mechanic_id")
     private User mechanic;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+//    @CreationTimestamp
+//    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private ServiceStatus status;
@@ -54,4 +57,16 @@ public class Services {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    // Bidirectional: Service has many ServiceParts
+    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<ServicePart> serviceParts = new ArrayList<>();
+
+    // // Bidirectional: Service has many Feedbacks
+    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    // private List<Feedback> feedbacks = new ArrayList<>();
+
+    // // Bidirectional: Service has many MechanicNotes
+    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<MechanicNote> mechanicNotes = new ArrayList<>();
 }

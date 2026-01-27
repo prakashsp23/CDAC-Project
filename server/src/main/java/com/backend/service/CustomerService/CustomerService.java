@@ -8,6 +8,7 @@ import com.backend.dtos.CustomerDTOs.CompletedServiceDto;
 import com.backend.dtos.CustomerDTOs.FeedbackHistoryDto;
 import com.backend.dtos.CustomerDTOs.FeedbackReq;
 import com.backend.dtos.CustomerDTOs.OngoingServiceDto;
+import com.backend.dtos.CustomerDTOs.UpdateCar;
 import com.backend.entity.Car;
 import com.backend.entity.Feedback;
 import com.backend.entity.ServiceCatalog;
@@ -23,7 +24,9 @@ public interface CustomerService {
 
     public List<CarResponse> getVehicle(Long userId);
 
-    public Car addCar(AddCar car, Long userId);
+    public CarResponse addCar(AddCar car, Long userId);
+
+    public CarResponse updateCar(Long carId, UpdateCar carData, Long userId);
 
     public void deleteCar(Long carId, Long userId);
 

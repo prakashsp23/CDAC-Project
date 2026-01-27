@@ -28,10 +28,11 @@ public class UserDetailsImpl implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_" + user.getRole()));
 
         return new UserDetailsImpl(
-                user.getUserId(),
-                user.getEmail(),
-                user.getPassword(),
-                authorities);
+            user.getId(),
+            user.getEmail(),
+            user.getPassword(),
+            authorities
+        );
     }
 
     @Override

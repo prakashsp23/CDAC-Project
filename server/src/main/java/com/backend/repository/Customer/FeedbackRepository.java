@@ -8,5 +8,5 @@ import com.backend.entity.Feedback;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
-    List<Feedback> findByUser_UserId(Long userId);
+    List<Feedback> findByUser_Id(Long userId);
 }
