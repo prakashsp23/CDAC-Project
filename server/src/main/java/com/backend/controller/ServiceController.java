@@ -1,12 +1,14 @@
 package com.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,15 +53,19 @@ public class ServiceController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllServices() {
-        List<ServiceDto> services = serviceService.getAllServices();
-        return ResponseBuilder.success("All services retrieved successfully", services);
+    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        return ResponseBuilder.success("All services retrieved successfully",serviceService.getAllServices());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getServiceById(@PathVariable Long id) {
-        ServiceDto service = serviceService.getServiceById(id);
-        return ResponseBuilder.success("Service retrieved successfully", service);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> getServiceById(@PathVariable Long id) {
+//        ServiceDto service = serviceService.getServiceById(id);
+//        return ResponseBuilder.success("Service retrieved successfully", service);
+//    }
 
     @GetMapping("/ongoing")
     public ResponseEntity<?> getOngoingService() {
@@ -87,4 +93,41 @@ public class ServiceController {
                 .collect(Collectors.toList());
         return ResponseBuilder.success("Completed services retrieved successfully", completedServices);
     }
+    
+    @PutMapping("/{serviceId}/accept")
+    public ResponseEntity<?> acceptService(@PathVariable Long serviceId) {
+    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        serviceService.acceptService(serviceId);
+        return ResponseBuilder.success("Service accepted successfully", null);
+    }
+    
+    @PutMapping("/{serviceId}/assign/{mechanicId}")
+    public ResponseEntity<?> assignMechanic(
+            @PathVariable Long serviceId,
+            @PathVariable Long mechanicId) {
+    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        serviceService.assignMechanic(serviceId, mechanicId);
+        return ResponseBuilder.success("Mechanic assigned successfully", null);
+    }
+    
+    @PutMapping("/{serviceId}/reject")
+    public ResponseEntity<?> rejectService(
+            @PathVariable Long serviceId,
+            @RequestBody Map<String, String> body) {
+    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        serviceService.rejectService(serviceId, body.get("reason"));
+        return ResponseBuilder.success("Service rejected successfully", null);
+    }
+    
+    
 }

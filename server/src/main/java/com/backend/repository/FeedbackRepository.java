@@ -1,4 +1,4 @@
-package com.backend.repository.Customer;
+package com.backend.repository;
 
 import java.util.List;
 
@@ -9,4 +9,5 @@ import com.backend.entity.Feedback;
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     List<Feedback> findByUser_Id(Long userId);
+    Feedback findByService(com.backend.entity.Services service);
 }

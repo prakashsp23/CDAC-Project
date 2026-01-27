@@ -13,10 +13,10 @@ import com.backend.dtos.MechanicDTOs.PartDto;
 import com.backend.entity.ServiceStatus;
 import com.backend.entity.Services;
 import com.backend.entity.Part;
-import com.backend.repository.Mechanic.ServiceRepo;
-import com.backend.repository.Mechanic.PartRepo;
-import com.backend.repository.Mechanic.MechanicNoteRepo;
-import com.backend.repository.Mechanic.ServicePartRepo;
+import com.backend.repository.MechanicNoteRepository;
+import com.backend.repository.PartRepository;
+import com.backend.repository.ServicePartRepository;
+import com.backend.repository.ServiceRepository;
 import com.backend.entity.User;
 import com.backend.entity.MechanicNote;
 import com.backend.entity.ServicePart;
@@ -34,10 +34,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ServiceImpl implements MechanicService {
 
-    private final ServiceRepo serviceRepo;
-    private final PartRepo partRepo;
-    private final MechanicNoteRepo mechanicNoteRepo;
-    private final ServicePartRepo servicePartRepo;
+    private final ServiceRepository serviceRepo;
+    private final PartRepository partRepo;
+    private final MechanicNoteRepository mechanicNoteRepo;
+    private final ServicePartRepository servicePartRepo;
     private final ModelMapper modelMapper;
 
     @Override

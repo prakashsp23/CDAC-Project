@@ -1,7 +1,5 @@
-package com.backend.repository.Mechanic;
+package com.backend.repository;
 
-import java.io.ObjectInputFilter.Status;
-import java.security.Provider.Service;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,9 +8,12 @@ import com.backend.entity.Services;
 import com.backend.entity.ServiceStatus;
 
 @Repository
-public interface ServiceRepo extends JpaRepository<Services, Long> {
+public interface ServiceRepository extends JpaRepository<Services, Long> {
+    List<Services> findByUser_Id(Long userId);
+
+    List<Services> findByStatusInAndUser_Id(List<ServiceStatus> status, Long userId);
+    
     List<Services> findByStatusAndMechanic_Id(ServiceStatus status, Long mechanicId);
 
     List<Services> findByMechanic_IdAndStatus(Long mechanicId, ServiceStatus status);
-
 }

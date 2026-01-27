@@ -13,8 +13,8 @@ import com.backend.dtos.CarDTOs.CarResponse;
 import com.backend.dtos.CarDTOs.UpdateCar;
 import com.backend.entity.Car;
 import com.backend.entity.User;
+import com.backend.repository.CarRepository;
 import com.backend.repository.UserRepository;
-import com.backend.repository.Customer.CarRepository;
 
 import lombok.RequiredArgsConstructor;
 
