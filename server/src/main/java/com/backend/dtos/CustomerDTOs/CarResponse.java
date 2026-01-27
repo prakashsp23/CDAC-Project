@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CarResponse {
-    private Long carId;
+    private Long id;
     private String regNumber;
     private String brand;
     private String model;
