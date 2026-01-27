@@ -2,7 +2,7 @@ package com.backend.controller;
 
 import com.backend.dtos.FeedbackDTOs.FeedbackHistoryDto;
 import com.backend.dtos.FeedbackDTOs.FeedbackReq;
-import com.backend.service.CustomerService.FeedbackService;
+import com.backend.service.FeedbackService.FeedbackService;
 import com.backend.util.AuthUtil;
 import com.backend.util.ResponseBuilder;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +41,16 @@ public class FeedbackController {
         }
         String message = feedbackService.submitFeedback(feedbackReq, userId);
         return ResponseBuilder.success(message, null);
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllFeedback() {
+
+        Long adminId = AuthUtil.getAuthenticatedUserId();
+        if (adminId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        return ResponseEntity.ok(feedbackService.getAllFeedback());
     }
 }

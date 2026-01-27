@@ -1,4 +1,4 @@
-package com.backend.service.CustomerService;
+package com.backend.service.FeedbackService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,12 +7,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.dtos.FeedbackDTOs.AdminFeedbackDTO;
 import com.backend.dtos.FeedbackDTOs.FeedbackHistoryDto;
 import com.backend.dtos.FeedbackDTOs.FeedbackReq;
 import com.backend.entity.Feedback;
+import com.backend.repository.FeedbackRepository;
+import com.backend.repository.ServiceRepository;
 import com.backend.repository.UserRepository;
-import com.backend.repository.Customer.FeedbackRepository;
-import com.backend.repository.Customer.ServiceRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -50,6 +51,26 @@ public class FeedbackServiceImpl implements FeedbackService {
         // feedback.setDate(LocalDate.now());
         feedbackRepository.save(feedback);
         return "Feedback Has Been Submitted Successfully";
+    }
+
+    @Override
+    public List<AdminFeedbackDTO> getAllFeedback() {
+            return feedbackRepository.findAll()
+                            .stream()
+                            .map(f -> {
+                                    AdminFeedbackDTO dto = modelMapper.map(f, AdminFeedbackDTO.class);
+
+                                    dto.setServiceId(f.getService().getId());
+                                    dto.setServiceType(f.getService().getCatalog().getServiceName());
+                                    dto.setCustomerName(f.getUser().getName());
+                                    dto.setMechanicName(
+                                                    f.getService().getMechanic() != null
+                                                                    ? f.getService().getMechanic().getName()
+                                                                    : null);
+
+                                    return dto;
+                            })
+                            .toList();
     }
 
 }

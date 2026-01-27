@@ -1,4 +1,4 @@
-package com.backend.dtos.AdminDTOs;
+package com.backend.dtos.FeedbackDTOs;
 
 import java.time.LocalDate;
 

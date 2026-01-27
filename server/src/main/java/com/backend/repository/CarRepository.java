@@ -1,4 +1,4 @@
-package com.backend.repository.Customer;
+package com.backend.repository;
 
 import com.backend.entity.Car;
 

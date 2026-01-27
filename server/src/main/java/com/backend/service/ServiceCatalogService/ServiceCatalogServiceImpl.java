@@ -12,7 +12,7 @@ import com.backend.dtos.ServiceCatalogDTO.CreateServiceCatalogDto;
 import com.backend.dtos.ServiceCatalogDTO.ServiceCatalogDto;
 import com.backend.dtos.ServiceCatalogDTO.UpdateServiceCatalogDto;
 import com.backend.entity.ServiceCatalog;
-import com.backend.repository.Customer.ScRepository;
+import com.backend.repository.ScRepository;
 
 import lombok.RequiredArgsConstructor;
 

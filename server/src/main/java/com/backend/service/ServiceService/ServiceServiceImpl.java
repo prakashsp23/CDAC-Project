@@ -1,5 +1,6 @@
 package com.backend.service.ServiceService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.custom_exceptions.ResourceNotFoundException;
+import com.backend.dtos.ServiceDTO.AdminServiceRequestDTO;
 import com.backend.dtos.ServiceDTO.CreateServiceDto;
 import com.backend.dtos.ServiceDTO.CustomerInfo;
 import com.backend.dtos.ServiceDTO.MechanicInfo;
@@ -15,13 +17,14 @@ import com.backend.dtos.ServiceDTO.ServiceDto;
 import com.backend.dtos.ServiceDTO.VehicleInfo;
 import com.backend.entity.Car;
 import com.backend.entity.PaymentStatus;
+import com.backend.entity.Role;
 import com.backend.entity.ServiceCatalog;
 import com.backend.entity.ServiceStatus;
 import com.backend.entity.Services;
 import com.backend.entity.User;
-import com.backend.repository.Customer.CarRepository;
-import com.backend.repository.Customer.ServiceRepository;
-import com.backend.repository.Customer.ScRepository;
+import com.backend.repository.CarRepository;
+import com.backend.repository.ScRepository;
+import com.backend.repository.ServiceRepository;
 import com.backend.repository.UserRepository;
 
 import org.modelmapper.ModelMapper;
@@ -79,11 +82,37 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public List<ServiceDto> getAllServices() {
-        List<Services> services = serviceRepository.findAll();
-        return services.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public List<AdminServiceRequestDTO> getAllServices() {
+            return serviceRepository.findAll()
+                            .stream()
+                            .map(service -> {
+                                    AdminServiceRequestDTO dto = modelMapper.map(service,
+                                                    AdminServiceRequestDTO.class);
+
+                                    dto.setStatus(service.getStatus().name());
+
+                                    dto.setCustomerName(
+                                                    service.getUser() != null ? service.getUser().getName() : null);
+
+                                    dto.setCarBrand(
+                                                    service.getCar() != null ? service.getCar().getBrand() : null);
+
+                                    dto.setCarModel(
+                                                    service.getCar() != null ? service.getCar().getModel() : null);
+
+                                    dto.setServiceName(
+                                                    service.getCatalog() != null
+                                                                    ? service.getCatalog().getServiceName()
+                                                                    : null);
+
+                                    dto.setMechanicName(
+                                                    service.getMechanic() != null
+                                                                    ? service.getMechanic().getName()
+                                                                    : "Unassigned");
+
+                                    return dto;
+                            })
+                            .toList();
     }
 
     @Override
@@ -123,4 +152,53 @@ public class ServiceServiceImpl implements ServiceService {
         
         return dto;
     }
+
+    @Override
+    public void acceptService(Long serviceId) {
+
+            Services service = serviceRepository.findById(serviceId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+            service.setStatus(ServiceStatus.PENDING);
+
+            serviceRepository.save(service);
+    }
+    
+    @Override
+    public void assignMechanic(Long serviceId, Long mechanicId) {
+
+            Services service = serviceRepository.findById(serviceId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+            User mechanic = userRepository.findById(mechanicId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Mechanic not found"));
+
+            // Optional safety check
+            if (mechanic.getRole() != Role.MECHANIC) {
+                    throw new IllegalArgumentException("Selected user is not a mechanic");
+            }
+
+            service.setMechanic(mechanic);
+            service.setStatus(ServiceStatus.ONGOING);
+
+            serviceRepository.save(service);
+    }
+    
+    @Override
+    public void rejectService(Long serviceId, String reason) {
+
+            Services service =serviceRepository.findById(serviceId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+            service.setStatus(ServiceStatus.CANCELLED);
+            service.setCancelledByAdmin(true);
+            service.setCancellationReason(reason);
+            service.setCancelledAt(LocalDateTime.now());
+
+            serviceRepository.save(service);
+    }
+    
+    
+    
+    
 }

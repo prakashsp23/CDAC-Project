@@ -1,4 +1,4 @@
-package com.backend.dtos.AdminDTOs;
+package com.backend.dtos.ServiceDTO;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AdminServiceRequestDTO {
 
-    private Long serviceId;
+    private Long Id;
     private String status;
 
     private String customerName;

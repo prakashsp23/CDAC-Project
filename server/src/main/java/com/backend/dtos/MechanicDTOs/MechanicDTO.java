@@ -1,4 +1,4 @@
-package com.backend.dtos.AdminDTOs;
+package com.backend.dtos.MechanicDTOs;
 
 import lombok.Getter;
 import lombok.Setter;
