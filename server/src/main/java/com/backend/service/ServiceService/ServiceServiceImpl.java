@@ -159,7 +159,7 @@ public class ServiceServiceImpl implements ServiceService {
             Services service = serviceRepository.findById(serviceId)
                             .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
-            service.setStatus(ServiceStatus.PENDING);
+            service.setStatus(ServiceStatus.ACCEPTED);
 
             serviceRepository.save(service);
     }

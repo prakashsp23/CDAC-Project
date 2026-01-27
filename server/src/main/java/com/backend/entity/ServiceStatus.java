@@ -1,8 +1,8 @@
 package com.backend.entity;
 
 public enum ServiceStatus {
-    NEW,
     PENDING,
+    ACCEPTED,
     ONGOING,
     COMPLETED,
     CANCELLED
