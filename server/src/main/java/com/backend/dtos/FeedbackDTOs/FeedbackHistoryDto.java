@@ -1,4 +1,4 @@
-package com.backend.dtos.CustomerDTOs;
+package com.backend.dtos.FeedbackDTOs;
 
 import java.time.LocalDate;
 
@@ -9,6 +9,6 @@ public class FeedbackHistoryDto {
     private String serviceName;
     private Integer rating;
     private String comments;
-    private LocalDate date;
+    private LocalDate createdOn;
     private String adminNote;
 }

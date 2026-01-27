@@ -10,17 +10,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "cars")
-@AttributeOverride(name="id",column = @Column(name="car_id"))
+@AttributeOverride(name = "id", column = @Column(name = "car_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 // @ToString(exclude = {"services"})
-public class Car extends BaseEntity{
+public class Car extends BaseEntity {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long carId;
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private Long carId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -32,6 +32,7 @@ public class Car extends BaseEntity{
     private String brand;
     private String model;
     private Integer year;
+    // vin is out of scope
 
     // Bidirectional: Car has many Services
     // @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)

@@ -28,56 +28,57 @@ public class AuthController {
         private final AuthenticationManager authenticationManager;
         private final JwtService jwtService;
         private final AuthService authService;
+
         @PostMapping("/login")
-        public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                        request.getPassword()));
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = authService.getUserByEmail(request.getEmail());
-        String token = jwtService.generateToken(user);
+                User user = authService.getUserByEmail(request.getEmail());
+                String token = jwtService.generateToken(user);
 
-        UserDto userDto = UserDto.builder()
-                .id(user.getId().toString())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole().name().toLowerCase())
-                .phone(user.getPhone())
-                .build();
+                UserDto userDto = UserDto.builder()
+                                .id(user.getId().toString())
+                                .name(user.getName())
+                                .email(user.getEmail())
+                                .role(user.getRole().name().toLowerCase())
+                                .phone(user.getPhone())
+                                .build();
 
-        AuthResponse response = AuthResponse.builder()
-                .success(true)
-                .message("User logged in successfully")
-                .user(userDto)
-                .token(token)
-                .build();
+                AuthResponse response = AuthResponse.builder()
+                                .success(true)
+                                .message("User logged in successfully")
+                                .user(userDto)
+                                .token(token)
+                                .build();
 
-        return ResponseEntity.ok(response);
+                return ResponseEntity.ok(response);
         }
 
         @PostMapping("/register")
-        public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
                 User user = authService.registerUser(request);
                 String token = jwtService.generateToken(user);
 
                 UserDto userDto = UserDto.builder()
-                        .id(user.getId().toString())
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .role(user.getRole().name().toLowerCase())
-                        .phone(user.getPhone())
-                        .build();
+                                .id(user.getId().toString())
+                                .name(user.getName())
+                                .email(user.getEmail())
+                                .role(user.getRole().name().toLowerCase())
+                                .phone(user.getPhone())
+                                .build();
 
                 AuthResponse response = AuthResponse.builder()
-                        .success(true)
-                        .message("User registered successfully")
-                        .user(userDto)
-                        .token(token)
-                        .build();
+                                .success(true)
+                                .message("User registered successfully")
+                                .user(userDto)
+                                .token(token)
+                                .build();
 
                 return ResponseEntity.ok(response);
         }

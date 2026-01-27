@@ -1,6 +1,6 @@
-package com.backend.dtos.CustomerDTOs;
+package com.backend.dtos.ServiceDTOs;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.backend.entity.ServiceStatus;
 
@@ -14,7 +14,7 @@ public class OngoingServiceDto {
     private String carBrand;
     private String carModel;
     private String carYear;
-    private LocalDateTime createdAt;
+    private LocalDate createdOn;
     private ServiceStatus status;
 
 }

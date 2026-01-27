@@ -1,6 +1,6 @@
-package com.backend.dtos.CustomerDTOs;
+package com.backend.dtos.ServiceDTOs;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Data;
 
@@ -9,5 +9,5 @@ public class CompletedServiceDto {
 
     private Long serviceId;
     private String serviceName;
-    private LocalDateTime createdAt;
+    private LocalDate createdOn;
 }

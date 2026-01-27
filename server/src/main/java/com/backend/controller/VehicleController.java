@@ -1,16 +1,8 @@
 package com.backend.controller;
 
-import com.backend.dtos.CustomerDTOs.AddCar;
-import com.backend.dtos.CustomerDTOs.CarResponse;
-import com.backend.dtos.CustomerDTOs.UpdateCar;
-import com.backend.service.CustomerService.CustomerService;
-import com.backend.util.AuthUtil;
-import com.backend.util.ResponseBuilder;
-import org.springframework.http.ResponseEntity;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,12 +12,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.dtos.CarDTOs.AddCar;
+import com.backend.dtos.CarDTOs.CarResponse;
+import com.backend.dtos.CarDTOs.UpdateCar;
+import com.backend.service.VehicleService.VehicleService;
+import com.backend.util.AuthUtil;
+import com.backend.util.ResponseBuilder;
+
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/vehicle")
 @RequiredArgsConstructor
 public class VehicleController {
-	
-    private final CustomerService customerService;
+
+    private final VehicleService vehicleService;
 
     @GetMapping
     public ResponseEntity<?> getVehicles() {
@@ -33,7 +34,7 @@ public class VehicleController {
         if (userId == null) {
             return AuthUtil.unauthorizedResponse();
         }
-        List<CarResponse> vehicles = customerService.getVehicle(userId);
+        List<CarResponse> vehicles = vehicleService.getVehicle(userId);
         return ResponseBuilder.success("Vehicles retrieved successfully", vehicles);
     }
 
@@ -44,7 +45,7 @@ public class VehicleController {
             return AuthUtil.unauthorizedResponse();
         }
 
-        CarResponse savedCar = customerService.addCar(car, userId);
+        CarResponse savedCar = vehicleService.addCar(car, userId);
         return ResponseBuilder.success("Vehicle added successfully", savedCar);
     }
 
@@ -55,7 +56,7 @@ public class VehicleController {
             return AuthUtil.unauthorizedResponse();
         }
 
-        CarResponse updatedCar = customerService.updateCar(carId, carData, userId);
+        CarResponse updatedCar = vehicleService.updateCar(carId, carData, userId);
         return ResponseBuilder.success("Vehicle updated successfully", updatedCar);
     }
 
@@ -66,7 +67,7 @@ public class VehicleController {
             return AuthUtil.unauthorizedResponse();
         }
 
-        customerService.deleteCar(carId, userId);
+        vehicleService.deleteCar(carId, userId);
         return ResponseBuilder.success("Vehicle deleted successfully", null);
     }
 }

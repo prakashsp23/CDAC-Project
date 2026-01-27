@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class WorkHistoryDto {
-    private Long Id;
+    private Long id;
 
     private String vehicleName;
 

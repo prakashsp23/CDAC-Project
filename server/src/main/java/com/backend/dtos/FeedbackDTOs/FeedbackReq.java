@@ -1,4 +1,4 @@
-package com.backend.dtos.CustomerDTOs;
+package com.backend.dtos.FeedbackDTOs;
 
 import lombok.Data;
 

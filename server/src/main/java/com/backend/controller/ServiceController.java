@@ -1,6 +1,7 @@
 package com.backend.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dtos.ServiceDTO.CreateServiceDto;
 import com.backend.dtos.ServiceDTO.ServiceDto;
+import com.backend.entity.ServiceStatus;
 import com.backend.service.ServiceService.ServiceService;
 import com.backend.util.AuthUtil;
 import com.backend.util.ResponseBuilder;
@@ -57,5 +59,32 @@ public class ServiceController {
     public ResponseEntity<?> getServiceById(@PathVariable Long id) {
         ServiceDto service = serviceService.getServiceById(id);
         return ResponseBuilder.success("Service retrieved successfully", service);
+    }
+
+    @GetMapping("/ongoing")
+    public ResponseEntity<?> getOngoingService() {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        List<ServiceDto> ongoingServices = serviceService.getMyServices(userId)
+                .stream()
+                .filter(s -> s.getStatus() == ServiceStatus.ONGOING.toString()
+                        || s.getStatus() == ServiceStatus.PENDING.toString())
+                .collect(Collectors.toList());
+        return ResponseBuilder.success("Ongoing services retrieved successfully", ongoingServices);
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity<?> getCompletedService() {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        List<ServiceDto> completedServices = serviceService.getMyServices(userId)
+                .stream()
+                .filter(s -> s.getStatus() == ServiceStatus.COMPLETED.toString())
+                .collect(Collectors.toList());
+        return ResponseBuilder.success("Completed services retrieved successfully", completedServices);
     }
 }
