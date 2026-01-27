@@ -1,25 +1,25 @@
-package com.backend.dtos.AuthDTOs;
+package com.backend.dtos;
 
 import java.time.LocalDateTime;
 
-import com.backend.dtos.UserDTO.UserDto;
-import com.backend.entity.Role;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthResponse {
-    @Builder.Default
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ApiResponse<T> {
+	@Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
     private boolean success;
     private String message;
-    private UserDto user;
-    private String token;
+    private T data;
+    private Object pagination;
+    private Object errors;
 }

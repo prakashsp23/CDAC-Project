@@ -1,5 +1,6 @@
 package com.backend.service.AuthService;
 
+import com.backend.custom_exceptions.ResourceNotFoundException;
 import com.backend.dtos.AuthDTOs.RegisterRequest;
 import com.backend.entity.Role;
 import com.backend.entity.User;
@@ -23,18 +24,16 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public String registerUser(RegisterRequest request) {
+    public User registerUser(RegisterRequest request) {
         User user = modelMapper.map(request, User.class);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.CUSTOMER);
-        userRepository.save(user);
-        return "User has been Registered Successfully";
+        user.setRole(request.getRole());
+        return userRepository.save(user);
     }
 
     @Override
     public User getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));;
-        return user;
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 }

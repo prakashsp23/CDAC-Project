@@ -5,15 +5,16 @@ import lombok.*;
 
 @Entity
 @Table(name = "service_parts")
+@AttributeOverride(name="id",column = @Column(name="service_part_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServicePart {
+public class ServicePart extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long servicePartId;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long servicePartId;
 
     @ManyToOne
     @JoinColumn(name = "service_id")

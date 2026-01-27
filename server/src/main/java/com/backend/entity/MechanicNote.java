@@ -5,15 +5,16 @@ import lombok.*;
 
 @Entity
 @Table(name = "mechanic_notes")
+@AttributeOverride(name="id",column = @Column(name="note_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MechanicNote {
+public class MechanicNote extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long noteId;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long noteId;
 
     @ManyToOne
     @JoinColumn(name = "service_id")

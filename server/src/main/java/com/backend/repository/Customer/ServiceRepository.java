@@ -9,7 +9,7 @@ import com.backend.entity.ServiceStatus;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Services, Long> {
-    List<Services> findByUser_UserId(Long userId);
+    List<Services> findByUser_Id(Long userId);
 
-    List<Services> findByStatusInAndUser_UserId(List<ServiceStatus> status, Long userId);
+    List<Services> findByStatusInAndUser_Id(List<ServiceStatus> status, Long userId);
 }

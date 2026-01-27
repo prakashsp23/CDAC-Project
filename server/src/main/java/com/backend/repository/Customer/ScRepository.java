@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.backend.entity.ServiceCatalog;
 
 @Repository
-public interface scRepository extends JpaRepository<ServiceCatalog, Long> {
+public interface ScRepository extends JpaRepository<ServiceCatalog, Long> {
 
 }
