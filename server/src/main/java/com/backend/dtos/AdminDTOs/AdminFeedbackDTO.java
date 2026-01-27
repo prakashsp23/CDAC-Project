@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class AdminFeedbackDTO {
 
-    private Long feedbackId;
+    private Long id;
 
     private Long serviceId;
     private String serviceType;
@@ -16,7 +16,6 @@ public class AdminFeedbackDTO {
     private String mechanicName;
 
     private Integer rating;
-    private String comment;
-    private LocalDate date;
+    private String comments;
+    private LocalDate createdOn;
 }
-  

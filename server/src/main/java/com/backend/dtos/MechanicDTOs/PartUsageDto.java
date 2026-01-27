@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PartUsageDto {
-    private Long partId;
+    private Long id;
     private Integer quantity;
     private Double priceAtTime;
 }

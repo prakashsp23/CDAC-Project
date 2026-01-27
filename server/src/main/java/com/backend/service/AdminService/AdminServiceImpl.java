@@ -72,7 +72,7 @@ public class AdminServiceImpl implements AdminService {
                                 .stream()
                                 .map(user -> {
                                         MechanicDTO dto = new MechanicDTO();
-                                        dto.setMechanicId(user.getUserId());
+                                        dto.setMechanicId(user.getId());
                                         dto.setName(user.getName());
                                         return dto;
                                 })
@@ -139,10 +139,9 @@ public class AdminServiceImpl implements AdminService {
                                 .map(f -> {
                                         AdminFeedbackDTO dto = modelMapper.map(f, AdminFeedbackDTO.class);
 
-                                        dto.setServiceId(f.getService().getServiceId());
+                                        dto.setServiceId(f.getService().getId());
                                         dto.setServiceType(f.getService().getCatalog().getServiceName());
                                         dto.setCustomerName(f.getUser().getName());
-
                                         dto.setMechanicName(
                                                         f.getService().getMechanic() != null
                                                                         ? f.getService().getMechanic().getName()

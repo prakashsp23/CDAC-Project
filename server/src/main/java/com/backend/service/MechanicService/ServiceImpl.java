@@ -43,10 +43,14 @@ public class ServiceImpl implements MechanicService {
     @Override
     public List<WorkHistoryDto> getWorkLogs(Long userId) {
         List<WorkHistoryDto> workHistory = new ArrayList<>();
-        List<Services> services = serviceRepo.findByStatusAndMechanic_UserId(ServiceStatus.COMPLETED, userId);
+        List<Services> services = serviceRepo.findByStatusAndMechanic_Id(ServiceStatus.COMPLETED, userId);
 
         for (Services s : services) {
-            WorkHistoryDto dto = modelMapper.map(s, WorkHistoryDto.class);
+            WorkHistoryDto dto = new WorkHistoryDto();
+            dto.setId(s.getId());
+            dto.setVehicleName(s.getCar().getBrand() + " " + s.getCar().getModel());
+            dto.setServiceName(s.getCatalog().getServiceName());
+            dto.setCompletionDate(s.getCompletionDate());
             workHistory.add(dto);
         }
         return workHistory;
@@ -61,21 +65,21 @@ public class ServiceImpl implements MechanicService {
         List<AssignedJobsDto> assignedJobs = new ArrayList<>();
 
         // Get all services assigned to this mechanic that are ongoing
-        List<Services> services = serviceRepo.findByMechanic_UserIdAndStatus(userId, ServiceStatus.ONGOING);
+        List<Services> services = serviceRepo.findByMechanic_IdAndStatus(userId, ServiceStatus.ONGOING);
 
         for (Services s : services) {
             AssignedJobsDto dto = new AssignedJobsDto();
-            dto.setServiceId(s.getServiceId());
+            dto.setId(s.getId());
             dto.setCustomerName(s.getUser().getName());
             dto.setCustomerPhone(s.getUser().getPhone());
             dto.setCarBrand(s.getCar().getBrand());
             dto.setCarModel(s.getCar().getModel());
             dto.setCarPlate(s.getCar().getRegNumber());
             dto.setServiceName(s.getCatalog().getServiceName());
-            dto.setServiceDate(s.getCreatedAt().toLocalDate());
+            dto.setServiceDate(s.getCreatedOn());
             dto.setStatus(s.getStatus().toString());
             dto.setNotes(s.getCustomerNotes());
-            dto.setCreatedAt(s.getCreatedAt());
+            dto.setCreatedOn(s.getCreatedOn());
 
             assignedJobs.add(dto);
         }
@@ -117,7 +121,7 @@ public class ServiceImpl implements MechanicService {
 
         // Create user with ID only (proxy) since we just need to link relation
         User mechanic = new User();
-        mechanic.setUserId(userId);
+        mechanic.setId(userId);
 
         MechanicNote note = new MechanicNote();
         note.setService(service);
@@ -148,7 +152,7 @@ public class ServiceImpl implements MechanicService {
             double currentPartsTotal = service.getPartsTotal() != null ? service.getPartsTotal() : 0.0;
 
             for (PartUsageDto partData : parts) {
-                Long partId = partData.getPartId();
+                Long partId = partData.getId();
                 Integer quantity = partData.getQuantity();
 
                 Part part = partRepo.findById(partId)
