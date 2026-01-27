@@ -20,6 +20,7 @@ import com.backend.service.ServiceService.ServiceService;
 import com.backend.util.AuthUtil;
 import com.backend.util.ResponseBuilder;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,7 +31,7 @@ public class ServiceController {
     private final ServiceService serviceService;
 
     @PostMapping
-    public ResponseEntity<?> createService(@RequestBody CreateServiceDto createDto) {
+    public ResponseEntity<?> createService(@Valid @RequestBody CreateServiceDto createDto) {
         Long userId = AuthUtil.getAuthenticatedUserId();
         if (userId == null) {
             return AuthUtil.unauthorizedResponse();
@@ -76,7 +77,7 @@ public class ServiceController {
         List<ServiceDto> ongoingServices = serviceService.getMyServices(userId)
                 .stream()
                 .filter(s -> s.getStatus() == ServiceStatus.ONGOING.toString()
-                        || s.getStatus() == ServiceStatus.PENDING.toString())
+                        || s.getStatus() == ServiceStatus.ACCEPTED.toString())
                 .collect(Collectors.toList());
         return ResponseBuilder.success("Ongoing services retrieved successfully", ongoingServices);
     }
