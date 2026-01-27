@@ -3,6 +3,7 @@ package com.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,8 @@ public class Services extends BaseEntity{
     private Boolean cancelledByAdmin;
     private String cancellationReason;
     private LocalDateTime cancelledAt;
+
+    private LocalDate completionDate;
 
     private String customerNotes;
 

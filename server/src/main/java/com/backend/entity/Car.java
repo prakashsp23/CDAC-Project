@@ -27,6 +27,7 @@ public class Car extends BaseEntity{
     @JsonIgnore
     private User owner;
 
+    @Column(nullable = false, unique = true)
     private String regNumber;
     private String brand;
     private String model;

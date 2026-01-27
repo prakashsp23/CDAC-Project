@@ -8,6 +8,7 @@ import com.backend.entity.User;
 import com.backend.security.jwt.JwtService;
 import com.backend.service.AuthService.AuthService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;

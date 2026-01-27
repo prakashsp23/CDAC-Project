@@ -9,6 +9,7 @@ import LandingPage from "./components/screens/landingPage/landingPage.jsx"
 import AdminPanel from "./components/screens/admin/adminPanel.jsx"
 import FeedbackPage from "./components/screens/admin/Pages/Feedback.jsx"
 import ServiceRequestsTable from "./components/screens/admin/Pages/ServiceRequests.jsx"
+import PartsManagement from "./components/screens/admin/Pages/PartsManagement.jsx"
 import MechanicsPage from "./components/screens/admin/Pages/MechanicsPage/MechanicsPage.jsx";
 import Login from "./components/screens/auth/login.jsx"
 import Register from "./components/screens/auth/register.jsx"
@@ -51,6 +52,7 @@ const router = createBrowserRouter(
         }>
           <Route index element={<AdminPanel />} />
           <Route path="mechanics" element={<MechanicsPage />} />
+          <Route path="parts" element={<PartsManagement />} />
           <Route path="service-requests" element={<ServiceRequestsTable />} />
           <Route path="feedback" element={<FeedbackPage />} />
         </Route>

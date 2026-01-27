@@ -26,4 +26,5 @@ public class Part extends BaseEntity{
     // Bidirectional: Part is used in many ServiceParts
     // @OneToMany(mappedBy = "part")
     // private List<ServicePart> serviceParts = new ArrayList<>();
+    private Integer stockQuantity;
 }
