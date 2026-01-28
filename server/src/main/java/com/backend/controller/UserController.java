@@ -58,4 +58,9 @@ public class UserController {
         UserDto updatedUser = userService.updateUser(userId, updateUserDto);
         return ResponseBuilder.success("User updated successfully", updatedUser);
     }
+
+    @GetMapping("/mechanics")
+    public ResponseEntity<?> getAllMechanics() {
+        return ResponseBuilder.success("Mechanics retrieved successfully", userService.getAllMechanics());
+    }
 }

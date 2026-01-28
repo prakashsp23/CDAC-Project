@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dtos.ServiceDTO.CreateServiceDto;
 import com.backend.dtos.ServiceDTO.ServiceDto;
+import com.backend.dtos.ServiceDTO.UpdateServiceDto;
 import com.backend.entity.ServiceStatus;
 import com.backend.service.ServiceService.ServiceService;
 import com.backend.util.AuthUtil;
@@ -54,19 +55,19 @@ public class ServiceController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllServices() {
-    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        Long adminId = AuthUtil.getAuthenticatedUserId();
         if (adminId == null) {
             return AuthUtil.unauthorizedResponse();
         }
 
-        return ResponseBuilder.success("All services retrieved successfully",serviceService.getAllServices());
+        return ResponseBuilder.success("All services retrieved successfully", serviceService.getAllServices());
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<?> getServiceById(@PathVariable Long id) {
-//        ServiceDto service = serviceService.getServiceById(id);
-//        return ResponseBuilder.success("Service retrieved successfully", service);
-//    }
+    // @GetMapping("/{id}")
+    // public ResponseEntity<?> getServiceById(@PathVariable Long id) {
+    // ServiceDto service = serviceService.getServiceById(id);
+    // return ResponseBuilder.success("Service retrieved successfully", service);
+    // }
 
     @GetMapping("/ongoing")
     public ResponseEntity<?> getOngoingService() {
@@ -94,22 +95,22 @@ public class ServiceController {
                 .collect(Collectors.toList());
         return ResponseBuilder.success("Completed services retrieved successfully", completedServices);
     }
-    
+
     @PutMapping("/{serviceId}/accept")
     public ResponseEntity<?> acceptService(@PathVariable Long serviceId) {
-    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        Long adminId = AuthUtil.getAuthenticatedUserId();
         if (adminId == null) {
             return AuthUtil.unauthorizedResponse();
         }
         serviceService.acceptService(serviceId);
         return ResponseBuilder.success("Service accepted successfully", null);
     }
-    
+
     @PutMapping("/{serviceId}/assign/{mechanicId}")
     public ResponseEntity<?> assignMechanic(
             @PathVariable Long serviceId,
             @PathVariable Long mechanicId) {
-    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        Long adminId = AuthUtil.getAuthenticatedUserId();
         if (adminId == null) {
             return AuthUtil.unauthorizedResponse();
         }
@@ -117,18 +118,75 @@ public class ServiceController {
         serviceService.assignMechanic(serviceId, mechanicId);
         return ResponseBuilder.success("Mechanic assigned successfully", null);
     }
-    
+
     @PutMapping("/{serviceId}/reject")
     public ResponseEntity<?> rejectService(
             @PathVariable Long serviceId,
             @RequestBody Map<String, String> body) {
-    	Long adminId = AuthUtil.getAuthenticatedUserId();
+        Long adminId = AuthUtil.getAuthenticatedUserId();
         if (adminId == null) {
             return AuthUtil.unauthorizedResponse();
         }
         serviceService.rejectService(serviceId, body.get("reason"));
         return ResponseBuilder.success("Service rejected successfully", null);
     }
-    
-    
+
+    @GetMapping("/mechanic/worklogs")
+    public ResponseEntity<?> getWorkLogs() {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        return ResponseEntity.ok(serviceService.getMechanicWorkHistory(userId));
+    }
+
+    @GetMapping("/mechanic/assigned-jobs")
+    public ResponseEntity<?> getAssignedJobs() {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        return ResponseEntity.ok(serviceService.getMechanicAssignedJobs(userId));
+    }
+
+    @PutMapping("/{serviceId}/update-execution")
+    public ResponseEntity<?> updateServiceExecution(
+            @PathVariable Long serviceId,
+            @Valid @RequestBody UpdateServiceDto updateDto) {
+
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        try {
+            serviceService.updateServiceExecution(serviceId, updateDto);
+            return ResponseEntity.ok("Service updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update service: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{serviceId}/note")
+    public ResponseEntity<?> addServiceNote(
+            @PathVariable Long serviceId,
+            @RequestBody String note) {
+
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        if (note == null || note.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Note content is required");
+        }
+
+        try {
+            serviceService.addServiceNote(serviceId, userId, note);
+            return ResponseEntity.ok("Note added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to add note: " + e.getMessage());
+        }
+    }
+
 }
