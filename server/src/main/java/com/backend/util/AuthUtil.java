@@ -1,5 +1,7 @@
 package com.backend.util;
 
+import com.backend.entity.Role;
+import com.backend.entity.User;
 import com.backend.security.service.UserDetailsImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,5 +27,16 @@ public class AuthUtil {
      */
     public static ResponseEntity<?> unauthorizedResponse() {
         return ResponseEntity.status(401).body("Unauthorized");
+    }
+
+    public static Role getAuthenticatedUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) return null;
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof User user) {
+            return user.getRole();
+        }
+        return null;
     }
 }
