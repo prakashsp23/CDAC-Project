@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.dtos.Dashboard.DashboardResponseDto;
 import com.backend.dtos.Dashboard.QuickStatsDto;
@@ -20,6 +21,7 @@ import com.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
