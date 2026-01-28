@@ -7,5 +7,6 @@ import com.backend.entity.ServicePart;
 
 @Repository
 public interface ServicePartRepository extends JpaRepository<ServicePart, Long> {
-    
+
+    boolean existsByPart_Id(Long partId);
 }
