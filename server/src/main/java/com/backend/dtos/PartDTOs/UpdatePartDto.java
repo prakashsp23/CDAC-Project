@@ -1,20 +1,20 @@
 package com.backend.dtos.PartDTOs;
 
-import lombok.Data;
-
-
+import jakarta.validation.constraints.Min;
 import lombok.*;
-@Data
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartDto {
+public class UpdatePartDto {
 
-    private Long id;
     private String name;
     private String description;
+
+    @Min(0)
     private Double price;
+
+    @Min(0)
     private Integer stock;
-    private String status; // derived (In Stock / Out of Stock)
 }
