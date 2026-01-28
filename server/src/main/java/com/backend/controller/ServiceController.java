@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.aop.annotation.Admin;
+import com.backend.aop.annotation.RequireAnyRole;
 import com.backend.dtos.ServiceDTO.CreateServiceDto;
 import com.backend.dtos.ServiceDTO.ServiceDto;
 import com.backend.dtos.ServiceDTO.UpdateServiceDto;
+import com.backend.entity.Role;
 import com.backend.entity.ServiceStatus;
 import com.backend.service.ServiceService.ServiceService;
 import com.backend.util.AuthUtil;
@@ -41,7 +44,7 @@ public class ServiceController {
         ServiceDto createdService = serviceService.createService(createDto, userId);
         return ResponseBuilder.success("Service request created successfully", createdService);
     }
-
+ 
     @GetMapping
     public ResponseEntity<?> getMyServices() {
         Long userId = AuthUtil.getAuthenticatedUserId();
@@ -51,8 +54,9 @@ public class ServiceController {
 
         List<ServiceDto> services = serviceService.getMyServices(userId);
         return ResponseBuilder.success("Your services retrieved successfully", services);
-    }
-
+    }  
+    
+    @RequireAnyRole({Role.ADMIN, Role.MECHANIC})
     @GetMapping("/all")
     public ResponseEntity<?> getAllServices() {
         Long adminId = AuthUtil.getAuthenticatedUserId();

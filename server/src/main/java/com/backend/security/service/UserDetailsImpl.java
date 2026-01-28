@@ -1,5 +1,6 @@
 package com.backend.security.service;
 
+import com.backend.entity.Role;
 import com.backend.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class UserDetailsImpl implements UserDetails {
     private Long userId;
     private String email;
     private String password;
+    private Role role;
     private Collection<? extends GrantedAuthority> authorities;
 
     // Static factory method to create from User entity
@@ -31,6 +33,7 @@ public class UserDetailsImpl implements UserDetails {
             user.getId(),
             user.getEmail(),
             user.getPassword(),
+            user.getRole(),
             authorities
         );
     }
