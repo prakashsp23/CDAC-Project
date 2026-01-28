@@ -12,8 +12,11 @@ public interface ServiceRepository extends JpaRepository<Services, Long> {
     List<Services> findByUser_Id(Long userId);
 
     List<Services> findByStatusInAndUser_Id(List<ServiceStatus> status, Long userId);
-    
+
     List<Services> findByStatusAndMechanic_Id(ServiceStatus status, Long mechanicId);
 
     List<Services> findByMechanic_IdAndStatus(Long mechanicId, ServiceStatus status);
+    
+    long countByMechanic_Id(Long mechanicId);
+
 }
