@@ -19,12 +19,6 @@ export default function Dashboard() {
       iconBg: "bg-gray-100",
     },
     {
-      title: "Jobs In Progress",
-      value: 2,
-      icon: <Wrench className="w-6 h-6 text-blue-700" />,
-      iconBg: "bg-blue-100",
-    },
-    {
       title: "Jobs Completed",
       value: 15,
       icon: <CheckCircle className="w-6 h-6 text-green-700" />,
@@ -59,15 +53,6 @@ export default function Dashboard() {
       task: "Brake System Inspection",
       status: "In Progress",
       time: "10:00 AM",
-    },
-    {
-      name: "Michael Johnson",
-      id: "SRV-001",
-      car: "Toyota Camry 2022",
-      plate: "ABC-1234",
-      task: "Oil Change & Filter Replacement",
-      status: "Pending",
-      time: "09:00 AM",
     },
   ];
 

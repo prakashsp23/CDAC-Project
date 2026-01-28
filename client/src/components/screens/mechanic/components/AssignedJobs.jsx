@@ -47,7 +47,9 @@ export default function AssignedJobs() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  // 🔥 Update job when modal submits
+  // draft notes (saved only when Update is clicked)
+  const [noteDrafts, setNoteDrafts] = useState({});
+
   const handleJobUpdate = (updatedJob) => {
     const updatedList = jobsList.map((job) =>
       job.id === updatedJob.id ? updatedJob : job
@@ -64,7 +66,9 @@ export default function AssignedJobs() {
     <div className="py-6 px-8 w-[90%] mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Assigned Jobs</h1>
-        <p className="text-muted-foreground">Manage your current service requests</p>
+        <p className="text-muted-foreground">
+          Manage your current service requests
+        </p>
       </div>
 
       {/* Search + Filter */}
@@ -74,14 +78,14 @@ export default function AssignedJobs() {
           <input
             type="text"
             placeholder="Search by customer, vehicle, or service type..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-muted/50 text-card-foreground border border-input"
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-muted/50 border border-input"
           />
         </div>
 
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-muted-foreground" />
           <select
-            className="px-3 py-2 rounded-lg bg-muted/50 text-card-foreground border border-input"
+            className="px-3 py-2 rounded-lg bg-muted/50 border border-input"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -98,62 +102,94 @@ export default function AssignedJobs() {
         {filteredJobs.map((job) => (
           <Card key={job.id} className="rounded-xl">
             <CardContent className="p-4">
-
+              {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="font-semibold text-lg">{job.customer}</h2>
                   <p className="text-xs text-muted-foreground">{job.id}</p>
                 </div>
 
-                <span
-                  className={`px-3 py-1 text-xs rounded-full font-medium ${
-                    job.status === "Pending"
-                      ? "bg-muted/50 text-muted-foreground"
-                      : job.status === "In Progress"
-                      ? "bg-muted/60 text-muted-foreground"
-                      : "bg-muted/70 text-muted-foreground"
-                  }`}
-                >
+                <span className="px-3 py-1 text-xs rounded-full bg-muted/50">
                   {job.status}
                 </span>
               </div>
 
+              {/* Vehicle */}
               <div className="mt-3">
                 <p className="text-sm text-muted-foreground">{job.car}</p>
-                <span className="inline-block mt-2 bg-muted/50 px-3 py-1 text-xs rounded-md text-muted-foreground">
+                <span className="inline-block mt-2 bg-muted/50 px-3 py-1 text-xs rounded-md">
                   {job.plate}
                 </span>
               </div>
 
+              {/* Service */}
               <div className="mt-4 bg-muted/20 p-3 rounded-lg">
-                <p className="text-sm font-medium text-card-foreground">{job.service}</p>
+                <p className="text-sm font-medium">{job.service}</p>
               </div>
 
+              {/* Time */}
               <div className="flex justify-between mt-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>Start: {job.start}</span>
+                  <Calendar className="w-4 h-4" />
+                  Start: {job.start}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>Expected: {job.expected}</span>
+                  <Calendar className="w-4 h-4" />
+                  Expected: {job.expected}
                 </div>
               </div>
 
-              {job.note && (
-                <div className="mt-4 bg-muted/50 border-l-4 border-muted/60 p-3 rounded">
+              {/* ✅ Service Notes / Updates */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-muted-foreground">
-                    <strong>Latest Note:</strong> {job.note}
+                    Service Notes / Updates
                   </p>
-                </div>
-              )}
 
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      handleJobUpdate({
+                        ...job,
+                        note: noteDrafts[job.id] ?? job.note,
+                      });
+
+                      setNoteDrafts({
+                        ...noteDrafts,
+                        [job.id]: undefined,
+                      });
+                    }}
+                  >
+                    Update
+                  </Button>
+                </div>
+
+                <textarea
+                  placeholder="e.g. Oil filter replaced, diagnostics completed..."
+                  className="w-full border rounded-lg px-3 py-2 text-sm bg-muted/50"
+                  value={noteDrafts[job.id] ?? job.note}
+                  onChange={(e) =>
+                    setNoteDrafts({
+                      ...noteDrafts,
+                      [job.id]: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              {/* Button */}
               <div className="mt-5">
-                <Button className="w-full" onClick={() => { setSelectedJob(job); setOpenModal(true); }}>
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedJob(job);
+                    setOpenModal(true);
+                  }}
+                >
                   View / Update Service
                 </Button>
               </div>
-
             </CardContent>
           </Card>
         ))}
