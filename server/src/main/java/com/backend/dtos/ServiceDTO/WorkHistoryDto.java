@@ -1,4 +1,4 @@
-package com.backend.dtos.MechanicDTOs;
+package com.backend.dtos.ServiceDTO;
 
 import lombok.Data;
 

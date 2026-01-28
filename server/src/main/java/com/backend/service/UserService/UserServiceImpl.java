@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.custom_exceptions.ResourceNotFoundException;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
+import com.backend.dtos.UserDTO.MechanicDTO;
+import com.backend.entity.Role;
 import com.backend.entity.User;
 import com.backend.repository.UserRepository;
 
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(Long userId, UpdateUserDto updateUserDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        
+
         if (updateUserDto.getName() != null && !updateUserDto.getName().trim().isEmpty()) {
             user.setName(updateUserDto.getName());
         }
@@ -66,5 +68,18 @@ public class UserServiceImpl implements UserService {
         dto.setId(user.getId().toString());
         dto.setRole(user.getRole().name());
         return dto;
+    }
+
+    @Override
+    public List<MechanicDTO> getAllMechanics() {
+        return userRepository.findByRole(Role.MECHANIC)
+                .stream()
+                .map(user -> {
+                    MechanicDTO dto = new MechanicDTO();
+                    dto.setMechanicId(user.getId());
+                    dto.setName(user.getName());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }
