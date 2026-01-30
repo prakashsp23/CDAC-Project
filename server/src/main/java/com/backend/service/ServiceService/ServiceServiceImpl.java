@@ -291,7 +291,7 @@ public class ServiceServiceImpl implements ServiceService {
                                                                 "Part not found: " + partId));
 
                                 if (part.getStockQuantity() < quantity) {
-                                        throw new RuntimeException(
+                                        throw new IllegalArgumentException(
                                                         "Insufficient stock for part: " + part.getPartName());
                                 }
 

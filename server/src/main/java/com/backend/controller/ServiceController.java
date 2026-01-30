@@ -159,12 +159,8 @@ public class ServiceController {
             return AuthUtil.unauthorizedResponse();
         }
 
-        try {
-            serviceService.updateServiceExecution(serviceId, updateDto);
-            return ResponseEntity.ok("Service updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to update service: " + e.getMessage());
-        }
+        serviceService.updateServiceExecution(serviceId, updateDto);
+        return ResponseBuilder.success("Service updated successfully", null);
     }
 
     @PostMapping("/{serviceId}/note")
@@ -178,15 +174,11 @@ public class ServiceController {
         }
 
         if (note == null || note.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Note content is required");
+            throw new IllegalArgumentException("Note content is required");
         }
 
-        try {
-            serviceService.addServiceNote(serviceId, userId, note);
-            return ResponseEntity.ok("Note added successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to add note: " + e.getMessage());
-        }
+        serviceService.addServiceNote(serviceId, userId, note);
+        return ResponseBuilder.success("Note added successfully", null);
     }
 
 }
