@@ -8,64 +8,42 @@ import StarRating from '../../ui/star-rating'
 import UniversalDisplay from '../../ui/universal-display'
 import { toast } from 'sonner'
 import ViewToggle from '../../ui/ViewToggle'
-import { getUserFeedbacks, getCompletedServicesForFeedback, submitFeedback } from '../../../services/mockDataService'
+import { useGetCompletedServices } from '../../../query/queries/serviceQueries'
+import { useGetMyFeedbacks, useSubmitFeedbackMutation } from '../../../query/queries/feedbackQueries'
 
 export default function ServiceFeedback() {
-  const [completedServices, setCompletedServices] = useState([])
-  const [feedbacks, setFeedbacks] = useState([])
 
   const [selectedService, setSelectedService] = useState('')
   const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [comments, setComments] = useState('')
 
   const [view, setView] = useState(() => window.localStorage.getItem('feedback-view') || 'grid');
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const servicesData = await getCompletedServicesForFeedback(1);
-      setCompletedServices(servicesData);
+  // Extract data from API response wrapper
+  const { data: feedbackResponse, isLoading } = useGetMyFeedbacks();
+  const feedbacks = feedbackResponse?.data;
 
-      if (servicesData.length > 0 && !selectedService) {
-        setSelectedService(String(servicesData[0].id));
-      }
+  const { data: serviceResponse, isLoading: isServiceLoading } = useGetCompletedServices();
+  const completedServices = serviceResponse?.data;
 
-      const feedbacksData = await getUserFeedbacks(1);
-      setFeedbacks(feedbacksData);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load feedback data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  const submitFeedbackMutation = useSubmitFeedbackMutation();
 
   async function handleSubmit() {
     if (!selectedService) return alert('Please select a completed service')
     if (!rating) return alert('Please provide a rating')
 
-    try {
-      await submitFeedback({
-        serviceId: selectedService,
-        rating,
-        comment
-      });
-      toast.success("Feedback recorded successfully");
-
-      setRating(0);
-      setComment('');
-      setSelectedService('');
-
-      loadData(); // Reload to update lists
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to submit feedback");
-    }
+    submitFeedbackMutation.mutate({
+      serviceId: selectedService,
+      rating,
+      comments
+    }, {
+      onSuccess: () => {
+        // toast is handled in the mutation
+        setRating(0);
+        setComments('');
+        setSelectedService('');
+      }
+    });
   }
 
   function handleViewChange(newView) {
@@ -73,7 +51,7 @@ export default function ServiceFeedback() {
     window.localStorage.setItem('feedback-view', newView);
   }
 
-  if (loading) return <div className="p-8">Loading feedback...</div>;
+  if (isLoading) return <div className="p-8">Loading feedback...</div>;
 
   return (
     <div className="py-6 px-8 w-[90%] mx-auto">
@@ -94,14 +72,26 @@ export default function ServiceFeedback() {
                 <label className="text-sm font-medium text-muted-foreground pb-2 block">Completed Service</label>
                 <Select value={selectedService} onValueChange={v => setSelectedService(v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder={completedServices.length > 0 ? "Select a service" : "No services to review"} />
+                    <SelectValue placeholder={completedServices?.length > 0 ? "Select a service" : "No services to review"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>Recent Services</SelectLabel>
-                      {completedServices.length > 0 ? completedServices.map(s => (
-                        <SelectItem key={s.id} value={String(s.id)}>{s.name} — {s.date}</SelectItem>
-                      )) : <SelectItem value="none" disabled>No pending reviews</SelectItem>}
+                      {isServiceLoading ? (
+                        <SelectItem value="loading" disabled>Loading...</SelectItem>
+                      ) : (
+                        <>
+                          <SelectLabel>Recent Services</SelectLabel>
+                          {completedServices.length > 0 ? (
+                            completedServices.map((s) => (
+                              <SelectItem key={s.id} value={String(s.id)}>
+                                {s.catalog.serviceName} — {String(s.createdOn)}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>No pending reviews</SelectItem>
+                          )}
+                        </>
+                      )}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -113,11 +103,11 @@ export default function ServiceFeedback() {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground pb-2 block">Your Feedback</label>
-              <Textarea placeholder="Share your experience, what went well, and what could be improved..." value={comment} onChange={(e) => setComment(e.target.value)} rows={4} />
+              <Textarea placeholder="Share your experience, what went well, and what could be improved..." value={comments} onChange={(e) => setComments(e.target.value)} rows={4} />
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setRating(0); setComment(''); }}>Cancel</Button>
+              <Button variant="ghost" onClick={() => { setRating(0); setComments(''); }}>Cancel</Button>
               <Button onClick={handleSubmit} className="bg-black text-white" disabled={!selectedService || completedServices.length === 0}>Submit Feedback</Button>
             </div>
           </div>
@@ -134,11 +124,11 @@ export default function ServiceFeedback() {
         view={view}
         idKey="id"
         columns={[
-          { key: 'service', title: 'Service' },
-          { key: 'date', title: 'Date' },
+          { key: 'serviceName', title: 'Service' },
+          { key: 'createdOn', title: 'Date' },
           { key: 'rating', title: 'Rating' },
-          { key: 'comment', title: 'Comment' },
-          { key: 'mechanicNotes', title: 'Mechanic Notes' },
+          { key: 'comments', title: 'Comment' },
+          { key: 'adminNote', title: 'Admin Note' },
         ]}
         perRow={3}
         renderCard={(f) => (
@@ -146,16 +136,16 @@ export default function ServiceFeedback() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <p className="font-semibold text-card-foreground">{f.service}</p>
-                  <p className="text-sm text-muted-foreground">{f.date}</p>
+                  <p className="font-semibold text-card-foreground">{f.serviceName}</p>
+                  <p className="text-sm text-muted-foreground">{String(f.createdOn)}</p>
                 </div>
                 <StarRating value={f.rating} readOnly size={16} />
               </div>
-              <p className="text-sm mt-3 text-muted-foreground italic border-l-2 border-border pl-3">"{f.comment}"</p>
-              {f.mechanicNotes && (
+              <p className="text-sm mt-3 text-muted-foreground italic border-l-2 border-border pl-3">"{f.comments}"</p>
+              {f.adminNote && (
                 <div className="text-xs mt-3 bg-muted/50 p-2 rounded-md">
-                  <p className="font-semibold">Mechanic's Notes:</p>
-                  <p className="text-muted-foreground">{f.mechanicNotes}</p>
+                  <p className="font-semibold">Admin's Notes:</p>
+                  <p className="text-muted-foreground">{f.adminNote}</p>
                 </div>
               )}
             </CardContent>
@@ -163,11 +153,11 @@ export default function ServiceFeedback() {
         )}
         renderRow={(f) => (
           <TableRow key={f.id}>
-            <TableCell className="font-medium">{f.service}</TableCell>
-            <TableCell>{f.date}</TableCell>
+            <TableCell className="font-medium">{f.serviceName}</TableCell>
+            <TableCell>{String(f.createdOn)}</TableCell>
             <TableCell><StarRating value={f.rating} readOnly size={16} /></TableCell>
-            <TableCell>{f.comment}</TableCell>
-            <TableCell>{f.mechanicNotes}</TableCell>
+            <TableCell>{f.comments}</TableCell>
+            <TableCell>{f.adminNote}</TableCell>
           </TableRow>
         )}
       />

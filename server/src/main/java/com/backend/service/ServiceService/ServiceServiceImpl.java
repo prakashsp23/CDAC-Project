@@ -318,7 +318,7 @@ public class ServiceServiceImpl implements ServiceService {
                                 currentPartsTotal += (partPrice * quantity);
                         }
                         service.setPartsTotal(currentPartsTotal);
-                        
+
                         // SECURITY FIX: Recalculate total amount (basePrice + parts)
                         // Ensures accurate billing
                         Double basePrice = service.getCatalog() != null ? service.getCatalog().getBasePrice() : 0.0;
@@ -347,6 +347,17 @@ public class ServiceServiceImpl implements ServiceService {
                 note.setNotes(noteContent);
 
                 mechanicNoteRepo.save(note);
+        }
+
+        @Override
+        public List<ServiceDto> getMyCompletedServicesWithoutFeedback(Long userId) {
+                List<Services> services = serviceRepository.findServiceWithoutFeedback(userId, ServiceStatus.COMPLETED);
+                System.out.println("values are:" + services);
+                List<ServiceDto> completedServices = new ArrayList<>();
+                for (Services service : services) {
+                        completedServices.add(convertToDto(service));
+                }
+                return completedServices;
         }
 
 }

@@ -43,22 +43,22 @@ public class ServiceController {
         ServiceDto createdService = serviceService.createService(createDto, userId);
         return ResponseBuilder.success("Service request created successfully", createdService);
     }
- 
+
     @Customer
     @GetMapping
     public ResponseEntity<?> getMyServices() {
         Long userId = AuthUtil.getAuthenticatedUserId();
         List<ServiceDto> services = serviceService.getMyServices(userId);
         return ResponseBuilder.success("Your services retrieved successfully", services);
-    }  
-    
+    }
+
     @Admin
     @GetMapping("/all")
     public ResponseEntity<?> getAllServices() {
         return ResponseBuilder.success("All services retrieved successfully", serviceService.getAllServices());
     }
 
-//    @RequireAnyRole
+    // @RequireAnyRole
     @GetMapping("/{serviceId}")
     public ResponseEntity<?> getServiceById(@PathVariable Long serviceId) {
         ServiceDto service = serviceService.getServiceById(serviceId);
@@ -81,10 +81,7 @@ public class ServiceController {
     @GetMapping("/completed")
     public ResponseEntity<?> getCompletedService() {
         Long userId = AuthUtil.getAuthenticatedUserId();
-        List<ServiceDto> completedServices = serviceService.getMyServices(userId)
-                .stream()
-                .filter(s -> s.getStatus() == ServiceStatus.COMPLETED.toString())
-                .collect(Collectors.toList());
+        List<ServiceDto> completedServices = serviceService.getMyCompletedServicesWithoutFeedback(userId);
         return ResponseBuilder.success("Completed services retrieved successfully", completedServices);
     }
 
@@ -156,6 +153,5 @@ public class ServiceController {
         serviceService.addServiceNote(serviceId, userId, note);
         return ResponseBuilder.success("Note added successfully", null);
     }
-    
 
 }
