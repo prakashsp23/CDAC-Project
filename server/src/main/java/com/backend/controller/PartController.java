@@ -7,6 +7,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+<<<<<<< Updated upstream
+=======
+import com.backend.aop.annotation.Admin;
+import com.backend.aop.annotation.RequireAnyRole;
+import com.backend.dtos.PartDTOs.CreatePartDto;
+import com.backend.dtos.PartDTOs.PartDto;
+import com.backend.dtos.PartDTOs.UpdatePartDto;
+import com.backend.entity.Role;
+>>>>>>> Stashed changes
 import com.backend.service.PartService.PartService;
 import com.backend.util.ResponseBuilder;
 
@@ -19,14 +28,44 @@ public class PartController {
 
     private final PartService partService;
 
+    @RequireAnyRole({Role.ADMIN, Role.MECHANIC})
     @GetMapping
     public ResponseEntity<?> getAllParts() {
         return ResponseEntity.ok(partService.getAllParts());
     }
     
+<<<<<<< Updated upstream
     
+=======
+    @Admin
+    @PostMapping
+    public ResponseEntity<?> createPart(@Valid @RequestBody CreatePartDto dto) {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        PartDto createdPart = partService.createPart(dto);
+        return ResponseBuilder.success("Part created successfully", createdPart);
+    }
     
+    @Admin
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePart(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdatePartDto dto) {
+
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+
+        PartDto updatedPart = partService.updatePart(id, dto);
+        return ResponseBuilder.success("Part updated successfully", updatedPart);
+    }
+>>>>>>> Stashed changes
     
+    @Admin
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePart(@PathVariable Long id) {
 
