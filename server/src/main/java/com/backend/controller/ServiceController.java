@@ -132,13 +132,14 @@ public class ServiceController {
     public ResponseEntity<?> updateServiceExecution(
             @PathVariable Long serviceId,
             @Valid @RequestBody UpdateServiceDto updateDto) {
-        try {
-            Long mechanicId = AuthUtil.getAuthenticatedUserId();
-            serviceService.updateServiceExecution(serviceId, updateDto, mechanicId);
-            return ResponseEntity.ok("Service updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to update service: " + e.getMessage());
+
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
         }
+
+        serviceService.updateServiceExecution(serviceId, updateDto);
+        return ResponseBuilder.success("Service updated successfully", null);
     }
 
     @Mechanic
@@ -149,15 +150,11 @@ public class ServiceController {
 
         Long userId = AuthUtil.getAuthenticatedUserId();
         if (note == null || note.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Note content is required");
+            throw new IllegalArgumentException("Note content is required");
         }
 
-        try {
-            serviceService.addServiceNote(serviceId, userId, note);
-            return ResponseEntity.ok("Note added successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to add note: " + e.getMessage());
-        }
+        serviceService.addServiceNote(serviceId, userId, note);
+        return ResponseBuilder.success("Note added successfully", null);
     }
     
 
