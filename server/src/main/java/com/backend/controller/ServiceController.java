@@ -135,7 +135,7 @@ public class ServiceController {
             return AuthUtil.unauthorizedResponse();
         }
 
-        serviceService.updateServiceExecution(serviceId, updateDto);
+        serviceService.updateServiceExecution(serviceId, updateDto, userId);
         return ResponseBuilder.success("Service updated successfully", null);
     }
 
