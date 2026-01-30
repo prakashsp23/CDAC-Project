@@ -30,7 +30,7 @@ public interface ServiceService {
 
     List<AssignedJobsDto> getMechanicAssignedJobs(Long mechanicId);
 
-    void updateServiceExecution(Long serviceId, UpdateServiceDto updateDto);
+    void updateServiceExecution(Long serviceId, UpdateServiceDto updateDto, Long mechanicId);
 
     void addServiceNote(Long serviceId, Long userId, String noteContent);
 

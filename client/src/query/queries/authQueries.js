@@ -72,16 +72,3 @@ export function useRegisterMutation() {
         },
     })
 }
-
-// Change password mutation
-export function useChangePasswordMutation() {
-    return useMutation({
-        mutationFn: AuthApi.changePassword,
-        onSuccess: (data) => {
-            toast.success(data?.message || 'Password changed successfully')
-        },
-        onError: (err) => {
-            toast.error(err?.message || 'Failed to change password')
-        },
-    })
-}

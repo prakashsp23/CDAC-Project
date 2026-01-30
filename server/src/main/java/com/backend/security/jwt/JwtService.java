@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -12,12 +13,19 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET = "THIS_IS_A_VERY_SECURE_SECRET_KEY_FOR_JWT_256_BITS";
+    // JWT secret loaded from environment variable
+    @Value("${jwt.secret:#{null}}")
+    private String secret;
 
     private static final long EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        if (secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "JWT_SECRET environment variable is not set. Please configure jwt.secret in application.properties or set JWT_SECRET environment variable."
+            );
+        }
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     // public String generateToken(String username) {

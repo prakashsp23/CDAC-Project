@@ -58,11 +58,12 @@ public class ServiceController {
         return ResponseBuilder.success("All services retrieved successfully", serviceService.getAllServices());
     }
 
-    // @GetMapping("/{id}")
-    // public ResponseEntity<?> getServiceById(@PathVariable Long id) {
-    // ServiceDto service = serviceService.getServiceById(id);
-    // return ResponseBuilder.success("Service retrieved successfully", service);
-    // }
+//    @RequireAnyRole
+    @GetMapping("/{serviceId}")
+    public ResponseEntity<?> getServiceById(@PathVariable Long serviceId) {
+        ServiceDto service = serviceService.getServiceById(serviceId);
+        return ResponseBuilder.success("Service retrieved successfully", service);
+    }
 
     @Customer
     @GetMapping("/ongoing")
@@ -132,7 +133,8 @@ public class ServiceController {
             @PathVariable Long serviceId,
             @Valid @RequestBody UpdateServiceDto updateDto) {
         try {
-            serviceService.updateServiceExecution(serviceId, updateDto);
+            Long mechanicId = AuthUtil.getAuthenticatedUserId();
+            serviceService.updateServiceExecution(serviceId, updateDto, mechanicId);
             return ResponseEntity.ok("Service updated successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to update service: " + e.getMessage());

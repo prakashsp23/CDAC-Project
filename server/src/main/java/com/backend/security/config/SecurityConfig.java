@@ -1,5 +1,7 @@
 package com.backend.security.config;
 
+import com.backend.security.CustomAccessDeniedHandler;
+import com.backend.security.CustomAuthenticationEntryPoint;
 import com.backend.security.jwt.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,8 @@ public class SecurityConfig {
 
         private final JwtAuthFilter jwtAuthFilter;
         private final CorsConfigurationSource corsConfigurationSource;
+        private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+        private final CustomAccessDeniedHandler accessDeniedHandler;
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,6 +57,11 @@ public class SecurityConfig {
 
                                                 // EVERYTHING ELSE SECURED
                                                 .anyRequest().authenticated())
+
+                                // CUSTOM EXCEPTION HANDLERS
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint(authenticationEntryPoint)
+                                                .accessDeniedHandler(accessDeniedHandler))
 
                                 // JWT FILTER
                                 .addFilterBefore(jwtAuthFilter,

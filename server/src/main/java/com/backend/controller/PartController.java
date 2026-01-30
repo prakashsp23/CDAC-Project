@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.aop.annotation.Admin;
 import com.backend.service.PartService.PartService;
 import com.backend.util.ResponseBuilder;
 
@@ -27,14 +28,10 @@ public class PartController {
     
     
     
+    @Admin
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePart(@PathVariable Long id) {
-
         partService.deletePart(id);
-
-        return ResponseBuilder.success(
-                "Part deleted successfully",
-                null
-        );
+        return ResponseBuilder.success("Part deleted successfully", null);
     }
 }

@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.aop.annotation.Admin;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
+import com.backend.entity.Role;
 import com.backend.service.UserService.UserService;
 import com.backend.util.AuthUtil;
 import com.backend.util.ResponseBuilder;
@@ -26,6 +28,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Admin
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
@@ -44,6 +47,14 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+        Long currentUserId = AuthUtil.getAuthenticatedUserId();
+        Role currentRole = AuthUtil.getAuthenticatedUserRole();
+        
+        // SECURITY: Only admin can view other users' profiles
+        if (currentRole != Role.ADMIN && !userId.equals(currentUserId)) {
+            return ResponseBuilder.error(HttpStatus.FORBIDDEN, "Access denied", null);
+        }
+        
         UserDto user = userService.getUserById(userId);
         return ResponseBuilder.success("User retrieved successfully", user);
     }

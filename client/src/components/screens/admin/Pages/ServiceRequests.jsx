@@ -11,10 +11,8 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-
 export default function ServiceRequestsTable() {
   const [filter, setFilter] = useState("All");
-
   const [requests, setRequests] = useState([
     {
       id: "REQ101",

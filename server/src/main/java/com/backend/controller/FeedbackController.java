@@ -1,5 +1,6 @@
 package com.backend.controller;
 
+import com.backend.aop.annotation.Admin;
 import com.backend.dtos.FeedbackDTOs.FeedbackHistoryDto;
 import com.backend.dtos.FeedbackDTOs.FeedbackReq;
 import com.backend.service.FeedbackService.FeedbackService;
@@ -43,14 +44,9 @@ public class FeedbackController {
         return ResponseBuilder.success(message, null);
     }
     
+    @Admin
     @GetMapping("/all")
     public ResponseEntity<?> getAllFeedback() {
-
-        Long adminId = AuthUtil.getAuthenticatedUserId();
-        if (adminId == null) {
-            return AuthUtil.unauthorizedResponse();
-        }
-
         return ResponseEntity.ok(feedbackService.getAllFeedback());
     }
 }
