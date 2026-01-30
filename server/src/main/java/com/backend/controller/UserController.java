@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -65,8 +66,6 @@ public class UserController {
     public ResponseEntity<?> getAllMechanics() {
         return ResponseBuilder.success("Mechanics retrieved successfully", userService.getAllMechanics());
     }
-<<<<<<< Updated upstream
-=======
     
     
     //admin - mechanic table
@@ -79,7 +78,7 @@ public class UserController {
         );
     }
     
-    @Admin
+  @Admin
     @DeleteMapping("/mechanics/{id}")
     public ResponseEntity<?> deleteMechanic(@PathVariable Long id) {
 
@@ -91,5 +90,4 @@ public class UserController {
         );
     }
 
->>>>>>> Stashed changes
 }
