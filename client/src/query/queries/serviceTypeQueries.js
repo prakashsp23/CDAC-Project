@@ -1,67 +1,103 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ServiceTypeApi } from '../../services/apiService'
+import { ServiceCatalogApi } from '../../services/apiService'
+import { toast } from 'sonner'
 
-export const serviceTypeKeys = {
-  all: ['serviceTypes'],
-  lists: () => [...serviceTypeKeys.all, 'list'],
-  list: (filters) => [...serviceTypeKeys.lists(), filters],
-  details: () => [...serviceTypeKeys.all, 'detail'],
-  detail: (id) => [...serviceTypeKeys.details(), id],
+/**
+ * Query Keys for Service Catalog
+ */
+export const serviceCatalogKeys = {
+  all: ['serviceCatalogs'],
+  lists: () => [...serviceCatalogKeys.all, 'list'],
+  list: (filters) => [...serviceCatalogKeys.lists(), filters],
+  details: () => [...serviceCatalogKeys.all, 'detail'],
+  detail: (id) => [...serviceCatalogKeys.details(), id],
 }
 
-// Get all service types
-export function useGetAllServiceTypes(options = {}) {
+// Alias for backward compatibility
+export const serviceTypeKeys = serviceCatalogKeys
+
+/**
+ * SERVICE CATALOG QUERIES
+ */
+
+// Get all service catalogs
+export function useGetAllServiceCatalogs(options = {}) {
   return useQuery({
-    queryKey: serviceTypeKeys.lists(),
-    queryFn: ServiceTypeApi.fetchServiceTypes,
+    queryKey: serviceCatalogKeys.lists(),
+    queryFn: ServiceCatalogApi.fetchServiceCatalogs,
     ...options,
   })
 }
 
-// Get service type by ID
-export function useGetServiceTypeById(serviceTypeId, options = {}) {
+// Get service catalog by ID
+export function useGetServiceCatalogById(catalogId, options = {}) {
   return useQuery({
-    queryKey: serviceTypeKeys.detail(serviceTypeId),
-    queryFn: () => ServiceTypeApi.fetchServiceTypeById(serviceTypeId),
-    enabled: !!serviceTypeId,
+    queryKey: serviceCatalogKeys.detail(catalogId),
+    queryFn: () => ServiceCatalogApi.fetchServiceCatalogById(catalogId),
+    enabled: !!catalogId,
     ...options,
   })
 }
 
-// Add service type
-export function useAddServiceTypeMutation() {
+/**
+ * SERVICE CATALOG MUTATIONS (Admin)
+ */
+
+// Create service catalog
+export function useCreateServiceCatalogMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ServiceTypeApi.createServiceType,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceTypeKeys.lists() })
+    mutationFn: ServiceCatalogApi.createServiceCatalog,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: serviceCatalogKeys.lists() })
+      toast.success(data?.message || 'Service catalog created successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to create service catalog')
     },
   })
 }
 
-// Update service type
-export function useUpdateServiceTypeMutation() {
+// Update service catalog
+export function useUpdateServiceCatalogMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ serviceTypeId, data }) =>
-      ServiceTypeApi.updateServiceType(serviceTypeId, data),
+    mutationFn: ({ catalogId, data }) =>
+      ServiceCatalogApi.updateServiceCatalog(catalogId, data),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: serviceTypeKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: serviceTypeKeys.detail(variables.serviceTypeId) })
+      queryClient.invalidateQueries({ queryKey: serviceCatalogKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: serviceCatalogKeys.detail(variables.catalogId) })
+      toast.success(data?.message || 'Service catalog updated successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to update service catalog')
     },
   })
 }
 
-// Delete service type
-export function useDeleteServiceTypeMutation() {
+// Delete service catalog
+export function useDeleteServiceCatalogMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ServiceTypeApi.deleteServiceType,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceTypeKeys.lists() })
+    mutationFn: ServiceCatalogApi.deleteServiceCatalog,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: serviceCatalogKeys.lists() })
+      toast.success(data?.message || 'Service catalog deleted successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to delete service catalog')
     },
   })
 }
+
+/**
+ * LEGACY ALIASES (for backward compatibility)
+ */
+export const useGetAllServiceTypes = useGetAllServiceCatalogs
+export const useGetServiceTypeById = useGetServiceCatalogById
+export const useAddServiceTypeMutation = useCreateServiceCatalogMutation
+export const useUpdateServiceTypeMutation = useUpdateServiceCatalogMutation
+export const useDeleteServiceTypeMutation = useDeleteServiceCatalogMutation

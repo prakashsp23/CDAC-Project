@@ -43,12 +43,27 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public String submitFeedback(FeedbackReq feedbackReq, Long userId) {
+        // Fetch user
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Fetch service
+        var service = serviceRepository.findById(feedbackReq.getServiceId())
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+        
+        // SECURITY: Verify service belongs to the user
+        if (service.getUser() == null || !service.getUser().getId().equals(userId)) {
+            throw new SecurityException("You can only submit feedback for your own services");
+        }
+        
+        // Verify service is completed
+        if (service.getStatus() != com.backend.entity.ServiceStatus.COMPLETED) {
+            throw new IllegalArgumentException("Feedback can only be submitted for completed services");
+        }
+        
         Feedback feedback = modelMapper.map(feedbackReq, Feedback.class);
-        feedback.setUser(userRepository.findById(userId)
-                .orElseThrow(() -> new NullPointerException()));
-        feedback.setService(serviceRepository.findById(feedbackReq.getServiceId())
-                .orElseThrow(() -> new NullPointerException()));
-        // feedback.setDate(LocalDate.now());
+        feedback.setUser(user);
+        feedback.setService(service);
         feedbackRepository.save(feedback);
         return "Feedback Has Been Submitted Successfully";
     }

@@ -1,280 +1,290 @@
 import apiClient from '../lib/api'
+
+// ==================== AUTHENTICATION SERVICES ====================
 export const AuthApi = {
+  // POST /auth/login
   login: async (credentials) => {
     const response = await apiClient.post('/auth/login', credentials)
     return response.data
   },
 
+  // POST /auth/register
   register: async (userData) => {
     const response = await apiClient.post('/auth/register', userData)
     return response.data
   },
-
-  changePassword: async (passwordData) => {
-    const response = await apiClient.post('/auth/change-password', passwordData)
-    return response.data
-  },
 }
 
+// ==================== USER SERVICES ====================
 export const UserApi = {
-  // Get all users (Admin only)
+  // GET /user - Get all users
   fetchAllUsers: async () => {
-    const response = await apiClient.get('/users')
+    const response = await apiClient.get('/user')
     return response.data
   },
 
-  // Get current user profile
+  // GET /user/me - Get current authenticated user profile
   fetchCurrentUser: async () => {
-    const response = await apiClient.get('/users/me')
+    const response = await apiClient.get('/user/me')
     return response.data
   },
 
-  // Get user stats
-  fetchUserStats: async () => {
-    const response = await apiClient.get('/users/stats')
-    return response.data
-  },
-
-  // Get user details by ID
+  // GET /user/{userId} - Get user by ID
   fetchUserById: async (userId) => {
-    const response = await apiClient.get(`/users/id/${userId}`)
-    return response.data
-  },
-}
-
-export const VehicleApi = {
-  // Get all vehicles for current user
-  fetchVehicles: async () => {
-    const response = await apiClient.get('/vehicles')
+    const response = await apiClient.get(`/user/${userId}`)
     return response.data
   },
 
-  // Get vehicle by ID
-  fetchVehicleById: async (vehicleId) => {
-    const response = await apiClient.get(`/vehicles/${vehicleId}`)
+  // PUT /user/me - Update current user profile
+  updateCurrentUser: async (userData) => {
+    const response = await apiClient.put('/user/me', userData)
     return response.data
   },
 
-  // Add new vehicle
-  createVehicle: async (vehicleData) => {
-    const response = await apiClient.post('/vehicles', vehicleData)
-    return response.data
-  },
-
-  // Update vehicle
-  updateVehicle: async (vehicleId, vehicleData) => {
-    const response = await apiClient.patch(`/vehicles/${vehicleId}`, vehicleData)
-    return response.data
-  },
-
-  // Delete vehicle
-  deleteVehicle: async (vehicleId) => {
-    const response = await apiClient.delete(`/vehicles/${vehicleId}`)
-    return response.data
-  },
-}
-
-export const ServiceTypeApi = {
-  // Get all service types
-  fetchServiceTypes: async () => {
-    const response = await apiClient.get('/service-types')
-    return response.data
-  },
-
-  // Get service type by ID
-  fetchServiceTypeById: async (serviceTypeId) => {
-    const response = await apiClient.get(`/service-types/${serviceTypeId}`)
-    return response.data
-  },
-
-  // Add new service type (Admin only)
-  createServiceType: async (serviceData) => {
-    const response = await apiClient.post('/service-types', serviceData)
-    return response.data
-  },
-
-  // Update service type (Admin only)
-  updateServiceType: async (serviceTypeId, serviceData) => {
-    const response = await apiClient.put(`/service-types/${serviceTypeId}`, serviceData)
-    return response.data
-  },
-
-  // Delete service type (Admin only)
-  deleteServiceType: async (serviceTypeId) => {
-    const response = await apiClient.delete(`/service-types/${serviceTypeId}`)
-    return response.data
-  },
-}
-
-// ==================== BOOKING SERVICES ====================
-export const BookingApi = {
-  // Get all bookings
-  fetchBookings: async () => {
-    const response = await apiClient.get('/bookings')
-    return response.data
-  },
-
-  // Get booking by ID
-  fetchBookingById: async (bookingId) => {
-    const response = await apiClient.get(`/bookings/${bookingId}`)
-    return response.data
-  },
-
-  // Create new booking
-  createBooking: async (bookingData) => {
-    const response = await apiClient.post('/bookings', bookingData)
-    return response.data
-  },
-
-  // Assign mechanic to booking (Admin only)
-  assignMechanic: async (bookingId, mechanicId) => {
-    const response = await apiClient.put(`/bookings/${bookingId}/assign`, {
-      mechanicId
-    })
-    return response.data
-  },
-
-  // Update booking status
-  updateBookingStatus: async (bookingId, status) => {
-    const response = await apiClient.put(`/bookings/${bookingId}/status`, {
-      status
-    })
-    return response.data
-  },
-
-  // Delete booking
-  deleteBooking: async (bookingId) => {
-    const response = await apiClient.delete(`/bookings/${bookingId}`)
-    return response.data
-  },
-}
-
-// ==================== WORKLOG SERVICES ====================
-export const WorklogApi = {
-  // Create worklog (Mechanic only)
-  createWorklog: async (worklogData) => {
-    const response = await apiClient.post('/worklogs', worklogData)
-    return response.data
-  },
-
-  // Get worklogs by booking ID
-  fetchWorklogsByBookingId: async (bookingId) => {
-    const response = await apiClient.get(`/worklogs/${bookingId}`)
-    return response.data
-  },
-
-  // Update worklog (Mechanic only)
-  updateWorklog: async (worklogId, worklogData) => {
-    const response = await apiClient.put(`/worklogs/${worklogId}`, worklogData)
-    return response.data
-  },
-}
-
-export const AdminApi = {
-  // Get all users
-  fetchAllUsers: async () => {
-    const response = await apiClient.get('/users')
-    return response.data
-  },
-
-  // Get user stats
-  fetchUserStats: async () => {
-    const response = await apiClient.get('/users/stats')
-    return response.data
-  },
-
-  // Get all mechanics
+  // GET /user/mechanics - Get all mechanics
   fetchMechanics: async () => {
-    const response = await apiClient.get('/users')
-    // Filter mechanics on the frontend or use a specific endpoint if available
-    return response.data
-  },
-
-  // Get all service requests (bookings)
-  fetchAllServiceRequests: async (params = {}) => {
-    const response = await apiClient.get('/bookings', { params })
-    return response.data
-  },
-
-  // Assign mechanic to booking
-  assignMechanicToBooking: async (bookingId, mechanicId) => {
-    const response = await apiClient.put(`/bookings/${bookingId}/assign`, {
-      mechanicId
-    })
+    const response = await apiClient.get('/user/mechanics')
     return response.data
   },
 }
 
+// ==================== VEHICLE SERVICES ====================
+export const VehicleApi = {
+  // GET /vehicle - Get all vehicles for current user
+  fetchVehicles: async () => {
+    const response = await apiClient.get('/vehicle')
+    return response.data
+  },
+
+  // POST /vehicle - Add a new vehicle
+  createVehicle: async (vehicleData) => {
+    const response = await apiClient.post('/vehicle', vehicleData)
+    return response.data
+  },
+
+  // PUT /vehicle/{carId} - Update vehicle by ID
+  updateVehicle: async (carId, vehicleData) => {
+    const response = await apiClient.put(`/vehicle/${carId}`, vehicleData)
+    return response.data
+  },
+
+  // DELETE /vehicle/{carId} - Delete vehicle by ID
+  deleteVehicle: async (carId) => {
+    const response = await apiClient.delete(`/vehicle/${carId}`)
+    return response.data
+  },
+}
+
+// ==================== SERVICE CATALOG SERVICES ====================
+export const ServiceCatalogApi = {
+  // GET /service-catalog - Get all service catalogs
+  fetchServiceCatalogs: async () => {
+    const response = await apiClient.get('/service-catalog')
+    return response.data
+  },
+
+  // GET /service-catalog/{id} - Get service catalog by ID
+  fetchServiceCatalogById: async (catalogId) => {
+    const response = await apiClient.get(`/service-catalog/${catalogId}`)
+    return response.data
+  },
+
+  // POST /service-catalog - Create new service catalog (Admin)
+  createServiceCatalog: async (catalogData) => {
+    const response = await apiClient.post('/service-catalog', catalogData)
+    return response.data
+  },
+
+  // PUT /service-catalog/{id} - Update service catalog by ID (Admin)
+  updateServiceCatalog: async (catalogId, catalogData) => {
+    const response = await apiClient.put(`/service-catalog/${catalogId}`, catalogData)
+    return response.data
+  },
+
+  // DELETE /service-catalog/{id} - Delete service catalog by ID (Admin)
+  deleteServiceCatalog: async (catalogId) => {
+    const response = await apiClient.delete(`/service-catalog/${catalogId}`)
+    return response.data
+  },
+}
+
+// ==================== SERVICE REQUEST SERVICES ====================
+export const ServiceApi = {
+  // POST /service - Create new service request (Customer)
+  createService: async (serviceData) => {
+    const response = await apiClient.post('/service', serviceData)
+    return response.data
+  },
+
+  // GET /service - Get my service requests (Customer)
+  fetchMyServices: async () => {
+    const response = await apiClient.get('/service')
+    return response.data
+  },
+
+  // GET /service/all - Get all service requests (Admin)
+  fetchAllServices: async () => {
+    const response = await apiClient.get('/service/all')
+    return response.data
+  },
+
+  // GET /service/{serviceId} - Get service by ID
+  fetchServiceById: async (serviceId) => {
+    const response = await apiClient.get(`/service/${serviceId}`)
+    return response.data
+  },
+
+  // GET /service/ongoing - Get ongoing service requests for current user (Customer)
+  fetchOngoingServices: async () => {
+    const response = await apiClient.get('/service/ongoing')
+    return response.data
+  },
+
+  // GET /service/completed - Get completed service requests for current user (Customer)
+  fetchCompletedServices: async () => {
+    const response = await apiClient.get('/service/completed')
+    return response.data
+  },
+
+  // PUT /service/{serviceId}/accept - Accept a service request (Admin)
+  acceptService: async (serviceId) => {
+    const response = await apiClient.put(`/service/${serviceId}/accept`)
+    return response.data
+  },
+
+  // PUT /service/{serviceId}/assign/{mechanicId} - Assign mechanic to service request (Admin)
+  assignMechanic: async (serviceId, mechanicId) => {
+    const response = await apiClient.put(`/service/${serviceId}/assign/${mechanicId}`)
+    return response.data
+  },
+
+  // PUT /service/{serviceId}/reject - Reject a service request (Admin)
+  rejectService: async (serviceId, reason) => {
+    const response = await apiClient.put(`/service/${serviceId}/reject`, { reason })
+    return response.data
+  },
+
+  // PUT /service/{serviceId}/update-execution - Update service execution details (Mechanic)
+  updateServiceExecution: async (serviceId, executionData) => {
+    const response = await apiClient.put(`/service/${serviceId}/update-execution`, executionData)
+    return response.data
+  },
+
+  // POST /service/{serviceId}/note - Add note to service request (Mechanic)
+  addServiceNote: async (serviceId, noteData) => {
+    const response = await apiClient.post(`/service/${serviceId}/note`, noteData)
+    return response.data
+  },
+}
+
+// ==================== MECHANIC SERVICES ====================
 export const MechanicApi = {
-  // Get assigned jobs (bookings assigned to current mechanic)
+  // GET /service/mechanic/worklogs - Get mechanic work history/logs
+  fetchWorkLogs: async () => {
+    const response = await apiClient.get('/service/mechanic/worklogs')
+    return response.data
+  },
+
+  // GET /service/mechanic/assigned-jobs - Get assigned jobs for current mechanic
   fetchAssignedJobs: async () => {
-    const response = await apiClient.get('/bookings')
-    // Filter by current mechanic on frontend or use specific endpoint
+    const response = await apiClient.get('/service/mechanic/assigned-jobs')
     return response.data
   },
 
-  // Get work history (completed worklogs)
-  fetchWorkHistory: async () => {
-    const response = await apiClient.get('/worklogs')
+  // PUT /service/{serviceId}/update-execution - Update service execution (reuses ServiceApi)
+  updateServiceExecution: async (serviceId, executionData) => {
+    const response = await apiClient.put(`/service/${serviceId}/update-execution`, executionData)
     return response.data
   },
 
-  // Update job status
-  updateJobStatus: async (bookingId, status) => {
-    const response = await apiClient.put(`/bookings/${bookingId}/status`, {
-      status
-    })
+  // POST /service/{serviceId}/note - Add note to service (reuses ServiceApi)
+  addNote: async (serviceId, noteData) => {
+    const response = await apiClient.post(`/service/${serviceId}/note`, noteData)
+    return response.data
+  },
+}
+
+// ==================== PARTS SERVICES ====================
+export const PartApi = {
+  // GET /parts - Get all parts
+  fetchParts: async () => {
+    const response = await apiClient.get('/parts')
     return response.data
   },
 
-  // Create worklog
-  createWorklog: async (worklogData) => {
-    const response = await apiClient.post('/worklogs', worklogData)
+  // DELETE /parts/{id} - Delete part by ID (Admin)
+  deletePart: async (partId) => {
+    const response = await apiClient.delete(`/parts/${partId}`)
+    return response.data
+  },
+}
+
+// ==================== FEEDBACK SERVICES ====================
+export const FeedbackApi = {
+  // GET /feedback/me - Get my feedbacks
+  fetchMyFeedbacks: async () => {
+    const response = await apiClient.get('/feedback/me')
     return response.data
   },
 
-  // Update worklog
-  updateWorklog: async (worklogId, worklogData) => {
-    const response = await apiClient.put(`/worklogs/${worklogId}`, worklogData)
+  // POST /feedback/submit - Submit new feedback
+  submitFeedback: async (feedbackData) => {
+    const response = await apiClient.post('/feedback/submit', feedbackData)
     return response.data
   },
+
+  // GET /feedback/all - Get all feedbacks (Admin)
+  fetchAllFeedbacks: async () => {
+    const response = await apiClient.get('/feedback/all')
+    return response.data
+  },
+}
+
+// ==================== ADMIN DASHBOARD SERVICES ====================
+export const AdminApi = {
+  // GET /admin/dashboard - Get admin dashboard data
+  fetchDashboardData: async () => {
+    const response = await apiClient.get('/admin/dashboard')
+    return response.data
+  },
+
+  // Reuse user endpoints
+  fetchAllUsers: UserApi.fetchAllUsers,
+  fetchMechanics: UserApi.fetchMechanics,
+  
+  // Reuse service endpoints
+  fetchAllServiceRequests: ServiceApi.fetchAllServices,
+  assignMechanicToService: ServiceApi.assignMechanic,
+  acceptServiceRequest: ServiceApi.acceptService,
+  rejectServiceRequest: ServiceApi.rejectService,
+}
+
+// ==================== LEGACY ALIASES (for backward compatibility) ====================
+// Note: These are deprecated. Use the specific APIs above instead.
+
+export const ServiceTypeApi = ServiceCatalogApi // Alias for backward compatibility
+export const CatalogApi = ServiceCatalogApi // Alias
+
+// BookingApi deprecated - use ServiceApi instead
+export const BookingApi = {
+  fetchBookings: ServiceApi.fetchMyServices,
+  fetchBookingById: (id) => ServiceApi.fetchMyServices().then(services => services.find(s => s.id === id)),
+  createBooking: ServiceApi.createService,
+  assignMechanic: ServiceApi.assignMechanic,
+  updateBookingStatus: ServiceApi.updateServiceExecution,
+  deleteBooking: (id) => console.warn('Delete booking not available in new API'),
+}
+
+// WorklogApi deprecated - use MechanicApi instead
+export const WorklogApi = {
+  fetchWorklogsByBookingId: () => console.warn('Worklog by booking ID not available - use MechanicApi.fetchWorkLogs'),
+  createWorklog: MechanicApi.addNote,
+  updateWorklog: MechanicApi.updateServiceExecution,
 }
 
 export const HealthApi = {
   check: async () => {
     const response = await apiClient.get('/health')
-    return response.data
-  },
-}
-
-// Service Catalog (alias for serviceTypeService)
-export const CatalogApi = {
-  fetchCatalog: ServiceTypeApi.fetchServiceTypes,
-  fetchServiceTypeById: ServiceTypeApi.fetchServiceTypeById,
-}
-
-// Service (alias for bookingService)
-export const ServiceApi = {
-  fetchServices: BookingApi.fetchBookings,
-  fetchServiceById: BookingApi.fetchBookingById,
-  createService: BookingApi.createBooking,
-  updateService: BookingApi.updateBookingStatus,
-  cancelService: BookingApi.deleteBooking,
-}
-
-export const FeedbackApi = {
-  fetchFeedbacks: async () => {
-    const response = await apiClient.get('/feedback')
-    return response.data
-  },
-
-  submitFeedback: async (feedbackData) => {
-    const response = await apiClient.post('/feedback', feedbackData)
-    return response.data
-  },
-
-  fetchFeedbackById: async (feedbackId) => {
-    const response = await apiClient.get(`/feedback/${feedbackId}`)
     return response.data
   },
 }

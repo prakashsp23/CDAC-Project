@@ -7,17 +7,24 @@ export * from './userQueries'
 // Vehicles
 export * from './vehicleQueries'
 
-// Service Types
+// Service Catalog (Service Types)
 export * from './serviceTypeQueries'
 
-// Bookings
-export * from './bookingQueries'
+// Service Requests
+export * from './serviceQueries'
 
-// Worklogs
-export * from './worklogQueries'
+// Parts
+export * from './partQueries'
+
+// Feedback
+export * from './feedbackQueries'
 
 // Admin
 export * from './adminQueries'
 
 // Mechanic
 export * from './mechanicQueries'
+
+// Legacy (for backward compatibility)
+export * from './bookingQueries'
+export * from './worklogQueries'

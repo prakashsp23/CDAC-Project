@@ -265,9 +265,14 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         @Override
-        public void updateServiceExecution(Long serviceId, UpdateServiceDto updateDto) {
+        public void updateServiceExecution(Long serviceId, UpdateServiceDto updateDto, Long mechanicId) {
                 Services service = serviceRepository.findById(serviceId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+                // SECURITY: Verify mechanic is assigned to this service
+                if (service.getMechanic() == null || !service.getMechanic().getId().equals(mechanicId)) {
+                        throw new SecurityException("You are not assigned to this service");
+                }
 
                 if (updateDto.getStatus() != null && !updateDto.getStatus().isEmpty()) {
                         try {
@@ -303,15 +308,21 @@ public class ServiceServiceImpl implements ServiceService {
                                 servicePart.setPart(part);
                                 servicePart.setQuantity(quantity);
 
-                                Double finalPrice = partData.getPriceAtTime() != null ? partData.getPriceAtTime()
-                                                : part.getUnitPrice();
-                                servicePart.setPriceAtTime(finalPrice);
+                                // SECURITY FIX: Always use current part price from database
+                                // Prevents price manipulation by mechanics
+                                Double partPrice = part.getUnitPrice();
+                                servicePart.setPriceAtTime(partPrice);
 
                                 servicePartRepo.save(servicePart);
 
-                                currentPartsTotal += (finalPrice * quantity);
+                                currentPartsTotal += (partPrice * quantity);
                         }
                         service.setPartsTotal(currentPartsTotal);
+                        
+                        // SECURITY FIX: Recalculate total amount (basePrice + parts)
+                        // Ensures accurate billing
+                        Double basePrice = service.getCatalog() != null ? service.getCatalog().getBasePrice() : 0.0;
+                        service.setTotalAmount(basePrice + currentPartsTotal);
                 }
 
                 serviceRepository.save(service);
@@ -321,6 +332,11 @@ public class ServiceServiceImpl implements ServiceService {
         public void addServiceNote(Long serviceId, Long userId, String noteContent) {
                 Services service = serviceRepository.findById(serviceId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+                // SECURITY: Verify mechanic is assigned to this service
+                if (service.getMechanic() == null || !service.getMechanic().getId().equals(userId)) {
+                        throw new SecurityException("You are not assigned to this service");
+                }
 
                 User mechanic = new User();
                 mechanic.setId(userId);

@@ -43,16 +43,17 @@ export default function ViewRequestDialog({ request }) {
             <p className="text-xs text-gray-500 dark:text-neutral-400">
               Request ID
             </p>
-            <p className="font-medium">{request.id}</p>
+            <p className="font-medium">#{request.id}</p>
           </div>
 
           <div className="flex items-center gap-2">
             <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
               {request.status}
             </Badge>
-            <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+            {/* Priority hardcoded or if API provides it */}
+            {/* <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
               Medium
-            </Badge>
+            </Badge> */}
           </div>
         </div>
 
@@ -69,7 +70,9 @@ export default function ViewRequestDialog({ request }) {
             <p className="text-[10px] text-gray-500 dark:text-neutral-400">
               Name
             </p>
-            <p className="text-sm font-medium">{request.customer}</p>
+            <p className="text-sm font-medium">
+              {request.customerName || "Unknown"}
+            </p>
           </div>
         </section>
 
@@ -84,7 +87,11 @@ export default function ViewRequestDialog({ request }) {
             <p className="text-[10px] text-gray-500 dark:text-neutral-400">
               Car Model
             </p>
-            <p className="text-sm font-medium">{request.model}</p>
+            <p className="text-sm font-medium">
+              {request.carBrand
+                ? `${request.carBrand} ${request.carModel}`
+                : "N/A"}
+            </p>
           </div>
         </section>
 
@@ -100,40 +107,63 @@ export default function ViewRequestDialog({ request }) {
               <p className="text-[10px] text-gray-500 dark:text-neutral-400">
                 Issue Type
               </p>
-              <p className="text-sm font-medium">{request.issue}</p>
+              <p className="text-sm font-medium">
+                {request.serviceName || "General Issue"}
+              </p>
             </div>
 
             <div>
               <p className="text-[10px] text-gray-500 dark:text-neutral-400">
-                Description
+                Description / Notes
               </p>
               <p className="text-sm font-medium">
-                Annual service check required.
+                {request.customerNotes || "No additional notes provided."}
               </p>
             </div>
           </div>
         </section>
 
-        {/* Assignment */}
-        <section className="mt-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Wrench className="w-3 h-3" />
-            <h3 className="font-semibold text-sm">Assignment Details</h3>
+        {/* Assignment & Payment */}
+        <section className="mt-3 grid grid-cols-2 gap-3">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Wrench className="w-3 h-3" />
+              <h3 className="font-semibold text-sm">Assignment</h3>
+            </div>
+            <div className="p-3 rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/70 space-y-2">
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-neutral-400">
+                  Mechanic
+                </p>
+                <p className="text-sm font-medium">
+                  {request.mechanicName || "Unassigned"}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-3 rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/70 space-y-2">
-            <div>
-              <p className="text-[10px] text-gray-500 dark:text-neutral-400">
-                Assigned Mechanic
-              </p>
-              <p className="text-sm font-medium">{request.mechanic}</p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-3 h-3" />
+              <h3 className="font-semibold text-sm">Payment Details</h3>
             </div>
-
-            <div>
-              <p className="text-[10px] text-gray-500 dark:text-neutral-400">
-                Date Assigned
-              </p>
-              <p className="text-sm font-medium">{request.date}</p>
+            <div className="p-3 rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/70 space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] text-gray-500 dark:text-neutral-400">
+                  Total
+                </p>
+                <p className="text-sm font-bold text-green-600">
+                  ₹{request.totalAmount || 0}
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                 <p className="text-[10px] text-gray-500 dark:text-neutral-400">
+                  Status
+                </p>
+                <Badge variant="outline" className="text-[9px] uppercase">
+                  {request.paymentStatus || "N/A"}
+                </Badge>
+              </div>
             </div>
           </div>
         </section>
@@ -149,7 +179,10 @@ export default function ViewRequestDialog({ request }) {
             <p className="text-[10px] text-gray-500 dark:text-neutral-400">
               Request Created
             </p>
-            <p className="text-sm font-medium">{request.date} • 09:00 AM</p>
+            <p className="text-sm font-medium">
+              {request.createdAt || "N/A"}
+              {/* Add time if available, e.g. request.createdAt */}
+            </p>
           </div>
         </section>
       </DialogContent>

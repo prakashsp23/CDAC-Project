@@ -7,12 +7,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.custom_exceptions.OperationNotAllowedException;
 import com.backend.custom_exceptions.ResourceNotFoundException;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
 import com.backend.dtos.UserDTO.MechanicDTO;
+import com.backend.dtos.UserDTO.MechanicListDto;
 import com.backend.entity.Role;
 import com.backend.entity.User;
+import com.backend.repository.ServiceRepository;
 import com.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ServiceRepository serviceRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -81,5 +85,54 @@ public class UserServiceImpl implements UserService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<MechanicListDto> getMechanicsForAdmin() {
+
+        List<User> mechanics = userRepository.findByRole(Role.MECHANIC);
+
+        return mechanics.stream().map(mechanic -> {
+
+            long assignedJobs =
+                    serviceRepository.countByMechanic_Id(mechanic.getId());
+
+            String status = assignedJobs > 0 ? "Active" : "Inactive";
+
+            return new MechanicListDto(
+                    mechanic.getId(),
+                    mechanic.getName(),
+                    mechanic.getEmail(),
+                    mechanic.getPhone(),
+                    status,
+                    assignedJobs
+            );
+
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteMechanic(Long mechanicId) {
+
+        User user = userRepository.findById(mechanicId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with id: " + mechanicId));
+
+        if (user.getRole() != Role.MECHANIC) {
+            throw new OperationNotAllowedException(
+                    "Only mechanics can be deleted using this operation"
+            );
+        }
+
+        long assignedJobs =
+                serviceRepository.countByMechanic_Id(mechanicId);
+
+        if (assignedJobs > 0) {
+            throw new OperationNotAllowedException(
+                    "Mechanic has assigned services and cannot be deleted"
+            );
+        }
+
+        userRepository.delete(user);
     }
 }

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ViewRequestDialog from "../components/ViewRequestDialog";
 import AssignMechanicDialog from "../components/AssignMechanicDialog";
+import RejectReasonDialog from "../components/RejectReasonDialog";
 import {
   Table,
   TableHeader,
@@ -11,62 +12,36 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
+
+import {
+  useGetAllServices,
+  useAcceptServiceMutation,
+  useRejectServiceMutation,
+  useAssignMechanicMutation,
+} from "@/query/queries/serviceQueries";
 
 export default function ServiceRequestsTable() {
   const [filter, setFilter] = useState("All");
 
-  const [requests, setRequests] = useState([
-    {
-      id: "REQ101",
-      customer: "Rohan Patil",
-      model: "Honda City",
-      issue: "Engine Noise",
-      status: "New",
-      mechanic: "Unassigned",
-      date: "2025-01-20",
-    },
-    {
-      id: "REQ102",
-      customer: "Sneha Kulkarni",
-      model: "Maruti Baleno",
-      issue: "Brake Failure",
-      status: "Pending",
-      mechanic: "Unassigned",
-      date: "2025-01-18",
-    },
-    {
-      id: "REQ103",
-      customer: "Aditya Deshmukh",
-      model: "Hyundai i20",
-      issue: "Battery Low",
-      status: "Ongoing",
-      mechanic: "Samir Khan",
-      date: "2025-01-19",
-    },
-  ]);
+  // Fetch all service requests using shared hook
+  const { data: requests = [], isLoading, isError } = useGetAllServices();
 
-  const handleAccept = (id) => {
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === id
-          ? { ...req, status: "Pending", mechanic: "Unassigned" }
-          : req
-      )
-    );
+  // Mutations
+  const acceptMutation = useAcceptServiceMutation();
+  const rejectMutation = useRejectServiceMutation();
+  const assignMutation = useAssignMechanicMutation();
+
+  const handleAccept = (serviceId) => {
+    acceptMutation.mutate(serviceId);
   };
 
-  const handleReject = (id) => {
-    setRequests((prev) => prev.filter((req) => req.id !== id));
+  const handleReject = (serviceId, reason) => {
+    rejectMutation.mutate({ serviceId, reason });
   };
 
-  const handleAssign = (id, mechanicName) => {
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === id
-          ? { ...req, mechanic: mechanicName, status: "Ongoing" }
-          : req
-      )
-    );
+  const handleAssign = (serviceId, mechanicId) => {
+    assignMutation.mutate({ serviceId, mechanicId });
   };
 
   const filteredRequests =
@@ -74,18 +49,48 @@ export default function ServiceRequestsTable() {
       ? requests
       : requests.filter((req) => req.status === filter);
 
-  const filters = ["All", "New", "Pending", "Ongoing", "Completed"];
+  const filters = ["All", "PENDING", "ACCEPTED", "ONGOING", "COMPLETED", "CANCELLED"];
 
   const getStatusVariant = (status) => {
-    if (status === "Completed") return "default";
-    if (status === "Ongoing") return "secondary";
-    return "outline";
+    switch (status) {
+      case "COMPLETED":
+        return "default";
+      case "ONGOING":
+        return "secondary";
+      case "ACCEPTED":
+        return "secondary";
+      case "PENDING":
+        return "warning";
+      case "CANCELLED":
+        return "destructive";
+      default:
+        return "outline";
+    }
   };
 
   const cardStyles = `p-4 rounded-xl border 
      bg-white dark:bg-neutral-800/60 
      border-neutral-300 dark:border-neutral-700
      shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer`;
+
+  // Helper to safely get counts
+  const getCount = (status) => requests.filter((r) => r.status === status).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Failed to load service requests. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div
@@ -105,39 +110,39 @@ export default function ServiceRequestsTable() {
 
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-4">
-        <div className={cardStyles} onClick={() => setFilter("New")}>
+        <div className={cardStyles} onClick={() => setFilter("PENDING")}>
           <p className="text-xs text-neutral-600 dark:text-neutral-300">
-            New Requests
+            Pending Requests
           </p>
           <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">
-            {requests.filter((r) => r.status === "New").length}
+            {getCount("PENDING")}
           </p>
         </div>
 
-        <div className={cardStyles} onClick={() => setFilter("Pending")}>
+        <div className={cardStyles} onClick={() => setFilter("ACCEPTED")}>
           <p className="text-xs text-neutral-600 dark:text-neutral-300">
-            Pending
+             Accepted Requests
           </p>
           <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">
-            {requests.filter((r) => r.status === "Pending").length}
+            {getCount("ACCEPTED")}
           </p>
         </div>
 
-        <div className={cardStyles} onClick={() => setFilter("Ongoing")}>
+        <div className={cardStyles} onClick={() => setFilter("ONGOING")}>
           <p className="text-xs text-neutral-600 dark:text-neutral-300">
             Ongoing
           </p>
           <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">
-            {requests.filter((r) => r.status === "Ongoing").length}
+            {getCount("ONGOING")}
           </p>
         </div>
 
-        <div className={cardStyles} onClick={() => setFilter("Completed")}>
+        <div className={cardStyles} onClick={() => setFilter("COMPLETED")}>
           <p className="text-xs text-neutral-600 dark:text-neutral-300">
             Completed
           </p>
           <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">
-            {requests.filter((r) => r.status === "Completed").length}
+            {getCount("COMPLETED")}
           </p>
         </div>
       </div>
@@ -178,71 +183,93 @@ export default function ServiceRequestsTable() {
               <TableHead>Car Model</TableHead>
               <TableHead>Issue Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Assigned Mechanic</TableHead>
+              <TableHead>Mechanic</TableHead>
+              <TableHead>Parts Total</TableHead>
+              <TableHead>Total Amount</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {filteredRequests.map((row) => (
-              <TableRow
-                key={row.id}
-                className="dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
-              >
-                <TableCell>{row.id}</TableCell>
-                <TableCell>{row.customer}</TableCell>
-                <TableCell>{row.model}</TableCell>
-                <TableCell>{row.issue}</TableCell>
+            {filteredRequests.length === 0 ? (
+               <TableRow>
+                 <TableCell colSpan={11} className="h-24 text-center">
+                   No requests found.
+                 </TableCell>
+               </TableRow>
+            ) : (
+              filteredRequests.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+                >
+                  <TableCell>#{row.id}</TableCell>
+                  <TableCell>{row.customerName || "Unknown"}</TableCell>
+                  <TableCell>
+                    {row.carBrand ? `${row.carBrand} ${row.carModel}` : "N/A"}
+                  </TableCell>
+                  <TableCell>{row.serviceName || "General"}</TableCell>
 
-                <TableCell>
-                  <Badge
-                    variant={getStatusVariant(row.status)}
-                    className="px-2 py-1 text-xs"
-                  >
-                    {row.status}
-                  </Badge>
-                </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={getStatusVariant(row.status)}
+                      className="px-2 py-1 text-xs"
+                    >
+                      {row.status}
+                    </Badge>
+                  </TableCell>
 
-                <TableCell>{row.mechanic}</TableCell>
-                <TableCell>{row.date}</TableCell>
+                  <TableCell>{row.mechanicName || "Unassigned"}</TableCell>
+                  <TableCell>₹{row.partsTotal || 0}</TableCell>
+                  <TableCell className="font-semibold text-green-600 dark:text-green-400">
+                    ₹{row.totalAmount || 0}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px] uppercase">
+                      {row.paymentStatus || "N/A"}
+                    </Badge>
+                  </TableCell>
+                  {/* Format date if needed, assuming ISO string or similar */}
+                  <TableCell>{row.createdAt || "N/A"}</TableCell>
 
-                <TableCell className="space-x-2">
-                  {row.status === "New" && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAccept(row.id)}
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleReject(row.id)}
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
+                  <TableCell className="space-x-2">
+                    {row.status === "PENDING" && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAccept(row.id)}
+                          disabled={acceptMutation.isPending}
+                        >
+                          {acceptMutation.isPending ? "..." : "Accept"}
+                        </Button>
+                        <RejectReasonDialog 
+                          onReject={(reason) => handleReject(row.id, reason)}
+                          isPending={rejectMutation.isPending}
+                        />
+                      </div>
+                    )}
 
-                  {row.status === "Pending" && (
-                    <>
+                    {row.status === "ACCEPTED" && (
+                      <div className="flex gap-2">
+                        <ViewRequestDialog request={row} />
+                        <AssignMechanicDialog
+                          request={row}
+                          onAssign={(mechanicId) => handleAssign(row.id, mechanicId)}
+                          isPending={assignMutation.isPending}
+                        />
+                      </div>
+                    )}
+
+                    {["ONGOING", "COMPLETED", "CANCELLED"].includes(row.status) && (
                       <ViewRequestDialog request={row} />
-                      <AssignMechanicDialog
-                        request={row}
-                        onAssign={(mechanic) => handleAssign(row.id, mechanic)}
-                      />
-                    </>
-                  )}
-
-                  {["Ongoing", "Completed"].includes(row.status) && (
-                    <ViewRequestDialog request={row} />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

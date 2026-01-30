@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { UserApi } from '../../services/apiService'
+import { toast } from 'sonner'
 
 /**
  * Query Keys
@@ -11,36 +12,27 @@ export const userKeys = {
     details: () => [...userKeys.all, 'detail'],
     detail: (id) => [...userKeys.details(), id],
     me: () => [...userKeys.all, 'me'],
-    stats: () => [...userKeys.all, 'stats'],
+    mechanics: () => [...userKeys.all, 'mechanics'],
 }
 
 /**
- * User Queries
+ * USER QUERIES
  */
 
 // Get all users (Admin)
-// export function useGetAllUsers(options = {}) {
-//     return useQuery({
-//         queryKey: userKeys.lists(),
-//         queryFn: userService.getAllUsers,
-//         ...options,
-//     })
-// }
+export function useGetAllUsers(options = {}) {
+    return useQuery({
+        queryKey: userKeys.lists(),
+        queryFn: UserApi.fetchAllUsers,
+        ...options,
+    })
+}
 
 // Get current user
 export function useGetCurrentUser(options = {}) {
     return useQuery({
         queryKey: userKeys.me(),
         queryFn: UserApi.fetchCurrentUser,
-        ...options,
-    })
-}
-
-// Get user stats
-export function useGetUserStats(options = {}) {
-    return useQuery({
-        queryKey: userKeys.stats(),
-        queryFn: UserApi.fetchUserStats,
         ...options,
     })
 }
@@ -55,19 +47,31 @@ export function useGetUserById(userId, options = {}) {
     })
 }
 
+// Get all mechanics
+export function useGetMechanics(options = {}) {
+    return useQuery({
+        queryKey: userKeys.mechanics(),
+        queryFn: UserApi.fetchMechanics,
+        ...options,
+    })
+}
+
 /**
- * User Mutations
+ * USER MUTATIONS
  */
 
-// Note: User updates would go here if available in API
-export function useUpdateUserMutation() {
+// Update current user profile
+export function useUpdateCurrentUserMutation() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: ({ userId, data }) => UserApi.updateUser(userId, data),
-        onSuccess: (data, variables) => {
-            queryClient.invalidateQueries({ queryKey: userKeys.lists() })
-            queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.userId) })
+        mutationFn: UserApi.updateCurrentUser,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: userKeys.me() })
+            toast.success(data?.message || 'Profile updated successfully')
+        },
+        onError: (err) => {
+            toast.error(err?.response?.data?.message || 'Failed to update profile')
         },
     })
 }

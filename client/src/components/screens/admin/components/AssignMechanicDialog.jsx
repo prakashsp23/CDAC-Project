@@ -9,29 +9,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Search, Wrench, User } from "lucide-react";
+import { Search, Wrench, User, Loader2 } from "lucide-react";
+import { useGetMechanics } from "@/query/queries/userQueries";
 
-export default function AssignMechanicDialog({ request, onAssign }) {
+export default function AssignMechanicDialog({ request, onAssign, isPending }) {
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState("");
+  const [selectedMechanicId, setSelectedMechanicId] = useState(null);
 
-  const mechanics = [
-    "John Davis (MECH-001)",
-    "Amit Sharma (MECH-002)",
-    "Vikas More (MECH-003)",
-    "Samir Khan (MECH-004)",
-    "Rohan Mehta (MECH-005)",
-    "Deepak Shinde (MECH-006)",
-    "Mahesh Pawar (MECH-007)",
-    "Rahul Kulkarni (MECH-008)",
-  ];
+  const { data: mechanics = [], isLoading, isError } = useGetMechanics();
 
   const filteredMechanics = mechanics.filter((m) =>
-    m.toLowerCase().includes(search.toLowerCase())
+    m.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="sm">
           Assign
@@ -61,14 +54,16 @@ export default function AssignMechanicDialog({ request, onAssign }) {
             <p className="text-[10px] text-gray-500 dark:text-neutral-400">
               Request ID
             </p>
-            <p className="text-sm font-medium">{request.id}</p>
+            <p className="text-sm font-medium">#{request.id}</p>
           </div>
 
           <div className="p-2 rounded-lg border bg-gray-50 dark:bg-neutral-900/70 dark:border-neutral-800">
             <p className="text-[10px] text-gray-500 dark:text-neutral-400">
               Current Mechanic
             </p>
-            <p className="text-sm font-medium">{request.mechanic}</p>
+            <p className="text-sm font-medium">
+              {request.mechanicName || "Unassigned"}
+            </p>
           </div>
         </div>
 
@@ -106,27 +101,40 @@ export default function AssignMechanicDialog({ request, onAssign }) {
             space-y-1
           "
         >
-          {filteredMechanics.map((mech) => (
-            <div
-              key={mech}
-              onClick={() => setSelected(mech)}
-              className={`
-                p-2 rounded-md cursor-pointer text-sm transition
-                ${
-                  selected === mech
-                    ? "bg-blue-50 dark:bg-blue-900/40 border border-blue-600"
-                    : "border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800"
-                }
-              `}
-            >
-              {mech}
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
             </div>
-          ))}
-
-          {filteredMechanics.length === 0 && (
-            <p className="text-center text-gray-500 dark:text-neutral-400 text-xs py-2">
-              No mechanic found
+          ) : isError ? (
+            <p className="text-center text-red-500 text-xs py-2">
+              Failed to load mechanics
             </p>
+          ) : (
+            <>
+              {filteredMechanics.map((mech) => (
+                <div
+                  key={mech.mechanicId}
+                  onClick={() => setSelectedMechanicId(mech.mechanicId)}
+                  className={`
+                    p-2 rounded-md cursor-pointer text-sm transition flex justify-between items-center
+                    ${
+                      selectedMechanicId === mech.mechanicId
+                        ? "bg-blue-50 dark:bg-blue-900/40 border border-blue-600"
+                        : "border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800"
+                    }
+                  `}
+                >
+                  <span>{mech.name}</span>
+                  <span className="text-[10px] text-gray-400">ID: {mech.mechanicId}</span>
+                </div>
+              ))}
+
+              {filteredMechanics.length === 0 && (
+                <p className="text-center text-gray-500 dark:text-neutral-400 text-xs py-2">
+                  No mechanic found
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -143,11 +151,14 @@ export default function AssignMechanicDialog({ request, onAssign }) {
           </DialogClose>
           <Button
             size="sm"
-            disabled={!selected}
-            onClick={() => onAssign(selected)}
+            disabled={!selectedMechanicId || isPending}
+            onClick={async () => {
+              await onAssign(selectedMechanicId);
+              setOpen(false); // Close dialog after assignment call
+            }}
             className="bg-blue-600 text-white hover:bg-blue-700"
           >
-            Assign Mechanic
+            {isPending ? "Assigning..." : "Assign Mechanic"}
           </Button>
         </div>
       </DialogContent>

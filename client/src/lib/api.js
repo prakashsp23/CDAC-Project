@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { forceLogout, getToken } from './auth'
 
-const API_URL = 'https://carsexptest.onrender.com/api'
+// const API_URL = 'https://carsexptest.onrender.com/api'
+
+const API_URL = 'http://localhost:8080/'
 
 const apiClient = axios.create({
   baseURL: API_URL,

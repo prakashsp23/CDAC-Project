@@ -1,5 +1,6 @@
 package com.backend.util;
 
+import com.backend.entity.Role;
 import com.backend.security.service.UserDetailsImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,18 @@ public class AuthUtil {
         return userDetails.getUserId();
     }
 
+    public static Role getAuthenticatedUserRole() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) return null;
+
+        Object principal = auth.getPrincipal();
+
+        if (principal instanceof UserDetailsImpl userDetails) {
+            return userDetails.getRole();
+        }
+        return null;
+    }
     /**
      * Helper method to get a standardized unauthorized response.
      */
