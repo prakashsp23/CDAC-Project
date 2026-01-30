@@ -25,7 +25,8 @@ export default function ServiceRequestsTable() {
   const [filter, setFilter] = useState("All");
 
   // Fetch all service requests using shared hook
-  const { data: requests = [], isLoading, isError } = useGetAllServices();
+  const { data: response, isLoading, isError } = useGetAllServices()
+  const requests = response?.data || [];
 
   // Mutations
   const acceptMutation = useAcceptServiceMutation();

@@ -17,7 +17,8 @@ export default function AssignMechanicDialog({ request, onAssign, isPending }) {
   const [search, setSearch] = useState("");
   const [selectedMechanicId, setSelectedMechanicId] = useState(null);
 
-  const { data: mechanics = [], isLoading, isError } = useGetMechanics();
+  const { data: response, isLoading, isError } = useGetMechanics();
+  const mechanics = response?.data || [];
 
   const filteredMechanics = mechanics.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())

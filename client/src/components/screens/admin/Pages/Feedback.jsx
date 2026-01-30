@@ -21,7 +21,8 @@ export default function FeedbackPage() {
     () => window.localStorage.getItem("feedback-view") || "table"
   )
 
-  const { data: feedbackData = [], isLoading, isError } = useGetAllFeedbacks()
+  const { data: response, isLoading, isError } = useGetAllFeedbacks()
+  const feedbackData = response?.data || []
 
   if (isLoading) {
     return (
