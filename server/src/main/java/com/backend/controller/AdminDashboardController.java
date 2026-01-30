@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.aop.annotation.Admin;
 import com.backend.service.DashboardService.DashboardService;
 import com.backend.util.AuthUtil;
 import com.backend.util.ResponseBuilder;
@@ -18,6 +19,7 @@ public class AdminDashboardController {
 
     private final DashboardService dashboardService;
 
+    @Admin
     @GetMapping
     public ResponseEntity<?> getDashboard() {
 

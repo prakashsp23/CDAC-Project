@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.aop.annotation.Admin;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
 import com.backend.service.UserService.UserService;
@@ -60,6 +61,7 @@ public class UserController {
         return ResponseBuilder.success("User updated successfully", updatedUser);
     }
 
+    @Admin
     @GetMapping("/mechanics")
     public ResponseEntity<?> getAllMechanics() {
         return ResponseBuilder.success("Mechanics retrieved successfully", userService.getAllMechanics());
@@ -67,6 +69,7 @@ public class UserController {
     
     
     //admin - mechanic table
+    @Admin
     @GetMapping("/mechanics/admin")
     public ResponseEntity<?> getMechanicsForAdmin() {
         return ResponseBuilder.success(
@@ -75,6 +78,7 @@ public class UserController {
         );
     }
     
+  @Admin
     @DeleteMapping("/mechanics/{id}")
     public ResponseEntity<?> deleteMechanic(@PathVariable Long id) {
 
