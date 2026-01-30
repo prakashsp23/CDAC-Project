@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -70,8 +71,33 @@ public class UserController {
         return ResponseBuilder.success("User updated successfully", updatedUser);
     }
 
+    @Admin
     @GetMapping("/mechanics")
     public ResponseEntity<?> getAllMechanics() {
         return ResponseBuilder.success("Mechanics retrieved successfully", userService.getAllMechanics());
     }
+    
+    
+    //admin - mechanic table
+    @Admin
+    @GetMapping("/mechanics/admin")
+    public ResponseEntity<?> getMechanicsForAdmin() {
+        return ResponseBuilder.success(
+                "Mechanics retrieved successfully",
+                userService.getMechanicsForAdmin()
+        );
+    }
+    
+  @Admin
+    @DeleteMapping("/mechanics/{id}")
+    public ResponseEntity<?> deleteMechanic(@PathVariable Long id) {
+
+        userService.deleteMechanic(id);
+
+        return ResponseBuilder.success(
+                "Mechanic deleted successfully",
+                null
+        );
+    }
+
 }
