@@ -80,8 +80,8 @@ public class UserController {
     
     //admin - mechanic table
     @Admin
-    @GetMapping("/mechanics/admin")
-    public ResponseEntity<?> getMechanicsForAdmin() {
+    @GetMapping("/mechanics/summary")
+    public ResponseEntity<?> getMechanicsForAdmin(){
         return ResponseBuilder.success(
                 "Mechanics retrieved successfully",
                 userService.getMechanicsForAdmin()
