@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus } from "lucide-react";
-import { useAddVehicleMutation } from "@/query/queries/vehicleQueries";
+import { Loader2, Pencil } from "lucide-react";
+import { useUpdateVehicleMutation } from "@/query/queries/vehicleQueries";
 
 import {
   Dialog,
@@ -45,9 +45,9 @@ const vehicleSchema = z.object({
     }, `Must be between 1900 and ${currentYear + 1}`),
 });
 
-export default function AddVehicle() {
+export default function EditVehicle({ vehicle, children }) {
   const [open, setOpen] = useState(false);
-  const addVehicleMutation = useAddVehicleMutation();
+  const updateVehicleMutation = useUpdateVehicleMutation();
 
   const form = useForm({
     resolver: zodResolver(vehicleSchema),
@@ -59,15 +59,29 @@ export default function AddVehicle() {
     },
   });
 
+  // Reset form with vehicle data when dialog opens
+  useEffect(() => {
+    if (open && vehicle) {
+      form.reset({
+        brand: vehicle.brand,
+        model: vehicle.model,
+        registration: vehicle.registration,
+        year: String(vehicle.year),
+      });
+    }
+  }, [open, vehicle, form]);
+
   const onSubmit = (data) => {
-    addVehicleMutation.mutate({
-      brand: data.brand,
-      model: data.model,
-      regNumber: data.registration,
-      year: parseInt(data.year)
+    updateVehicleMutation.mutate({
+      carId: vehicle.id,
+      data: {
+        brand: data.brand,
+        model: data.model,
+        regNumber: data.registration,
+        year: parseInt(data.year)
+      }
     }, {
       onSuccess: () => {
-        form.reset();
         setOpen(false);
       }
     });
@@ -78,22 +92,24 @@ export default function AddVehicle() {
     if (!newOpen) {
       form.reset();
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Vehicle
-        </Button>
+        {children || (
+          <Button variant="outline" size="sm">
+            <Pencil className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Vehicle</DialogTitle>
+          <DialogTitle>Edit Vehicle</DialogTitle>
           <DialogDescription>
-            Fill in the details to register a new vehicle
+            Update the details of your vehicle
           </DialogDescription>
         </DialogHeader>
 
@@ -110,7 +126,7 @@ export default function AddVehicle() {
                     <Input 
                       placeholder="Toyota" 
                       {...field}
-                      disabled={addVehicleMutation.isPending}
+                      disabled={updateVehicleMutation.isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -128,7 +144,7 @@ export default function AddVehicle() {
                     <Input 
                       placeholder="Camry" 
                       {...field}
-                      disabled={addVehicleMutation.isPending}
+                      disabled={updateVehicleMutation.isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -146,7 +162,7 @@ export default function AddVehicle() {
                     <Input 
                       placeholder="ABC123" 
                       {...field}
-                      disabled={addVehicleMutation.isPending}
+                      disabled={updateVehicleMutation.isPending}
                       className="uppercase"
                     />
                   </FormControl>
@@ -166,7 +182,7 @@ export default function AddVehicle() {
                       placeholder="2024" 
                       type="number"
                       {...field}
-                      disabled={addVehicleMutation.isPending}
+                      disabled={updateVehicleMutation.isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -179,21 +195,21 @@ export default function AddVehicle() {
                 type="button" 
                 variant="outline" 
                 onClick={() => setOpen(false)}
-                disabled={addVehicleMutation.isPending}
+                disabled={updateVehicleMutation.isPending}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit"
-                disabled={addVehicleMutation.isPending}
+                disabled={updateVehicleMutation.isPending}
               >
-                {addVehicleMutation.isPending ? (
+                {updateVehicleMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Adding...
+                    Updating...
                   </>
                 ) : (
-                  "Add Vehicle"
+                  "Update Vehicle"
                 )}
               </Button>
             </div>

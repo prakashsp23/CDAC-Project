@@ -60,12 +60,13 @@ export function NavMain() {
         {navItems
           .filter((item) => item.allowedRoles.includes(userRole))
           .map((item) => {
+            // More precise active check - only match exact path or ensure it's truly a parent path
             const isActive =
               item.url === "#"
                 ? false
                 : item.url === "/"
                   ? location.pathname === "/"
-                  : location.pathname.startsWith(item.url);
+                  : location.pathname === item.url;
 
             return (
               <SidebarMenuItem key={item.title}>
@@ -91,7 +92,7 @@ export function NavMain() {
                           child.url === "#"
                             ? false
                             : location.pathname === child.url ||
-                            location.pathname.startsWith(child.url);
+                            location.pathname.startsWith(child.url + "/");
                         return (
                           <SidebarMenuItem key={child.title + child.url}>
                             <SidebarMenuButton asChild isActive={childActive}>

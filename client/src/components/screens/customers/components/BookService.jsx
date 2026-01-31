@@ -1,46 +1,57 @@
-import React, { useEffect, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../ui/dialog'
+import { useEffect, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../ui/dialog'
 import { Button } from '../../../ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../../ui/select'
-import { Calendar } from '../../../ui/calendar'
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '../../../ui/dropdown-menu'
 import { Textarea } from '../../../ui/textarea'
-
-function todayDateString() {
-  const d = new Date()
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
+import { useCreateServiceMutation } from '../../../../query/queries/serviceQueries'
 
 const DUMMY_VEHICLES = [];
 const DUMMY_SERVICES = [];
 
-export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHICLES, services = DUMMY_SERVICES, defaultVehicleId = null, defaultServiceName = null, onConfirm }) {
-  const [form, setForm] = useState({ vehicleId: defaultVehicleId || (vehicles[0]?.id ?? ''), service: '', date: '', notes: '' })
+// eslint-disable-next-line react/prop-types
+export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHICLES, services = DUMMY_SERVICES, defaultVehicleId = null, defaultServiceName = null }) {
+  const [form, setForm] = useState({ vehicleId: '', service: '', notes: '' })
+  const createServiceMutation = useCreateServiceMutation()
 
   useEffect(() => {
-    // When the dialog opens or defaults change, prefill vehicle/service and reset date/notes.
-    const vehicleId = defaultVehicleId || (vehicles[0]?.id ?? '')
+    // When the dialog opens or defaults change, prefill vehicle/service and reset notes.
+    const vehicleId = defaultVehicleId || (vehicles[0]?.id ? String(vehicles[0].id) : '')
     let serviceId = ''
     if (defaultServiceName) {
       const byId = services.find(s => s.id === defaultServiceName)
-      if (byId) serviceId = byId.id
+      if (byId) serviceId = String(byId.id)
       else {
         const byName = services.find(s => String(s.name).toLowerCase() === String(defaultServiceName).toLowerCase())
-        if (byName) serviceId = byName.id
+        if (byName) serviceId = String(byName.id)
       }
     }
 
-    setForm({ vehicleId, service: serviceId || '', date: '', notes: '' })
+    setForm({ vehicleId, service: serviceId, notes: '' })
   }, [open, defaultVehicleId, defaultServiceName, vehicles, services])
 
   function handleSubmit() {
-    if (!form.date) return
-    onConfirm?.(form)
-    onOpenChange(false)
+    if (!form.vehicleId || !form.service) return
+    
+    const catalogId = parseInt(form.service)
+    const carId = parseInt(form.vehicleId)
+    
+    // Validate parsed values
+    if (isNaN(catalogId) || isNaN(carId)) {
+      console.error('Invalid IDs:', { catalogId, carId, form })
+      return
+    }
+    
+    createServiceMutation.mutate({
+      catalogId,
+      carId,
+      customerNotes: form.notes.trim() || null
+    }, {
+      onSuccess: () => {
+        setForm({ vehicleId: '', service: '', notes: '' })
+        onOpenChange(false)
+      }
+    })
   }
 
   return (
@@ -48,6 +59,9 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Book a Service</DialogTitle>
+          <DialogDescription>
+            Schedule a service appointment for your vehicle
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -73,7 +87,7 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
                 </SelectTrigger>
                 <SelectContent>
                   {services.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -81,52 +95,41 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
           </div>
 
           <div>
-            <label className="text-sm text-muted-foreground">Date</label>
-            <div className="mt-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="w-full rounded-md border border-input px-3 py-2 bg-card text-card-foreground flex items-center justify-between">
-                    <span>{form.date ? new Date(form.date).toLocaleDateString() : 'Select date'}</span>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent className="p-0">
-                  <div className="p-2 bg-popover text-popover-foreground rounded-md">
-                    <Calendar
-                      mode="single"
-                      selected={form.date ? new Date(form.date) : undefined}
-                      defaultMonth={form.date ? new Date(form.date) : new Date()}
-                      onSelect={(d) => {
-                        if (!d) return
-                        const dd = new Date(d)
-                        const yyyy = dd.getFullYear()
-                        const mm = String(dd.getMonth() + 1).padStart(2, '0')
-                        const day = String(dd.getDate()).padStart(2, '0')
-                        const iso = `${yyyy}-${mm}-${day}`
-                        setForm(f => ({ ...f, date: iso }))
-                      }}
-                      disabled={{ before: new Date(todayDateString()) }}
-                    />
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-muted-foreground">Notes</label>
-            <Textarea value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
+            <label className="text-sm text-muted-foreground">Notes (Optional)</label>
+            <Textarea 
+              value={form.notes} 
+              onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+              placeholder="Any specific requirements or issues..."
+              disabled={createServiceMutation.isPending}
+            />
           </div>
 
           <div className="p-3 bg-muted rounded">
-            <div className="text-sm text-muted-foreground">Choose a convenient date and provide any notes for the mechanic.</div>
+            <div className="text-sm text-muted-foreground">
+              Your service request will be reviewed by our team and you&apos;ll be notified once approved.
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 mt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={!form.date || !form.service} className="disabled:opacity-60">
-              Confirm Booking
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={createServiceMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!form.vehicleId || !form.service || createServiceMutation.isPending}
+            >
+              {createServiceMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Booking...
+                </>
+              ) : (
+                'Confirm Booking'
+              )}
             </Button>
           </div>
         </div>

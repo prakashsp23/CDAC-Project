@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '../../ui/card'
+import { useState } from 'react';
 import { Button } from '../../ui/button'
 import { TableRow, TableCell } from '../../ui/table'
 import UniversalDisplay from '../../ui/universal-display'
@@ -8,13 +7,13 @@ import {
   Disc,
   Battery,
   Wrench,
-  Sparkles,
   Activity,
-  AlignJustify
 } from 'lucide-react'
 import ViewToggle from '../../ui/ViewToggle'
 import ServiceDetailDialog from './components/ServiceDetailDialog';
-import { getServiceCatalog, getUserVehicles, bookService } from '../../../services/mockDataService';
+import { useGetAllServiceCatalogs } from '../../../query/queries/serviceTypeQueries'
+import { useGetAllVehicles } from '../../../query/queries/vehicleQueries'
+import { bookService } from '../../../services/mockDataService';
 import { toast } from 'sonner';
 
 const iconMap = {
@@ -30,47 +29,32 @@ export default function AllServicesPage() {
   const [viewLocal, setViewLocal] = useState(() => window.localStorage.getItem('univ_view') || 'grid');
   const [selectedService, setSelectedService] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [services, setServices] = useState([]);
-  const [vehicles, setVehicles] = useState([]); // [NEW] Store vehicles
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        const [catalogData, vehiclesData] = await Promise.all([
-          getServiceCatalog(),
-          getUserVehicles(1)
-        ]);
+  // React Query hooks
+  const { data: catalogData, isLoading: isLoadingCatalog } = useGetAllServiceCatalogs()
+  const { data: vehiclesData, isLoading: isLoadingVehicles } = useGetAllVehicles()
 
-        setServices(catalogData.map(s => ({
-          id: s.catalog_id,
-          name: s.service_name,
-          description: s.description,
-          price: s.base_price,
-          coveredPoints: s.full_details ? s.full_details.split(', ') : [],
-          Icon: iconMap[s.service_name] || Wrench,
-          // for dropdown compatibility
-          value: s.catalog_id
-        })));
+  // Transform service catalog data
+  const services = catalogData?.data?.map(s => ({
+    id: s.id,
+    name: s.serviceName,
+    description: s.description,
+    price: s.basePrice,
+    coveredPoints: s.fullDetails ? s.fullDetails.split(', ') : [],
+    Icon: iconMap[s.serviceName] || Wrench,
+    value: s.id
+  })) || []
 
-        setVehicles(vehiclesData.map(v => ({
-          id: v.car_id,
-          brand: v.brand,
-          model: v.model,
-          registration: v.reg_number,
-          year: v.year
-        })));
+  // Transform vehicles data
+  const vehicles = vehiclesData?.data?.map(v => ({
+    id: v.carId,
+    brand: v.brand,
+    model: v.model,
+    registration: v.regNumber,
+    year: v.year
+  })) || []
 
-      } catch (e) {
-        console.error(e);
-        toast.error("Failed to load services");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const loading = isLoadingCatalog || isLoadingVehicles
 
   const handleBookingConfirm = async (bookingData) => {
     try {
@@ -83,7 +67,13 @@ export default function AllServicesPage() {
     }
   };
 
-  if (loading) return <div className="p-8">Loading services...</div>;
+  if (loading) {
+    return <div className="p-8">Loading services...</div>
+  }
+
+  if (catalogData?.error) {
+    return <div className="p-8 text-destructive">Error loading services: {catalogData.error}</div>
+  }
 
   return (
     <div className="p-6 w-[90%] mx-auto">
@@ -118,10 +108,10 @@ export default function AllServicesPage() {
             <div className="p-0 h-full">
               <div className="rounded-lg shadow-sm border bg-card h-full flex flex-col text-left p-4 transition-all hover:shadow-md hover:border-primary/20">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 text-primary flex-shrink-0 flex items-center justify-center bg-muted/50 rounded-lg">
+                  <div className="w-12 h-12 text-primary shrink-0 flex items-center justify-center bg-muted/50 rounded-lg">
                     <Icon className="w-7 h-7" />
                   </div>
-                  <div className="flex-grow">
+                  <div className="grow">
                     <h3 className="font-semibold text-md">{s.name}</h3>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{s.description}</p>
                   </div>
