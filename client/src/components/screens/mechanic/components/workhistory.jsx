@@ -1,14 +1,13 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MechanicApi } from "../../../../services/apiService";
-import StarRating from "../../../ui/star-rating";
-import { AlertCircle } from "lucide-react";
+import { BookingApi } from "../../../../services/apiService";
 
 export default function WorkHistory() {
-  const { data: workLogs = [], isLoading, error } = useQuery({
-    queryKey: ["workHistory"],
-    queryFn: MechanicApi.fetchWorkHistory,
+  const { data: workLogs , isLoading, error } = useQuery({
+    queryKey: ["fetchBookings"],
+    queryFn: BookingApi.fetchBookings,
   });
+  console.log(workLogs)
 
   if (isLoading) {
     return (
@@ -26,10 +25,6 @@ export default function WorkHistory() {
     );
   }
 
-  const averageRating = workLogs.length > 0 
-    ? (workLogs.reduce((sum, job) => sum + (job.rating || 0), 0) / workLogs.filter(job => job.rating > 0).length).toFixed(1)
-    : 0;
-
   return (
     <div className="py-6 px-8 w-[90%] mx-auto space-y-8">
       <div className="flex items-center justify-between">
@@ -39,9 +34,6 @@ export default function WorkHistory() {
         </div>
 
         <div className="flex items-center gap-6 text-sm whitespace-nowrap">
-          <span>
-            Average Rating: <span className="font-semibold">{averageRating} ⭐</span>
-          </span>
           <span>
             Total Completed: <span className="font-semibold">{workLogs.length}</span>
           </span>
@@ -59,9 +51,8 @@ export default function WorkHistory() {
               <tr className="border-b bg-muted/20">
                 <th className="text-left p-3">Service ID</th>
                 <th className="text-left p-3">Vehicle</th>
+                <th className="text-left p-3">Service Name</th>
                 <th className="text-left p-3">Date Completed</th>
-                <th className="text-left p-3">Rating</th>
-                <th className="text-left p-3">Feedback</th>
               </tr>
             </thead>
 
@@ -75,23 +66,8 @@ export default function WorkHistory() {
                   </td>
 
                   <td className="p-3">{job.vehicleName}</td>
+                  <td className="p-3">{job.serviceName}</td>
                   <td className="p-3">{job.completionDate}</td>
-
-                  <td className="p-3 whitespace-nowrap">
-                    {job.rating > 0 ? (
-                      <StarRating value={job.rating} readOnly={true} size={18} />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">No rating</span>
-                    )}
-                  </td>
-
-                  <td className="p-3">
-                    {job.feedback ? (
-                      <span>{job.feedback}</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
