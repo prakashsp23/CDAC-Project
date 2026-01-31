@@ -43,10 +43,10 @@ public class FeedbackController {
         String message = feedbackService.submitFeedback(feedbackReq, userId);
         return ResponseBuilder.success(message, null);
     }
-    
+
     @Admin
     @GetMapping("/all")
     public ResponseEntity<?> getAllFeedback() {
-        return ResponseEntity.ok(feedbackService.getAllFeedback());
+        return ResponseBuilder.success("All feedback retrieved successfully", feedbackService.getAllFeedback());
     }
 }

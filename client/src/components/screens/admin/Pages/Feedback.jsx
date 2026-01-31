@@ -12,6 +12,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import StarRating from "@/components/ui/star-rating"
 import UniversalDisplay from "@/components/ui/universal-display"
 import ViewToggle from "@/components/ui/ViewToggle"
+import { useGetAllFeedbacks } from "@/query/queries/feedbackQueries"
+import { Loader2 } from "lucide-react"
 
 export default function FeedbackPage() {
   const [filter, setFilter] = useState("All")
@@ -19,35 +21,24 @@ export default function FeedbackPage() {
     () => window.localStorage.getItem("feedback-view") || "table"
   )
 
-  const feedbackData = [
-    {
-      serviceId: "SRV101",
-      customer: "Rohan Patil",
-      mechanic: "Amit Sharma",
-      serviceType: "Engine Repair",
-      rating: 5,
-      comment: "Excellent service!",
-      date: "2025-01-21",
-    },
-    {
-      serviceId: "SRV102",
-      customer: "Sneha Kulkarni",
-      mechanic: "Vikas More",
-      serviceType: "Brake Check",
-      rating: 3,
-      comment: "Good but slow response...",
-      date: "2025-01-20",
-    },
-    {
-      serviceId: "SRV103",
-      customer: "Aditya Deshmukh",
-      mechanic: "Samir Khan",
-      serviceType: "Battery Replacement",
-      rating: 4,
-      comment: "Quick service!",
-      date: "2025-01-19",
-    },
-  ]
+  const { data: response, isLoading, isError } = useGetAllFeedbacks()
+  const feedbackData = response?.data || []
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Failed to load feedbacks. Please try again.
+      </div>
+    )
+  }
 
   const filteredData =
     filter === "All"
@@ -177,33 +168,36 @@ export default function FeedbackPage() {
         perRow={3}
         columns={[
           { key: "serviceId", title: "Service ID" },
-          { key: "customer", title: "Customer" },
-          { key: "mechanic", title: "Mechanic" },
+          { key: "customerName", title: "Customer" },
+          { key: "mechanicName", title: "Mechanic" },
           { key: "serviceType", title: "Service Type" },
           { key: "rating", title: "Rating" },
-          { key: "comment", title: "Comment" },
-          { key: "date", title: "Date" },
+          { key: "comments", title: "Comment" },
+          { key: "createdOn", title: "Date" },
         ]}
         renderCard={(row) => (
           <Card className="h-full">
             <CardContent className="p-4 space-y-2">
-              <p className="font-semibold">{row.serviceId}</p>
+              <p className="font-semibold">SRV#{row.serviceId}</p>
+              <div className="flex justify-between items-start">
+                <p className="text-sm font-medium">{row.customerName}</p>
+              </div>
               <p className="text-sm text-gray-400">{row.serviceType}</p>
               <StarRating value={row.rating} readOnly size={16} />
-              <p className="text-sm italic text-muted-foreground">"{row.comment}"</p>
-              <p className="text-xs text-gray-500">{row.date}</p>
+              <p className="text-sm italic text-muted-foreground line-clamp-2">"{row.comments}"</p>
+              <p className="text-xs text-gray-500">{row.createdOn}</p>
             </CardContent>
           </Card>
         )}
         renderRow={(row) => (
-          <TableRow key={row.serviceId}>
-            <TableCell>{row.serviceId}</TableCell>
-            <TableCell>{row.customer}</TableCell>
-            <TableCell>{row.mechanic}</TableCell>
+          <TableRow key={row.id}>
+            <TableCell>SRV#{row.serviceId}</TableCell>
+            <TableCell>{row.customerName}</TableCell>
+            <TableCell>{row.mechanicName || "N/A"}</TableCell>
             <TableCell>{row.serviceType}</TableCell>
             <TableCell>{renderStars(row.rating)}</TableCell>
-            <TableCell>{row.comment}</TableCell>
-            <TableCell>{row.date}</TableCell>
+            <TableCell className="max-w-xs truncate">{row.comments}</TableCell>
+            <TableCell>{row.createdOn}</TableCell>
           </TableRow>
         )}
       />

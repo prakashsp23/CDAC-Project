@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { AuthApi } from '../../services/apiService'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { loginSuccess } from '../../slices/authSlice'
+import { loginSuccess, logout } from '../../slices/authSlice'
 import { toast } from 'sonner'
 
 // Login mutation
@@ -69,6 +69,23 @@ export function useRegisterMutation() {
             if (err?.message?.toLowerCase().includes('email')) {
                 // form.setFocus('email')
             }
+        },
+    })
+}
+
+// Change password mutation
+export function useChangePasswordMutation() {
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    return useMutation({
+        mutationFn: AuthApi.changePassword,
+        onSuccess: (data) => {
+            toast.success(data.message || 'Password changed successfully')
+            dispatch(logout())
+            navigate('/login')
+        },
+        onError: (err) => {
+            toast.error(err?.response?.data?.message || err?.message || 'Failed to change password')
         },
     })
 }

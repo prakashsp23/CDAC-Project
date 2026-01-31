@@ -10,12 +10,6 @@ import { useSelector } from "react-redux";
 
 const navItems = [
   {
-    title: "Profile",
-    url: "/profile",
-    icon: User,
-    allowedRoles: ["ADMIN", "CUSTOMER", "MECHANIC"], // all roles
-  },
-  {
     title: "Admin Page",
     url: "/admin",
     icon: BarChart3,

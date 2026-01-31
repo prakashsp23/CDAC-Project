@@ -62,7 +62,7 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
           if (isModal && onClose) onClose()
         },
         onError: (err) => {
-          setBackendError(err?.message || "Failed to change password")
+          setBackendError(err?.response?.data?.message || err?.message || "Failed to change password")
         },
       }
     )
@@ -70,7 +70,9 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4">
 
         {backendError && (
           <div className="text-sm text-destructive p-3 bg-destructive/10 rounded">
@@ -140,7 +142,9 @@ export default function ForgotPasswordPage({ isModal = false, onClose = null }) 
 
         {/* BUTTONS */}
         <div className="flex gap-2 pt-2">
-          <Button type="submit" className="flex-1" disabled={isPending}>
+          <Button type="submit" className="flex-1"
+            disabled={isPending}
+          >
             {isPending ? "Changing..." : "Change Password"}
           </Button>
 

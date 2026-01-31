@@ -6,11 +6,13 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.backend.custom_exceptions.OperationNotAllowedException;
 import com.backend.custom_exceptions.ResourceNotFoundException;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
+import com.backend.dtos.UserDTO.ChangePasswordDto;
 import com.backend.dtos.UserDTO.MechanicDTO;
 import com.backend.dtos.UserDTO.MechanicListDto;
 import com.backend.entity.Role;
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserDto> getAllUsers() {
@@ -62,6 +65,9 @@ public class UserServiceImpl implements UserService {
         if (updateUserDto.getPhone() != null && !updateUserDto.getPhone().trim().isEmpty()) {
             user.setPhone(updateUserDto.getPhone());
         }
+        if (updateUserDto.getEmail() != null && !updateUserDto.getEmail().trim().isEmpty()) {
+            user.setEmail(updateUserDto.getEmail());
+        }
 
         User updatedUser = userRepository.save(user);
         return convertToDto(updatedUser);
@@ -86,7 +92,7 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<MechanicListDto> getMechanicsForAdmin() {
 
@@ -94,8 +100,7 @@ public class UserServiceImpl implements UserService {
 
         return mechanics.stream().map(mechanic -> {
 
-            long assignedJobs =
-                    serviceRepository.countByMechanic_Id(mechanic.getId());
+            long assignedJobs = serviceRepository.countByMechanic_Id(mechanic.getId());
 
             String status = assignedJobs > 0 ? "Active" : "Inactive";
 
@@ -105,8 +110,7 @@ public class UserServiceImpl implements UserService {
                     mechanic.getEmail(),
                     mechanic.getPhone(),
                     status,
-                    assignedJobs
-            );
+                    assignedJobs);
 
         }).collect(Collectors.toList());
     }
@@ -115,24 +119,33 @@ public class UserServiceImpl implements UserService {
     public void deleteMechanic(Long mechanicId) {
 
         User user = userRepository.findById(mechanicId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found with id: " + mechanicId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + mechanicId));
 
         if (user.getRole() != Role.MECHANIC) {
             throw new OperationNotAllowedException(
-                    "Only mechanics can be deleted using this operation"
-            );
+                    "Only mechanics can be deleted using this operation");
         }
 
-        long assignedJobs =
-                serviceRepository.countByMechanic_Id(mechanicId);
+        long assignedJobs = serviceRepository.countByMechanic_Id(mechanicId);
 
         if (assignedJobs > 0) {
             throw new OperationNotAllowedException(
-                    "Mechanic has assigned services and cannot be deleted"
-            );
+                    "Mechanic has assigned services and cannot be deleted");
         }
 
         userRepository.delete(user);
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordDto changePasswordDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        if (!passwordEncoder.matches(changePasswordDto.getOldPassword(), user.getPassword())) {
+            throw new OperationNotAllowedException("Invalid old password");
+        }
+
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        userRepository.save(user);
     }
 }

@@ -22,26 +22,27 @@ import jakarta.persistence.EntityNotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException e){
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException e) {
         return ResponseBuilder.error(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
-    
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Object>> handleAuthenticationException(AuthenticationException e) {
         return ResponseBuilder.error(HttpStatus.UNAUTHORIZED, e.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e) {
         Map<String, String> fieldErrors = e.getFieldErrors()
                 .stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
-                        FieldError::getDefaultMessage
-                ));
+                        FieldError::getDefaultMessage));
 
         return ResponseBuilder.error(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
     }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleEntityNotFoundException(EntityNotFoundException e) {
         return ResponseBuilder.error(HttpStatus.NOT_FOUND, e.getMessage(), null);
@@ -57,9 +58,19 @@ public class GlobalExceptionHandler {
         return ResponseBuilder.error(HttpStatus.FORBIDDEN, e.getMessage(), null);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseBuilder.error(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+    }
+
+    @ExceptionHandler(com.backend.custom_exceptions.OperationNotAllowedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleOperationNotAllowedException(
+            com.backend.custom_exceptions.OperationNotAllowedException e) {
+        return ResponseBuilder.error(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
         return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong", e.getMessage());
     }
 }
-

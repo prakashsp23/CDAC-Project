@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FeedbackApi } from '../../services/apiService'
 import { toast } from 'sonner'
+import { serviceKeys } from './serviceQueries'
 
 /**
  * Query Keys for Feedback
@@ -47,6 +48,7 @@ export function useSubmitFeedbackMutation() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: feedbackKeys.lists() })
       queryClient.invalidateQueries({ queryKey: feedbackKeys.myFeedbacks() })
+      queryClient.invalidateQueries({ queryKey: serviceKeys.completed() })
       toast.success(data?.message || 'Feedback submitted successfully')
     },
     onError: (err) => {

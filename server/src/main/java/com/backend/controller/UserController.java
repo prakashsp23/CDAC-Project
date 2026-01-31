@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.backend.aop.annotation.Admin;
 import com.backend.dtos.UserDTO.UpdateUserDto;
 import com.backend.dtos.UserDTO.UserDto;
+import com.backend.dtos.UserDTO.ChangePasswordDto;
 import com.backend.entity.Role;
 import com.backend.service.UserService.UserService;
 import com.backend.util.AuthUtil;
@@ -50,12 +51,12 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
         Long currentUserId = AuthUtil.getAuthenticatedUserId();
         Role currentRole = AuthUtil.getAuthenticatedUserRole();
-        
+
         // SECURITY: Only admin can view other users' profiles
         if (currentRole != Role.ADMIN && !userId.equals(currentUserId)) {
             return ResponseBuilder.error(HttpStatus.FORBIDDEN, "Access denied", null);
         }
-        
+
         UserDto user = userService.getUserById(userId);
         return ResponseBuilder.success("User retrieved successfully", user);
     }
@@ -71,24 +72,32 @@ public class UserController {
         return ResponseBuilder.success("User updated successfully", updatedUser);
     }
 
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        if (userId == null) {
+            return AuthUtil.unauthorizedResponse();
+        }
+        userService.changePassword(userId, changePasswordDto);
+        return ResponseBuilder.success("Password changed successfully", null);
+    }
+
     @Admin
     @GetMapping("/mechanics")
     public ResponseEntity<?> getAllMechanics() {
         return ResponseBuilder.success("Mechanics retrieved successfully", userService.getAllMechanics());
     }
-    
-    
-    //admin - mechanic table
+
+    // admin - mechanic table
     @Admin
-    @GetMapping("/mechanics/admin")
+    @GetMapping("/mechanics/summary")
     public ResponseEntity<?> getMechanicsForAdmin() {
         return ResponseBuilder.success(
                 "Mechanics retrieved successfully",
-                userService.getMechanicsForAdmin()
-        );
+                userService.getMechanicsForAdmin());
     }
-    
-  @Admin
+
+    @Admin
     @DeleteMapping("/mechanics/{id}")
     public ResponseEntity<?> deleteMechanic(@PathVariable Long id) {
 
@@ -96,8 +105,7 @@ public class UserController {
 
         return ResponseBuilder.success(
                 "Mechanic deleted successfully",
-                null
-        );
+                null);
     }
 
 }

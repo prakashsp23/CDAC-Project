@@ -34,4 +34,6 @@ public interface ServiceService {
 
     void addServiceNote(Long serviceId, Long userId, String noteContent);
 
+    List<ServiceDto> getMyCompletedServicesWithoutFeedback(Long userId);
+
 }

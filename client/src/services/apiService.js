@@ -13,6 +13,12 @@ export const AuthApi = {
     const response = await apiClient.post('/auth/register', userData)
     return response.data
   },
+
+  // PUT /user/change-password
+  changePassword: async (passwordData) => {
+    const response = await apiClient.put('/user/change-password', passwordData)
+    return response.data
+  },
 }
 
 // ==================== USER SERVICES ====================
