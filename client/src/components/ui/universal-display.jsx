@@ -96,9 +96,7 @@ export default function UniversalDisplay({
       {effectiveView === 'grid' ? (
         <div className={`grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-${perRow}`}>
           {items.map(item => (
-            <div key={item[idKey]}>
-              <GridRenderer item={item} />
-            </div>
+            <GridRenderer key={item[idKey]} item={item} />
           ))}
         </div>
       ) : (

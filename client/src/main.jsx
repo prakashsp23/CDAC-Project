@@ -23,6 +23,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react-router/v6'
 import CustomerTable from "./components/screens/customers/customerTable.jsx"
 import CustomerDashboard from "./components/screens/customers/CustomerDashboard.jsx"
 import MyServicesPage from "./components/screens/customers/MyServicesPage.jsx"
+import ServiceDetailsPage from "./components/screens/customers/ServiceDetailsPage.jsx"
 import MyVehicles from "./components/screens/customers/MyVehicles.jsx"
 import AllServicesPage from "./components/screens/customers/AllServicesPage.jsx"
 import FeedBackPage from "./components/screens/customers/ServiceFeedback.jsx"
@@ -67,6 +68,7 @@ const router = createBrowserRouter(
           <Route path="table" element={<CustomerTable />} />
           <Route path="allservices" element={<AllServicesPage />} />
           <Route path="myservices" element={<MyServicesPage />} />
+          <Route path="services/:serviceId" element={<ServiceDetailsPage />} />
           <Route path="vehicles" element={<MyVehicles />} />
           <Route path="feedback" element={<FeedBackPage />} />
         </Route>
