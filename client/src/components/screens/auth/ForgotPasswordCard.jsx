@@ -13,7 +13,8 @@ import { Input } from '../../ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-// import { useChangePasswordMutation } from '../../../query/queries'
+
+//import { useChangePasswordMutation } from '../../../query/queries'
 
 // Password validation schema
 const passwordSchema = z.string()
