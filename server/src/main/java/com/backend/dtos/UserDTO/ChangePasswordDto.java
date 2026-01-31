@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateUserDto {
-    private String name;
-    private String email;
-    private String phone;
+public class ChangePasswordDto {
+    private String oldPassword;
+    private String newPassword;
 }

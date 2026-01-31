@@ -63,6 +63,12 @@ public class GlobalExceptionHandler {
         return ResponseBuilder.error(HttpStatus.BAD_REQUEST, e.getMessage(), null);
     }
 
+    @ExceptionHandler(com.backend.custom_exceptions.OperationNotAllowedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleOperationNotAllowedException(
+            com.backend.custom_exceptions.OperationNotAllowedException e) {
+        return ResponseBuilder.error(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
         return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong", e.getMessage());

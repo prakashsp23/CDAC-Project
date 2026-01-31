@@ -9,7 +9,6 @@ import {
     CardTitle,
     CardDescription,
     CardContent,
-    CardFooter,
 } from '../ui/card'
 import {
     Form,
@@ -24,77 +23,59 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 
 import { Input } from '../ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { useGetCurrentUser } from '../../query/queries'
+import { useGetCurrentUser, useUpdateCurrentUserMutation } from '../../query/queries/userQueries'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
 import ForgotPasswordPage from './auth/ForgotPasswordCard'
 
 // Validation schema
 const profileSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Invalid email address'),
     phone: z.string().min(1, 'Phone number is required'),
-    address: z.string().min(1, 'Address is required'),
 })
 
 export default function ProfilePage() {
     const navigate = useNavigate()
-    const [profile, setProfile] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const { data: profileResponse, isLoading } = useGetCurrentUser()
+    const profile = profileResponse?.data
+    const updateProfileMutation = useUpdateCurrentUserMutation()
+
     const [showChangePassword, setShowChangePassword] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
 
     const form = useForm({
         resolver: zodResolver(profileSchema),
         defaultValues: {
+            name: '',
+            email: '',
             phone: '',
-            address: '',
         },
     })
 
+    // Reset form when profile data loads
     useEffect(() => {
-        fetchProfile()
-    }, [])
-
-    const fetchProfile = async () => {
-        try {
-            // const data = await getUserProfile()
-            const data = {
-                name: 'John Doe',
-                email: 'john@example.com',
-                phone: '+1 234-567-8900',
-                address: '123 Main St, City, State',
-                role: 'user',
-            }
-            setProfile(data)
+        if (profile) {
             form.reset({
-                phone: data?.phone || '',
-                address: data?.address || '',
+                name: profile.name || '',
+                email: profile.email || '',
+                phone: profile.phone || '',
             })
-        } catch (err) {
-            console.error('Failed to fetch profile:', err)
-            toast.error('Failed to load profile')
-            navigate('/login')
-        } finally {
-            setLoading(false)
         }
-    }
+    }, [profile, form])
 
     const onSubmit = async (data) => {
-        try {
-            // TODO: Call API to update profile
-            // await updateUserProfile(data)
-            toast.success('Profile updated successfully')
-            setIsEditing(false)
-        } catch {
-            toast.error('Failed to update profile')
-        }
+        updateProfileMutation.mutate(data, {
+            onSuccess: () => {
+                setIsEditing(false)
+            }
+        })
     }
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="text-center">
@@ -130,105 +111,133 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-3xl">
-                <CardHeader>
-                    <CardTitle>Profile</CardTitle>
-                    <CardDescription>Manage your profile information</CardDescription>
+            <Card className="w-full max-w-4xl shadow-lg border-0 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="border-b bg-muted/20 pb-6">
+                    <CardTitle className="text-2xl font-bold">Account Settings</CardTitle>
+                    <CardDescription>Manage your personal information and security</CardDescription>
                 </CardHeader>
 
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Left Side - Avatar and Name */}
-                        <div className="flex flex-col items-center justify-start mt-4">
-                            <Avatar className="h-28 w-28 mb-4">
-                                <AvatarImage src="https://github.com/shadcn.png" alt={profile?.name} />
-                                <AvatarFallback className="text-2xl">
-                                    {getInitials(profile?.name)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <h2 className="text-lg font-semibold text-center">{profile?.name}</h2>
-                            <p className="text-sm text-muted-foreground capitalize mt-1">
-                                {profile?.role || 'User'}
-                            </p>
+                <CardContent className="p-0">
+                    <div className="grid grid-cols-1 md:grid-cols-12 min-h-[300px]">
+                        {/* Left Side - Avatar and Role */}
+                        <div className="md:col-span-4 p-6 flex flex-col items-center border-r bg-muted/10">
+                            <div className="relative mb-6">
+                                <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
+                                    <AvatarImage src={`https://ui-avatars.com/api/?name=${profile.name}&background=random`} alt={profile.name} />
+                                    <AvatarFallback className="text-3xl font-bold bg-primary/10 text-primary">
+                                        {getInitials(profile.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </div>
+
+                            <h2 className="text-xl font-bold text-center mb-1">{profile.name}</h2>
+                            <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
+                                {profile.role || 'User'}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                className="w-full mt-6"
+                                onClick={() => setShowChangePassword(true)}
+                            >
+                                Change Password
+                            </Button>
                         </div>
 
-                        {/* Right Side - Profile Fields */}
-                        <div className="md:col-span-2">
+                        {/* Right Side - Profile Form */}
+                        <div className="md:col-span-8 p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-semibold">Profile Information</h3>
+                                <Button
+                                    type="button"
+                                    variant={isEditing ? "ghost" : "outline"}
+                                    size="sm"
+                                    onClick={() => {
+                                        if (isEditing) {
+                                            form.reset() // Cancel edits
+                                            setIsEditing(false)
+                                        } else {
+                                            setIsEditing(true)
+                                        }
+                                    }}
+                                >
+                                    {isEditing ? 'Cancel Edit' : 'Edit Details'}
+                                </Button>
+                            </div>
+
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                    {/* Email - Read Only */}
-                                    <FormItem>
-                                        <FormLabel>Email Address</FormLabel>
-                                        <div className="flex items-center px-3 py-2 bg-muted rounded-md border border-input cursor-not-allowed">
-                                            <span className="text-sm text-muted-foreground">{profile?.email}</span>
-                                        </div>
-                                    </FormItem>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                    <div className="grid gap-6">
+                                        {/* Name Field */}
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Full Name</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="John Doe"
+                                                            disabled={!isEditing}
+                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
-                                    {/* Phone Number - Editable */}
-                                    <FormField
-                                        control={form.control}
-                                        name="phone"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Phone Number</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="tel"
-                                                        placeholder="(555) 123-567"
-                                                        disabled={!isEditing}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                        {/* Email Field */}
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Email Address</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="email"
+                                                            placeholder="john@example.com"
+                                                            disabled={!isEditing}
+                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
-                                    {/* Address - Editable */}
-                                    <FormField
-                                        control={form.control}
-                                        name="address"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Address</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="text"
-                                                        placeholder="173 Oak Street, Apt 48, Greenfield, CA 90210"
-                                                        disabled={!isEditing}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    {/* Action Buttons */}
-                                    <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t">
-                                        <Button
-                                            type="button"
-                                            onClick={() => setShowChangePassword(true)}
-                                            variant="outline"
-                                            className="flex-1"
-                                        >
-                                            Change Password
-                                        </Button>
-
-                                        <Button
-                                            type="button"
-                                            onClick={() => {
-                                                if (isEditing) {
-                                                    form.handleSubmit(onSubmit)()
-                                                } else {
-                                                    setIsEditing(true)
-                                                }
-                                            }}
-                                            className="flex-1"
-                                        >
-                                            {isEditing ? 'Save Profile' : 'Edit Profile'}
-                                        </Button>
+                                        {/* Phone Field */}
+                                        <FormField
+                                            control={form.control}
+                                            name="phone"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Phone Number</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="tel"
+                                                            placeholder="+1 (555) 000-0000"
+                                                            disabled={!isEditing}
+                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
+
+                                    {isEditing && (
+                                        <div className="flex justify-end pt-4 animate-in fade-in slide-in-from-bottom-2">
+                                            <Button type="submit" disabled={updateProfileMutation.isPending}>
+                                                {updateProfileMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
+                                            </Button>
+                                        </div>
+                                    )}
                                 </form>
                             </Form>
                         </div>
@@ -238,14 +247,14 @@ export default function ProfilePage() {
                 <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
                     <DialogContent className="max-w-md">
                         <DialogHeader>
-                        <DialogTitle>Change Password</DialogTitle>
+                            <DialogTitle>Change Password</DialogTitle>
                         </DialogHeader>
-                        <hr />
-
-                        <ForgotPasswordPage
-                        isModal={true}
-                        onClose={() => setShowChangePassword(false)}
-                        />
+                        <div className="pt-4">
+                            <ForgotPasswordPage
+                                isModal={true}
+                                onClose={() => setShowChangePassword(false)}
+                            />
+                        </div>
                     </DialogContent>
                 </Dialog>
 
