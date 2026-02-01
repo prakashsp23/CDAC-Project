@@ -1,9 +1,8 @@
 import axios from 'axios'
 import { forceLogout, getToken } from './auth'
 
-// const API_URL = 'https://carsexptest.onrender.com/api'
-
-const API_URL = 'http://localhost:8080/'
+// Default: your backend URL. Override with VITE_API_URL (e.g. /api in Docker/k8s so nginx proxies to backend).
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/'
 
 const apiClient = axios.create({
   baseURL: API_URL,
