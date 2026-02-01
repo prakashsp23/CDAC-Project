@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AdminApi } from '../../services/apiService'
+import { AdminApi, UserApi } from '../../services/apiService'
 import { userKeys } from './userQueries'
 import { serviceKeys } from './serviceQueries'
 import { toast } from 'sonner'
@@ -34,12 +34,29 @@ export function useGetAllUsers(options = {}) {
   })
 }
 
-// Get all mechanics (uses dedicated endpoint)
+// Get all mechanics (uses dedicated summary endpoint for admin table)
 export function useGetAllMechanics(options = {}) {
   return useQuery({
-    queryKey: [...userKeys.lists(), { role: 'mechanic' }],
-    queryFn: AdminApi.fetchMechanics,
+    queryKey: [...adminKeys.all, 'mechanics-summary'],
+    queryFn: UserApi.fetchMechanicsSummary,
     ...options,
+  })
+}
+
+// Delete mechanic (Admin)
+export function useDeleteMechanicMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: UserApi.deleteMechanic,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [...adminKeys.all, 'mechanics-summary'] })
+      queryClient.invalidateQueries({ queryKey: adminKeys.dashboard() })
+      toast.success(data?.message || 'Mechanic deleted successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to delete mechanic')
+    },
   })
 }
 
@@ -61,7 +78,7 @@ export function useAdminAssignMechanicMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ serviceId, mechanicId }) => 
+    mutationFn: ({ serviceId, mechanicId }) =>
       AdminApi.assignMechanicToService(serviceId, mechanicId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.allServices() })

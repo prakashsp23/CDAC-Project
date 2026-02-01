@@ -1,45 +1,79 @@
 import React from 'react'
 import { Card, CardTitle, CardDescription, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useMemo } from 'react'
+import { toast } from 'sonner'
+import { useGetAdminDashboard } from '@/query/queries/adminQueries'
+import { Loader2 } from 'lucide-react'
 
 
 function Dashboard() {
-  // Top cards data
-  const summary = {
-    totalUsers: 25,
-    totalBookings: 120,
-    ongoingServices: 5,
-    completedServices: 115,
-  };
+  const { data: response, isLoading, isError } = useGetAdminDashboard()
 
-  // Quick stats data
-  const quickStats = {
-    activeMechanics: 8,
-    pendingRequests: 12,
-    avgRating: 4.7,
-  };
+  // DEBUG: Log raw response to verify structure
+  if (response) {
+    console.log("Dashboard API Response:", response)
+  }
 
-  // Unassigned service requests (dummy data for now)
-  const unassignedRequests = [
-    {
-      id: "REQ-009",
-      customerName: "Alice Cooper",
-      serviceType: "Annual Service",
-      status: "New",
-      timeAgo: "30m ago",
-    },
-    {
-      id: "REQ-010",
-      customerName: "Bob Williams",
-      serviceType: "Suspension",
-      status: "awaiting assignment",
-      timeAgo: "1h ago",
-    },
-  ];
+  // Use memo to safely extract and map data from the backend response
+  const dashboardData = useMemo(() => {
+    // If response.data exists, use it. Otherwise fall back.
+    // The query hook manages data state, so we just map it here.
+    const backendData = response?.data || {}
+
+    return {
+      summary: backendData.summary || {},
+      quickStats: backendData.quickStats || {},
+      unassignedRequests: backendData.unassignedRequests || []
+    }
+  }, [response])
+
+  const summary = useMemo(() => {
+    return {
+      totalUsers: dashboardData.summary.totalUsers || 0,
+      totalBookings: dashboardData.summary.totalBookings || 0,
+      ongoingServices: dashboardData.summary.ongoingServices || 0,
+      completedServices: dashboardData.summary.completedServices || 0
+    }
+  }, [dashboardData])
+
+  const quickStats = useMemo(() => {
+    return {
+      activeMechanics: dashboardData.quickStats.activeMechanics || 0,
+      pendingRequests: dashboardData.quickStats.pendingRequests || 0,
+      avgRating: dashboardData.quickStats.avgRating || 0
+    }
+  }, [dashboardData])
+
+  const unassignedRequests = useMemo(() => {
+    return (dashboardData.unassignedRequests || []).map(req => ({
+      id: req.id,
+      customerName: req.customerName,
+      serviceType: req.serviceType,
+      status: req.status,
+      timeAgo: req.timeAgo
+    }))
+  }, [dashboardData])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Failed to load dashboard data. Please refresh lightly.
+      </div>
+    )
+  }
 
   return (
-     <div className="flex flex-col gap-6 px-8 py-6">
-    {/* Title + subtitle */}
+    <div className="flex flex-col gap-6 px-8 py-6">
+      {/* Title + subtitle */}
       <div>
         <h1 className="text-2xl font-semibold">Dashboard Overview</h1>
         <p className="text-sm text-slate-500">
@@ -49,17 +83,17 @@ function Dashboard() {
 
       {/* Top cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="Total Users" value={summary.totalUsers} trend="+12%" />
-        <SummaryCard label="Total Bookings" value={summary.totalBookings} trend="+23%" />
+        <SummaryCard label="Total Users" value={summary.totalUsers} trend="" />
+        <SummaryCard label="Total Bookings" value={summary.totalBookings} trend="" />
         <SummaryCard
           label="Ongoing Services"
           value={summary.ongoingServices}
-          trend="-2"
+          trend=""
         />
         <SummaryCard
           label="Completed Services"
           value={summary.completedServices}
-          trend="+18%"
+          trend=""
         />
       </div>
 
@@ -76,7 +110,7 @@ function Dashboard() {
 
 function SummaryCard({ label, value, trend }) {
   return (
-<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+    <Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardContent className="py-4 flex flex-col gap-2">
         <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
           {label}
@@ -94,7 +128,7 @@ function QuickStatsCard({ stats }) {
   const { activeMechanics, pendingRequests, avgRating } = stats;
 
   return (
-<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+    <Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle className="text-base">Quick Stats</CardTitle>
       </CardHeader>
@@ -113,7 +147,7 @@ function QuickStatsCard({ stats }) {
 
 function UnassignedRequestsCard({ requests }) {
   return (
-<Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+    <Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Unassigned Service Requests </CardTitle>
       </CardHeader>
