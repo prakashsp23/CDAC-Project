@@ -393,12 +393,10 @@ export default function ServiceDetailsPage() {
                 <PaymentBadge status={service.paymentStatus} />
               </div>
 
-              {/* Pay Now Button */}
-              {service.status === 'COMPLETED' && service.paymentStatus !== 'PAID' && (
+              {service.paymentStatus !== 'PAID' && service.status === 'COMPLETED' && (
                 <Button
-                  onClick={() => {
-                    alert('Payment gateway integration coming soon!')
-                  }}
+                  onClick={() => navigate('/customers/payment', { state: { serviceId: service.id } })}
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Pay Now
@@ -415,95 +413,100 @@ export default function ServiceDetailsPage() {
             )}
           </CardContent>
         </Card>
-      )}
+      )
+      }
 
       {/* Cancellation Information (if cancelled) */}
-      {service.status === 'CANCELLED' && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Ban className="w-5 h-5" />
-              Cancellation Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoRow
-                icon={AlertCircle}
-                label="Cancelled By"
-                value={service.cancelledByAdmin ? 'Admin' : 'System'}
-              />
-              <InfoRow
-                icon={Calendar}
-                label="Cancelled At"
-                value={formatDateTime(service.cancelledAt)}
-              />
-            </div>
-            {service.cancellationReason && (
-              <>
-                <Separator />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Reason</p>
-                  <p className="text-sm bg-background p-3 rounded-lg border border-destructive/30">
-                    {service.cancellationReason}
-                  </p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {
+        service.status === 'CANCELLED' && (
+          <Card className="border-destructive/50 bg-destructive/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <Ban className="w-5 h-5" />
+                Cancellation Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InfoRow
+                  icon={AlertCircle}
+                  label="Cancelled By"
+                  value={service.cancelledByAdmin ? 'Admin' : 'System'}
+                />
+                <InfoRow
+                  icon={Calendar}
+                  label="Cancelled At"
+                  value={formatDateTime(service.cancelledAt)}
+                />
+              </div>
+              {service.cancellationReason && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Reason</p>
+                    <p className="text-sm bg-background p-3 rounded-lg border border-destructive/30">
+                      {service.cancellationReason}
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
 
       {/* Work Logs */}
-      {worklogs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5" />
-              Work Progress
-              <Badge variant="secondary" className="ml-2">{worklogs.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {worklogsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {worklogs.map((log, index) => (
-                  <div
-                    key={log.id || index}
-                    className="flex gap-4 p-4 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Wrench className="w-4 h-4 text-primary" />
+      {
+        worklogs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5" />
+                Work Progress
+                <Badge variant="secondary" className="ml-2">{worklogs.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {worklogsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {worklogs.map((log, index) => (
+                    <div
+                      key={log.id || index}
+                      className="flex gap-4 p-4 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Wrench className="w-4 h-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <p className="font-semibold">{log.description || 'Work Update'}</p>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDateTime(log.createdAt)}
+                          </span>
+                        </div>
+                        {log.notes && (
+                          <p className="text-sm text-muted-foreground">{log.notes}</p>
+                        )}
+                        {log.mechanicName && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            By: {log.mechanicName}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <p className="font-semibold">{log.description || 'Work Update'}</p>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDateTime(log.createdAt)}
-                        </span>
-                      </div>
-                      {log.notes && (
-                        <p className="text-sm text-muted-foreground">{log.notes}</p>
-                      )}
-                      {log.mechanicName && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          By: {log.mechanicName}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
+    </div >
   )
 }
