@@ -19,6 +19,8 @@ public class AssignedJobsDto {
 
     private String carPlate;
 
+    private String licenseNumber;
+
     private String serviceName;
 
     private LocalDate serviceDate;

@@ -30,6 +30,9 @@ public class ServiceDto {
     // Payment
     private String paymentStatus;
 
+    // Feedback
+    private boolean hasFeedback;
+
     // Cancellation
     private Boolean cancelledByAdmin;
     private String cancellationReason;

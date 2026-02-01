@@ -28,7 +28,8 @@ export default function MyVehicles() {
         brand: v.brand,
         model: v.model,
         registration: v.regNumber,
-        year: v.year
+        year: v.year,
+        licenseNumber: v.licenseNumber
     })) || []
 
     const serviceOptions = catalogsData?.data?.map(s => ({
@@ -58,7 +59,12 @@ export default function MyVehicles() {
     }
 
     if (isLoadingVehicles || isLoadingCatalogs) {
-        return <div className="p-8">Loading vehicles...</div>
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+                <span className="text-lg text-muted-foreground">Loading vehicles...</span>
+            </div>
+        )
     }
 
     if (vehiclesError) {
@@ -110,6 +116,7 @@ export default function MyVehicles() {
                             { key: 'brand', title: 'Brand' },
                             { key: 'model', title: 'Model' },
                             { key: 'registration', title: 'Registration' },
+                            { key: 'licenseNumber', title: 'License' },
                             { key: 'year', title: 'Year' },
                             { key: 'actions', title: 'Actions' },
                         ]}
@@ -144,7 +151,7 @@ export default function MyVehicles() {
                                                 </EditVehicle>
                                                 <DropdownMenuItem variant="destructive"
                                                     onClick={() => handleDeleteClick(v)}
-                                                    // className="text-destructive"
+                                                // className="text-destructive"
                                                 >
                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                     Delete Vehicle
@@ -153,13 +160,17 @@ export default function MyVehicles() {
                                         </DropdownMenu>
                                     </div>
                                     <div className="space-y-2 text-sm mb-4">
+                                        <div className="flex justify-between border-b pb-1">
+                                            <span className="text-muted-foreground">License Num</span>
+                                            <span className="font-medium">{v.licenseNumber || 'N/A'}</span>
+                                        </div>
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Year</span>
                                             <span>{v.year}</span>
                                         </div>
                                     </div>
-                                    <Button 
-                                        className="w-full mt-4" 
+                                    <Button
+                                        className="w-full mt-4"
                                         size="sm"
                                         onClick={() => setOpenBooking(true)}
                                     >
@@ -175,10 +186,11 @@ export default function MyVehicles() {
                                 <TableCell className="font-medium">{v.brand}</TableCell>
                                 <TableCell>{v.model}</TableCell>
                                 <TableCell className="font-mono">{v.registration}</TableCell>
+                                <TableCell>{v.licenseNumber || '-'}</TableCell>
                                 <TableCell>{v.year}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        <Button 
+                                        <Button
                                             size="sm"
                                             onClick={() => setOpenBooking(true)}
                                         >
@@ -198,7 +210,7 @@ export default function MyVehicles() {
                                                         Edit
                                                     </DropdownMenuItem>
                                                 </EditVehicle>
-                                                <DropdownMenuItem 
+                                                <DropdownMenuItem
                                                     onClick={() => handleDeleteClick(v)}
                                                     className="text-destructive focus:text-destructive"
                                                 >

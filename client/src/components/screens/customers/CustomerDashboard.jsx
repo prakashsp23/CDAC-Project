@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '../../ui/card'
 import { Button } from '../../ui/button'
-import BookService from './components/BookService'
 import {
   Droplets,
   Disc,
@@ -12,8 +10,34 @@ import {
   Wrench,
   Sparkles
 } from 'lucide-react'
-import { toast } from 'sonner'
-import { getServiceCatalog, getUserVehicles, getUserAppointments, bookService } from '../../../services/mockDataService'
+
+import { useGetAllServiceCatalogs } from '../../../query/queries/serviceTypeQueries'
+import { useGetAllVehicles } from '../../../query/queries/vehicleQueries'
+import { useGetOngoingServices } from '../../../query/queries/serviceQueries'
+
+// Status configuration
+const STATUS_CONFIG = {
+  PENDING: {
+    label: 'Pending',
+    color: 'text-yellow-600 bg-yellow-50 border-yellow-200'
+  },
+  ACCEPTED: {
+    label: 'Accepted',
+    color: 'text-blue-600 bg-blue-50 border-blue-200'
+  },
+  ONGOING: {
+    label: 'In Progress',
+    color: 'text-cyan-600 bg-cyan-50 border-cyan-200'
+  },
+  COMPLETED: {
+    label: 'Completed',
+    color: 'text-green-600 bg-green-50 border-green-200'
+  },
+  CANCELLED: {
+    label: 'Cancelled',
+    color: 'text-red-600 bg-red-50 border-red-200'
+  }
+}
 
 const serviceToIconMap = {
   'Oil Change': Droplets,
@@ -29,7 +53,7 @@ const serviceToIconMap = {
   'Full Service': Activity,
 };
 
-function ServiceCard({ s, onBook }) {
+function ServiceCard({ s }) {
   const Icon = s.Icon;
   return (
     <Card className="rounded-[14px]">
@@ -43,12 +67,6 @@ function ServiceCard({ s, onBook }) {
             <div className="text-sm font-medium text-card-foreground">{s.name}</div>
             <div className="text-xs text-muted-foreground mt-1">{s.desc}</div>
           </div>
-
-          <div className="ml-2 flex-shrink-0">
-            <Button size="sm" variant="default" onClick={() => onBook && onBook({ serviceName: s.name })}>
-              Book Now
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>
@@ -56,7 +74,6 @@ function ServiceCard({ s, onBook }) {
 }
 
 function AppointmentCard({ a }) {
-  const statusLabel = a.status === 'ONGOING' ? 'In Progress' : a.status === 'REQUESTED' ? 'Requested' : 'Completed'
   const Icon = a.Icon;
   return (
     <Card className="rounded-[12px]">
@@ -67,20 +84,22 @@ function AppointmentCard({ a }) {
           </div>
           <div>
             <div className="text-sm font-medium text-card-foreground">{a.service}</div>
-            <div className="text-xs text-muted-foreground">{a.car}</div>
+            <div className="text-xs text-muted-foreground">{a.vehicle.brand} {a.vehicle.model}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="text-xs text-muted-foreground">{a.date}</div>
-          <div className="px-2 py-0.5 rounded-full text-xs border border-input text-muted-foreground">{statusLabel}</div>
+          <div className={`px-2 py-0.5 rounded-full text-xs border ${STATUS_CONFIG[a.status]?.color || 'border-input text-muted-foreground'}`}>
+            {STATUS_CONFIG[a.status]?.label || a.status}
+          </div>
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function VehicleCard({ v, onManage, onBook }) {
+function VehicleCard({ v, onManage }) {
   return (
     <Card className="relative rounded-[12px]">
       <CardContent className="px-3">
@@ -99,9 +118,7 @@ function VehicleCard({ v, onManage, onBook }) {
             <Button size="sm" variant="outline" className="flex-1" onClick={() => onManage(v)}>
               Manage
             </Button>
-            <Button size="sm" variant="default" onClick={() => onBook && onBook({ vehicleId: v.id })}>
-              Book
-            </Button>
+
           </div>
         </div>
       </CardContent>
@@ -111,72 +128,28 @@ function VehicleCard({ v, onManage, onBook }) {
 
 export default function CustomerDashboard() {
   const navigate = useNavigate()
-  const [openBooking, setOpenBooking] = useState(false)
-  const [bookingDefaults, setBookingDefaults] = useState({ vehicleId: null, serviceName: null })
 
-  const [services, setServices] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [appointments, setAppointments] = useState([])
-  const [loading, setLoading] = useState(true)
+  // React Query Hooks
+  const { data: serviceCatalogResponse, isLoading: isLoadingServices } = useGetAllServiceCatalogs();
+  const services = serviceCatalogResponse?.data || [];
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [catalogData, vehiclesData, apptsData] = await Promise.all([
-        getServiceCatalog(),
-        getUserVehicles(1),
-        getUserAppointments(1)
-      ]);
+  const { data: vehiclesResponse, isLoading: isLoadingVehicles } = useGetAllVehicles();
+  const vehicles = vehiclesResponse?.data || [];
 
-      setServices(catalogData.map(s => ({
-        id: s.catalog_id,
-        name: s.service_name,
-        desc: s.description,
-        Icon: serviceToIconMap[s.service_name] || Wrench
-      })));
+  const { data: appointmentsResponse, isLoading: isLoadingAppointments } = useGetOngoingServices();
+  const appointments = appointmentsResponse?.data || [];
 
-      setVehicles(vehiclesData.map(v => ({
-        id: v.car_id,
-        brand: v.brand,
-        model: v.model,
-        registration: v.reg_number,
-        year: v.year
-      })));
+  const isLoading = isLoadingServices || isLoadingVehicles || isLoadingAppointments;
 
-      setAppointments(apptsData.map(a => ({
-        id: a.service_id,
-        service: a.service_name,
-        car: a.car_details,
-        date: a.created_at ? a.created_at.split('T')[0] : 'N/A',
-        status: a.status,
-        Icon: serviceToIconMap[a.service_name] || Wrench
-      })));
-    } catch (error) {
-      console.error("Failed to load dashboard data:", error);
-      toast.error("Failed to connect to server. Ensure backend is running.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const handleBooking = async (data) => {
-    // data: { vehicleId, serviceName }
-    try {
-      await bookService(data);
-      toast.success("Service booked successfully!");
-      setOpenBooking(false);
-      loadData(); // Refresh appointments
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to book service.");
-    }
-  };
-
-  if (loading) return <div className="p-8">Loading dashboard...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading dashboard...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="py-6 px-8 w-[90%] mx-auto">
@@ -188,9 +161,12 @@ export default function CustomerDashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.slice(0, 6).map(s => (
-            <ServiceCard key={s.id} s={s} onBook={({ serviceName }) => { setBookingDefaults({ serviceName, vehicleId: null }); setOpenBooking(true) }} />
-          ))}
+          {services.slice(0, 6).map(s => {
+            const Icon = serviceToIconMap[s.serviceName] || Wrench;
+            return (
+              <ServiceCard key={s.id} s={{ ...s, name: s.serviceName, desc: s.description, Icon: Icon }} />
+            )
+          })}
         </div>
       </section>
 
@@ -203,9 +179,19 @@ export default function CustomerDashboard() {
 
 
         <div className="space-y-3">
-          {appointments.length > 0 ? appointments.map(a => (
-            <AppointmentCard key={a.id} a={a} />
-          )) : <p className="text-muted-foreground text-sm">No ongoing appointments.</p>}
+          {appointments.length > 0 ? appointments.map(a => {
+            const Icon = a.catalog?.serviceName ? (serviceToIconMap[a.catalog.serviceName] || Wrench) : Wrench;
+            return (
+              <AppointmentCard key={a.id} a={{
+                ...a,
+                service: a.catalog?.serviceName || 'Unknown Service',
+                vehicle: a.vehicle,
+                date: a.createdOn ? String(a.createdOn) : 'N/A',
+                status: a.status,
+                Icon: Icon
+              }} />
+            )
+          }) : <p className="text-muted-foreground text-sm">No ongoing appointments.</p>}
         </div>
       </section>
 
@@ -224,21 +210,16 @@ export default function CustomerDashboard() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {vehicles.map(v => (
-            <VehicleCard key={v.id} v={v} onManage={() => navigate('/customers/vehicles')} onBook={({ vehicleId }) => { setBookingDefaults({ vehicleId, serviceName: null }); setOpenBooking(true) }} />
+            <VehicleCard key={v.id} v={{
+              id: v.id,
+              brand: v.brand,
+              model: v.model,
+              registration: v.regNumber,
+              year: v.year
+            }} onManage={() => navigate('/customers/vehicles')} />
           ))}
         </div>
       </section>
-
-      {/* Booking modal used by dashboard */}
-      <BookService
-        open={openBooking}
-        onOpenChange={setOpenBooking}
-        vehicles={vehicles}
-        services={services}
-        defaultVehicleId={bookingDefaults.vehicleId}
-        defaultServiceName={bookingDefaults.serviceName}
-        onConfirm={handleBooking}
-      />
     </div>
   )
 }
