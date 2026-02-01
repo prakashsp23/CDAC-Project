@@ -10,7 +10,7 @@
         }
 
         options {
-            buildDiscarder(logRotator(numToKeepStr: '10'))
+            buildDiscarder(logRotator(numToKeepStr: '5'))
             timeout(time: 30, unit: 'MINUTES')
             timestamps()
         }
@@ -18,7 +18,7 @@
         environment {
             IMAGE_TAG = env.BUILD_NUMBER ?: 'latest'
             // Optional: separate repo for k8s manifests. Empty = update and push in this repo.
-            MANIFESTS_REPO_URL = "${env.MANIFESTS_REPO_URL ?: ''}"
+            MANIFESTS_REPO_URL = "https://github.com/prakashsp23/cdac-project-manifest"
         }
 
         stages {
