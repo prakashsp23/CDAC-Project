@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-            reuseNode true
-        }
-    }
+    agent any
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
