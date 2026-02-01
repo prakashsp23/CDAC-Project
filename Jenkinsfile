@@ -14,20 +14,18 @@ pipeline {
     }
 
     environment {
-        IMAGE_TAG = "latest"   // default
+        IMAGE_TAG = "latest"
         MANIFESTS_REPO_URL = "https://github.com/prakashsp23/cdac-project-manifest"
     }
 
     stages {
 
-        stage('Checkout Source Code') {
+        stage('Prepare Build Variables') {
             steps {
                 script {
                     env.IMAGE_TAG = env.BUILD_NUMBER ?: "latest"
                     echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
                 }
-                sh 'apk add --no-cache git'
-                checkout scm
             }
         }
 
@@ -66,15 +64,11 @@ pipeline {
                             set -e
                             MANIFESTS_REPO_URL='${manifestsRepo.replaceAll("'", "'\\\\''")}'
 
-                            if [ -n "\$MANIFESTS_REPO_URL" ]; then
-                              git clone "https://\${GIT_USER}:\${GIT_PASS}@\${MANIFESTS_REPO_URL#https://}" manifests-repo
-                              cd manifests-repo
-                              MANIFEST_BASE=k8s
-                            else
-                              MANIFEST_BASE=manifest/k8s
-                            fi
+                            git clone "https://\${GIT_USER}:\${GIT_PASS}@\${MANIFESTS_REPO_URL#https://}" manifests-repo
+                            cd manifests-repo
+                            MANIFEST_BASE=k8s
 
-                            echo "Updating Kubernetes manifests with tag ${IMAGE_TAG}"
+                            echo "Updating manifests with tag ${IMAGE_TAG}"
 
                             for f in \$MANIFEST_BASE/backend-deployment.yaml \$MANIFEST_BASE/frontend-deployment.yaml; do
                               sed -i 's|DOCKER_HUB_PLACEHOLDER|${dockerHubUser}|g' \$f
@@ -84,15 +78,11 @@ pipeline {
                             git config user.email "jenkins@localhost"
                             git config user.name "Jenkins"
 
-                            git add \$MANIFEST_BASE/backend-deployment.yaml \$MANIFEST_BASE/frontend-deployment.yaml
+                            git add .
+                            git commit -m "Deploy image tag ${IMAGE_TAG}" || echo "No changes to commit"
 
-                            if ! git diff --staged --quiet; then
-                              git commit -m "Deploy image tag ${IMAGE_TAG}"
-                              REPO_HTTPS=\$(git remote get-url origin | sed "s|git@github.com:|https://github.com/|" | sed "s|\\.git\$||" | sed "s|https://||")
-                              git push "https://\${GIT_USER}:\${GIT_PASS}@\${REPO_HTTPS}" HEAD:main
-                            else
-                              echo "No manifest changes detected"
-                            fi
+                            REPO_HTTPS=\$(git remote get-url origin | sed "s|git@github.com:|https://github.com/|" | sed "s|\\.git\$||" | sed "s|https://||")
+                            git push "https://\${GIT_USER}:\${GIT_PASS}@\${REPO_HTTPS}" HEAD:main
                         """
                     }
                 }
@@ -102,7 +92,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully. Argo CD will sync the new version.'
+            echo '✅ Deployment pipeline completed. Argo CD will sync.'
         }
         failure {
             echo '❌ Pipeline failed. Check logs above.'
