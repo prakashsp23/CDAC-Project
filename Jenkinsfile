@@ -75,8 +75,7 @@ pipeline {
                             git add .
                             git commit -m "Deploy image tag ${IMAGE_TAG}" || echo "No changes to commit"
 
-                            REPO_HTTPS=\$(git remote get-url origin | sed "s|git@github.com:|https://github.com/|" | sed "s|\\.git\$||" | sed "s|https://||")
-                            git push "https://\${GIT_USER}:\${GIT_PASS}@\${REPO_HTTPS}" HEAD:main
+                            git push origin HEAD:main
                         """
                     }
                 }
