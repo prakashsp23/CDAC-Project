@@ -2,8 +2,8 @@ package com.backend.dtos.PartDTOs;
 
 import lombok.Data;
 
-
 import lombok.*;
+
 @Data
 @Getter
 @Setter
@@ -12,9 +12,9 @@ import lombok.*;
 public class PartDto {
 
     private Long id;
-    private String name;
+    private String partName;
     private String description;
-    private Double price;
-    private Integer stock;
+    private Double unitPrice;
+    private Integer stockQuantity;
     private String status; // derived (In Stock / Out of Stock)
 }

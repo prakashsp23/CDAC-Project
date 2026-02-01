@@ -8,4 +8,5 @@ import com.backend.entity.MechanicNote;
 @Repository
 public interface MechanicNoteRepository extends JpaRepository<MechanicNote, Long> {
 
+    java.util.List<MechanicNote> findByService_Id(Long serviceId);
 }

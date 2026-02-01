@@ -255,7 +255,13 @@ public class ServiceServiceImpl implements ServiceService {
                         dto.setServiceName(s.getCatalog().getServiceName());
                         dto.setServiceDate(s.getCreatedOn());
                         dto.setStatus(s.getStatus().toString());
-                        dto.setNotes(s.getCustomerNotes());
+                        // Fetch mechanic notes
+                        java.util.List<MechanicNote> notes = mechanicNoteRepo.findByService_Id(s.getId());
+                        if (!notes.isEmpty()) {
+                                dto.setNotes(notes.get(notes.size() - 1).getNotes());
+                        } else {
+                                dto.setNotes("");
+                        }
                         dto.setCreatedOn(s.getCreatedOn());
 
                         assignedJobs.add(dto);
@@ -338,14 +344,21 @@ public class ServiceServiceImpl implements ServiceService {
                         throw new SecurityException("You are not assigned to this service");
                 }
 
-                User mechanic = new User();
-                mechanic.setId(userId);
+                java.util.List<MechanicNote> existingNotes = mechanicNoteRepo.findByService_Id(serviceId);
+                MechanicNote note;
 
-                MechanicNote note = new MechanicNote();
-                note.setService(service);
-                note.setMechanic(mechanic);
+                if (existingNotes.isEmpty()) {
+                        note = new MechanicNote();
+                        note.setService(service);
+                        User mechanic = new User();
+                        mechanic.setId(userId);
+                        note.setMechanic(mechanic);
+                } else {
+                        // If multiple notes exist (legacy data), update the last one
+                        note = existingNotes.get(existingNotes.size() - 1);
+                }
+
                 note.setNotes(noteContent);
-
                 mechanicNoteRepo.save(note);
         }
 
