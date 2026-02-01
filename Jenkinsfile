@@ -20,11 +20,9 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            when { branch 'main' }
+        stage('Checkout Source Code') {
             steps {
                 script {
-                    // Runtime-safe way to set dynamic tag
                     env.IMAGE_TAG = env.BUILD_NUMBER ?: "latest"
                     echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
                 }
@@ -34,7 +32,6 @@ pipeline {
         }
 
         stage('Build & Push Docker Images') {
-            when { branch 'main' }
             steps {
                 script {
                     def dockerHubUser = getDockerHubUsername()
@@ -44,10 +41,12 @@ pipeline {
 
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
 
+                        echo "Building Backend Image: ${backendImage}"
                         def backendBuild = docker.build(backendImage, '-f server/Dockerfile server/')
                         backendBuild.push()
                         backendBuild.push('latest')
 
+                        echo "Building Frontend Image: ${frontendImage}"
                         def frontendBuild = docker.build(frontendImage, '-f client/Dockerfile client/')
                         frontendBuild.push()
                         frontendBuild.push('latest')
@@ -56,8 +55,7 @@ pipeline {
             }
         }
 
-        stage('Update Git & Trigger Argo CD') {
-            when { branch 'main' }
+        stage('Update Manifest Repo (GitOps)') {
             steps {
                 script {
                     def dockerHubUser = getDockerHubUsername()
@@ -65,6 +63,7 @@ pipeline {
 
                     withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                         sh """
+                            set -e
                             MANIFESTS_REPO_URL='${manifestsRepo.replaceAll("'", "'\\\\''")}'
 
                             if [ -n "\$MANIFESTS_REPO_URL" ]; then
@@ -74,6 +73,8 @@ pipeline {
                             else
                               MANIFEST_BASE=manifest/k8s
                             fi
+
+                            echo "Updating Kubernetes manifests with tag ${IMAGE_TAG}"
 
                             for f in \$MANIFEST_BASE/backend-deployment.yaml \$MANIFEST_BASE/frontend-deployment.yaml; do
                               sed -i 's|DOCKER_HUB_PLACEHOLDER|${dockerHubUser}|g' \$f
@@ -90,7 +91,7 @@ pipeline {
                               REPO_HTTPS=\$(git remote get-url origin | sed "s|git@github.com:|https://github.com/|" | sed "s|\\.git\$||" | sed "s|https://||")
                               git push "https://\${GIT_USER}:\${GIT_PASS}@\${REPO_HTTPS}" HEAD:main
                             else
-                              echo "No manifest changes to commit"
+                              echo "No manifest changes detected"
                             fi
                         """
                     }
@@ -101,10 +102,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed. Images pushed, manifests updated. Argo CD will sync to k3s.'
+            echo '✅ Pipeline completed successfully. Argo CD will sync the new version.'
         }
         failure {
-            echo 'Pipeline failed. Check logs above.'
+            echo '❌ Pipeline failed. Check logs above.'
         }
         always {
             cleanWs(deleteDirs: true)
@@ -112,7 +113,6 @@ pipeline {
     }
 }
 
-// Helper method
 def getDockerHubUsername() {
     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
         return env.DOCKER_USER
