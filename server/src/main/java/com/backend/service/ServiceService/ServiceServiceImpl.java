@@ -88,7 +88,6 @@ public class ServiceServiceImpl implements ServiceService {
                 service.setUser(user);
                 service.setCar(car);
                 service.setStatus(ServiceStatus.PENDING);
-                service.setPaymentStatus(PaymentStatus.PENDING);
                 service.setCustomerNotes(createDto.getCustomerNotes());
 
                 // Set initial pricing

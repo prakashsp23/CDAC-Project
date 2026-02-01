@@ -270,6 +270,21 @@ export const FeedbackApi = {
   },
 }
 
+// ==================== PAYMENT SERVICES ====================
+export const PaymentApi = {
+  // POST /payment/create-payment-intent
+  createPaymentIntent: async (paymentRequest) => {
+    const response = await apiClient.post('/payment/create-payment-intent', paymentRequest)
+    return response.data
+  },
+
+  // POST /payment/confirm-payment
+  confirmPaymentOnBackend: async (paymentIntentId) => {
+    const response = await apiClient.post('/payment/confirm-payment', { paymentIntentId })
+    return response.data
+  },
+}
+
 // ==================== ADMIN DASHBOARD SERVICES ====================
 export const AdminApi = {
   // GET /admin/dashboard - Get admin dashboard data
