@@ -13,5 +13,5 @@ public class PartDto {
     private String description;
     private Double unitPrice;
     private Integer stockQuantity;
-    private String status;
+    private String status; // derived (In Stock / Out of Stock)
 }
