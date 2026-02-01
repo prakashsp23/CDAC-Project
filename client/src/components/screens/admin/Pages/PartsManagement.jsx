@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useGetAllParts, useCreatePartMutation, useUpdatePartMutation, useDeletePartMutation } from "@/query/queries/partQueries";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,79 +20,48 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
 
 export default function PartsManagement() {
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Updated Mock Data (Simplified Schema)
-    const [parts, setParts] = useState([
-        {
-            id: "PART-001",
-            name: "Brake Pad",
-            category: "Brake",
-            description: "Standard front brake pads",
-            price: 1200,
-            stock: 25,
-            status: "In Stock",
-        },
-        {
-            id: "PART-002",
-            name: "Engine Oil",
-            category: "Engine",
-            description: "Full synthetic 5W-30",
-            price: 800,
-            stock: 5,
-            status: "In Stock", // Changed from Low Stock
-        },
-        {
-            id: "PART-003",
-            name: "Air Filter",
-            category: "Engine",
-            description: "High performance air filter",
-            price: 500,
-            stock: 0,
-            status: "Out of Stock",
-        },
-        {
-            id: "PART-004",
-            name: "Spark Plug",
-            category: "Ignition",
-            description: "Iridium spark plugs",
-            price: 300,
-            stock: 50,
-            status: "In Stock"
-        },
-        {
-            id: "PART-005",
-            name: "Battery 45Ah",
-            category: "Electrical",
-            description: "Maintenance free battery",
-            price: 4500,
-            stock: 2,
-            status: "In Stock" // Changed from Low Stock
-        },
-    ]);
+    // React Query Hooks
+    const { data: response, isLoading, isError } = useGetAllParts();
+
+    // DEBUG: Log raw response to debug data issues
+    if (response) {
+        console.log("Parts Management - Backend Response:", response);
+    }
+
+    const createMutation = useCreatePartMutation();
+    const updateMutation = useUpdatePartMutation();
+    const deleteMutation = useDeletePartMutation();
+
+    // Map Backend Data
+    const parts = useMemo(() => {
+        const rawParts = response?.data || [];
+        return rawParts.map(part => ({
+            id: String(part.id), // Ensure ID is string for search
+            name: part.partName || part.name || "N/A", // Handle DTO change (partName)
+            description: part.description || "",
+            price: part.unitPrice != null ? part.unitPrice : (part.price || 0), // Handle DTO change (unitPrice)
+            stock: part.stockQuantity != null ? part.stockQuantity : (part.stock || 0), // Handle DTO change (stockQuantity)
+            // Derive status
+            status: part.status || ((part.stockQuantity || part.stock) > 0 ? "In Stock" : "Out of Stock")
+        }));
+    }, [response]);
 
     // Modal State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPart, setEditingPart] = useState(null);
 
-    // Form State (Simplified)
+    // Form State
     const [formData, setFormData] = useState({
         name: "",
-        category: "",
         description: "",
         price: "",
         stock: "",
-        status: "In Stock",
     });
 
     // Handle Opening Modal for Add
@@ -98,11 +69,9 @@ export default function PartsManagement() {
         setEditingPart(null);
         setFormData({
             name: "",
-            category: "",
             description: "",
             price: "",
             stock: "",
-            status: "In Stock",
         });
         setIsDialogOpen(true);
     };
@@ -112,57 +81,56 @@ export default function PartsManagement() {
         setEditingPart(part);
         setFormData({
             name: part.name,
-            category: part.category,
             description: part.description || "",
             price: part.price,
             stock: part.stock,
-            status: part.status,
         });
         setIsDialogOpen(true);
     };
 
     const handleSave = () => {
-        // Mock save logic (Simplified)
-        console.log("Saving part:", formData, "Mode:", editingPart ? "Edit" : "Add");
+        const payload = {
+            partName: formData.name, // Map to backend DTO
+            description: formData.description,
+            unitPrice: parseFloat(formData.price), // Map to backend DTO
+            stockQuantity: parseInt(formData.stock) // Map to backend DTO
+        };
 
         if (editingPart) {
-            // Mock Update
-            setParts(prev => prev.map(p => p.id === editingPart.id ? { ...p, ...formData } : p));
+            updateMutation.mutate({
+                id: parseInt(editingPart.id), // Ensure ID is backend-friendly (number)
+                partData: payload
+            }, {
+                onSuccess: () => setIsDialogOpen(false)
+            });
         } else {
-            // Mock Create
-            const newPart = {
-                id: `PART-00${parts.length + 1}`,
-                ...formData
-            };
-            setParts(prev => [...prev, newPart]);
+            createMutation.mutate(payload, {
+                onSuccess: () => setIsDialogOpen(false)
+            });
         }
-
-        setIsDialogOpen(false);
     };
 
     const handleDelete = (id) => {
-        // Mock delete
-        setParts(prev => prev.filter(p => p.id !== id));
+        deleteMutation.mutate(parseInt(id)); // Ensure ID is backend-friendly (number)
     };
 
-    // Filter Logic
-    const filteredParts = parts.filter(part => {
-        const matchesStatus = filter === "All" || part.status === filter;
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch =
-            part.name.toLowerCase().includes(searchLower) ||
-            part.description?.toLowerCase().includes(searchLower) ||
-            part.id.toLowerCase().includes(searchLower) ||
-            part.category.toLowerCase().includes(searchLower);
+    const filteredParts = useMemo(() => {
+        return parts.filter(part => {
+            const matchesStatus = filter === "All" || part.status === filter;
+            const searchLower = searchQuery.toLowerCase();
+            const matchesSearch =
+                (part.name || "").toLowerCase().includes(searchLower) ||
+                (part.description || "").toLowerCase().includes(searchLower) ||
+                String(part.id).toLowerCase().includes(searchLower);
 
-        return matchesStatus && matchesSearch;
-    });
+            return matchesStatus && matchesSearch;
+        });
+    }, [parts, filter, searchQuery]);
 
-    // Summary Metrics (Simplified)
-    const totalParts = parts.length;
-    // REMOVED: Low Stock Metric
-    const outOfStock = parts.filter(p => p.status === "Out of Stock").length;
-    const inventoryValue = parts.reduce((acc, curr) => acc + (curr.price * curr.stock), 0);
+    // Summary Metrics
+    const totalParts = useMemo(() => parts.length, [parts]);
+    const outOfStock = useMemo(() => parts.filter(p => p.status === "Out of Stock").length, [parts]);
+    const inventoryValue = useMemo(() => parts.reduce((acc, curr) => acc + (curr.price * curr.stock), 0), [parts]);
 
     const getStatusVariant = (status) => {
         switch (status) {
@@ -177,6 +145,22 @@ export default function PartsManagement() {
      border-neutral-300 dark:border-neutral-700
      shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer`;
 
+    if (isLoading) {
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="p-6 text-center text-red-500">
+                Failed to load parts. Please try again.
+            </div>
+        );
+    }
+
     return (
         <div className="
       p-6 rounded-2xl space-y-6
@@ -188,7 +172,7 @@ export default function PartsManagement() {
                 <div className="flex flex-col gap-1">
                     <h2 className="text-2xl font-bold tracking-tight">Parts Management</h2>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Manage spare parts inventory (Simplified Schema)
+                        Manage spare parts inventory
                     </p>
                 </div>
                 <Button onClick={handleAddClick}>+ Add Part</Button>
@@ -197,20 +181,19 @@ export default function PartsManagement() {
             {/* SEARCH BAR */}
             <div className="max-w-md">
                 <Input
-                    placeholder="Search by name, ID, category or description"
+                    placeholder="Search by name, ID, or description"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="bg-white dark:bg-neutral-800"
                 />
             </div>
 
-            {/* SUMMARY CARDS (Simplified Grid) */}
+            {/* SUMMARY CARDS */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 my-4">
                 <div className={cardStyles} onClick={() => setFilter("All")}>
                     <p className="text-xs text-neutral-600 dark:text-neutral-300">Total Parts</p>
                     <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">{totalParts}</p>
                 </div>
-                {/* REMOVED: Low Stock Card */}
                 <div className={cardStyles} onClick={() => setFilter("Out of Stock")}>
                     <p className="text-xs text-neutral-600 dark:text-neutral-300">Out of Stock</p>
                     <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">{outOfStock}</p>
@@ -228,7 +211,6 @@ export default function PartsManagement() {
                         <TableRow className="dark:border-neutral-700">
                             <TableHead>Part ID</TableHead>
                             <TableHead>Part Name</TableHead>
-                            <TableHead>Category</TableHead>
                             <TableHead>Unit Price</TableHead>
                             <TableHead>Stock</TableHead>
                             <TableHead>Status</TableHead>
@@ -249,7 +231,6 @@ export default function PartsManagement() {
                                             <span className="text-xs text-neutral-500">{row.description}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{row.category}</TableCell>
                                     <TableCell>₹{row.price}</TableCell>
                                     <TableCell>{row.stock}</TableCell>
                                     <TableCell>
@@ -277,7 +258,7 @@ export default function PartsManagement() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center h-24 text-neutral-500">
+                                <TableCell colSpan={6} className="text-center h-24 text-neutral-500">
                                     No parts found.
                                 </TableCell>
                             </TableRow>
@@ -286,7 +267,7 @@ export default function PartsManagement() {
                 </Table>
             </div>
 
-            {/* ADD / EDIT DIALOG (Simplified) */}
+            {/* ADD / EDIT DIALOG */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -302,16 +283,6 @@ export default function PartsManagement() {
                                 className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="category" className="text-right">Category</Label>
-                            <Input
-                                id="category"
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="col-span-3"
-                            />
-                        </div>
-                        {/* ADDED: Description Field */}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="description" className="text-right">Desc</Label>
                             <Input
@@ -341,26 +312,12 @@ export default function PartsManagement() {
                                 className="col-span-3"
                             />
                         </div>
-                        {/* ADDED: Status Dropdown */}
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="status" className="text-right">Status</Label>
-                            <Select
-                                value={formData.status}
-                                onValueChange={(value) => setFormData({ ...formData, status: value })}
-                            >
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="In Stock">In Stock</SelectItem>
-                                    <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSave}>Save changes</Button>
+                        <Button onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending}>
+                            {createMutation.isPending || updateMutation.isPending ? "Saving..." : "Save changes"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

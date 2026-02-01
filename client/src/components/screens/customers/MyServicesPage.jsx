@@ -1,46 +1,105 @@
-import React, { useEffect, useState, useMemo } from 'react'
+/* eslint-disable react/prop-types */
+import { useState, useMemo } from 'react'
 import { Button } from '../../ui/button'
 import { TableRow, TableCell } from '../../ui/table'
 import UniversalDisplay from '../../ui/universal-display'
 import { useNavigate } from 'react-router-dom'
 import ViewToggle from '../../ui/ViewToggle'
-import { getUserServiceHistory } from '../../../services/mockDataService'
-import { toast } from 'sonner'
+import { useGetMyServices } from '../../../query/queries/serviceQueries'
+import { Car, Calendar, User, IndianRupee, ArrowRight, Wrench } from 'lucide-react'
+import { Card, CardContent } from '../../ui/card'
+
+// Status color coding for badge only
+const STATUS_UI = {
+  Pending:    { label: 'Pending',    class: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
+  Accepted:   { label: 'Accepted',   class: 'bg-blue-50 text-blue-800 border-blue-200' },
+  'In Progress': { label: 'In Progress', class: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
+  Completed:  { label: 'Completed',  class: 'bg-green-50 text-green-800 border-green-200' },
+  Cancelled:  { label: 'Cancelled',  class: 'bg-red-50 text-red-800 border-red-200' }
+}
+
+function StatusBadge({ status }) {
+  const conf = STATUS_UI[status] || { label: status, class: 'bg-muted text-foreground border' }
+  return (
+    <span
+      className={`inline-flex px-3 py-0.5 rounded-full border text-xs font-semibold min-w-[80px] items-center justify-center transition-colors ${conf.class}`}
+      aria-label={`${conf.label} status`}
+    >
+      {conf.label}
+    </span>
+  )
+}
 
 export default function MyServicesPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState('All')
   const [viewLocal, setViewLocal] = useState(() => window.localStorage.getItem('univ_view') || 'grid')
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        const history = await getUserServiceHistory(1);
-        setServices(history.map(s => ({
-          id: s.service_id,
-          name: s.service_name,
-          date: s.created_at ? s.created_at.split('T')[0] : 'N/A',
-          status: s.status === 'ONGOING' ? 'In Progress' : (s.status === 'REQUESTED' ? 'Pending' : (s.status === 'COMPLETED' ? 'Completed' : 'Cancelled')),
-          desc: s.description,
-          car: s.car_details
-        })));
-      } catch (e) {
-        console.error(e);
-        toast.error("Failed to load service history");
-      } finally {
-        setLoading(false);
+  const { data: servicesData, isLoading: loading, error: servicesError } = useGetMyServices()
+
+  const services = useMemo(() => {
+    if (!servicesData?.data) return []
+    
+    return servicesData.data.map(s => {
+      // Safely format date
+      let formattedDate = 'N/A'
+      if (s.createdOn) {
+        try {
+          formattedDate = new Date(s.createdOn).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+        } catch (err) {
+          console.error('Invalid date format:', s.createdOn, err)
+        }
       }
-    }
-    load();
-  }, []);
+
+      // Map status safely
+      const statusMap = {
+        'PENDING': 'Pending',
+        'ACCEPTED': 'Accepted',
+        'ONGOING': 'In Progress',
+        'COMPLETED': 'Completed',
+        'CANCELLED': 'Cancelled'
+      }
+
+      // Format vehicle info safely
+      const vehicleInfo = s.vehicle 
+        ? {
+            brand: s.vehicle.brand || '',
+            model: s.vehicle.model || '',
+            regNumber: s.vehicle.regNumber || '',
+            display: `${s.vehicle.brand || ''} ${s.vehicle.model || ''} (${s.vehicle.regNumber || 'N/A'})`
+          }
+        : null
+
+      return {
+        id: s.id,
+        name: s.catalog?.serviceName || 'N/A',
+        date: formattedDate,
+        status: statusMap[s.status] || s.status,
+        rawStatus: s.status,
+        desc: s.catalog?.description || s.customerNotes || 'No description',
+        vehicle: vehicleInfo,
+        paymentStatus: s.paymentStatus,
+        totalAmount: s.totalAmount,
+        mechanic: s.mechanic 
+      }
+    })
+  }, [servicesData])
+
+  const TABS = [
+    { key: 'All',        label: 'All',        indicator: '' },
+    { key: 'Ongoing',    label: 'Ongoing',    indicator: 'bg-cyan-100' },
+    { key: 'Completed',  label: 'Completed',  indicator: 'bg-green-100' },
+    { key: 'Cancelled',  label: 'Cancelled',  indicator: 'bg-red-100' }
+  ]
 
   const counts = useMemo(() => {
     const c = { All: services.length, Ongoing: 0, Completed: 0, Cancelled: 0 }
     services.forEach(s => {
-      if (s.status === 'In Progress' || s.status === 'Pending' || s.status === 'Awaiting Approval') c.Ongoing++
+      if (['Pending', 'Accepted', 'In Progress'].includes(s.status)) c.Ongoing++
       if (s.status === 'Completed') c.Completed++
       if (s.status === 'Cancelled') c.Cancelled++
     })
@@ -49,92 +108,213 @@ export default function MyServicesPage() {
 
   const filtered = useMemo(() => {
     if (filter === 'All') return services
-    if (filter === 'Ongoing') return services.filter(s => s.status === 'In Progress' || s.status === 'Pending' || s.status === 'Awaiting Approval')
+    if (filter === 'Ongoing') return services.filter(s => ['Pending', 'Accepted', 'In Progress'].includes(s.status))
     if (filter === 'Completed') return services.filter(s => s.status === 'Completed')
     if (filter === 'Cancelled') return services.filter(s => s.status === 'Cancelled')
     return services
   }, [filter, services])
 
-  if (loading) return <div className="p-8">Loading history...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading services...</span>
+      </div>
+    )
+  }
+
+  if (servicesError) {
+    return (
+      <div className="max-w-lg mx-auto p-8 rounded border border-destructive/30 bg-destructive/5 text-destructive text-center shadow">
+        <div className="font-semibold text-2xl mb-2">Oops!</div>
+        <div className="text-lg font-mono">{servicesError.message}</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-6 w-[90%] mx-auto">
+    <main className="max-w-5xl mx-auto p-4 sm:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold">My Services</h1>
-          <p className="text-muted-foreground mt-1">View and manage your service history.</p>
+          <h1 className="text-3xl font-bold tracking-tight leading-snug">My Services</h1>
+          <p className="text-muted-foreground mt-2 text-base">
+            See all your bookings and track status easily.
+          </p>
         </div>
-        <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
-      </div>
+      </header>
 
-      {/* Filters and View Toggle */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          {['All', 'Ongoing', 'Completed', 'Cancelled'].map(key => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`text-sm inline-flex items-center gap-2 px-3 py-1 rounded-md font-medium transition-colors ${filter === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent'}`}>
-              <span>{key}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === key ? 'bg-primary-foreground/20' : 'bg-background'}`}>{counts[key] ?? 0}</span>
-            </button>
-          ))}
+      {/* Filter tabs and view toggle */}
+      <nav className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between items-start sm:items-center mb-5">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map(tab => {
+            const selected = filter === tab.key
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border transition-all outline-none  ${
+                  selected
+                    ? `bg-background border-muted-foreground text-muted-foreground `
+                    : 'bg-muted'
+                }`}
+                aria-pressed={selected}
+                aria-label={`Show ${tab.label} services`}
+              >
+                <span>{tab.label}</span>
+                <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-semibold  border border-muted-foreground/30">{counts[tab.key] ?? 0}</span>
+              </button>
+            )
+          })}
         </div>
         <ViewToggle view={viewLocal} onViewChange={setViewLocal} />
-      </div>
+      </nav>
 
-      {/* Display Area */}
-      <UniversalDisplay
-        items={filtered}
-        idKey="id"
-        columns={[
-          { key: 'name', title: 'Service Name' },
-          { key: 'date', title: 'Date' },
-          { key: 'status', title: 'Status' },
-          { key: 'desc', title: 'Description' },
-          { key: 'car', title: 'Associated Car' },
-          { key: 'actions', title: 'Actions' },
-        ]}
-        perRow={3}
-        view={viewLocal}
-        onViewChange={setViewLocal}
-        showViewToggle={false} // Handled outside
-        renderCard={(s) => (
-          <div className="p-0">
-            <div className="rounded-lg shadow-sm border bg-card h-full flex flex-col">
-              <div className="p-4 flex-grow">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-semibold text-card-foreground">{s.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{s.desc}</div>
-                    <div className="text-xs text-muted-foreground mt-2 font-medium">{s.car}</div>
+      <section>
+        <UniversalDisplay
+          items={filtered}
+          idKey="id"
+          columns={[
+            { key: 'name', title: 'Service Name' },
+            { key: 'date', title: 'Date' },
+            { key: 'status', title: 'Status' },
+            { key: 'desc', title: 'Description' },
+            { key: 'car', title: 'Associated Car' },
+            { key: 'actions', title: 'Actions' },
+          ]}
+          perRow={2}
+          view={viewLocal}
+          onViewChange={setViewLocal}
+          showViewToggle={false} // Handled above
+          renderCard={(s) => (
+            <Card className="group hover:shadow-lg transition-all duration-300 border  overflow-hidden">
+              <CardContent className="p-0">
+                {/* Header Section */}
+                <div className="p-5 pb-4 border-b bg-linear-to-br from-muted/30 to-background">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Wrench className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">{s.name}</h3>
+                        <p className="text-xs text-muted-foreground">Service ID: #{s.id}</p>
+                      </div>
+                    </div>
+                    <StatusBadge status={s.status} />
                   </div>
-                  <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">#{s.id}</div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{s.desc}</p>
                 </div>
-              </div>
-              <div className="border-t p-3 flex items-center justify-between">
-                <span className="text-xs font-medium px-2 py-1 bg-secondary text-secondary-foreground rounded">{s.status}</span>
-                <Button size="sm" variant="ghost" onClick={() => alert(`View details for ${s.name}`)}>View Details</Button>
-              </div>
+
+                {/* Details Section */}
+                <div className="p-5 space-y-3">
+                  {s.vehicle ? (
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Car className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground truncate">
+                          {s.vehicle.brand} {s.vehicle.model}
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground shrink-0">{s.vehicle.regNumber}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Car className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">N/A</span>
+                    </div>
+                  )}
+                  
+                  {s.mechanic ? (
+                    <div className="flex items-center gap-2 text-sm w-full">
+                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <div className="flex justify-between items-center flex-1 w-full gap-2">
+                        <div className="text-muted-foreground font-medium truncate">
+                          {s.mechanic.name || s.mechanic}
+                        </div>
+                        <div className="text-xs text-muted-foreground whitespace-nowrap pl-3">
+                          {s.mechanic.phoneNumber ? s.mechanic.phoneNumber : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span>Mechanic not assigned yet</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center justify-between w-full gap-4 text-sm">
+                    {s.totalAmount != null && (
+                        <div className="flex items-center font-semibold ">
+                          Base Amount: 
+                          <span className="pl-2 text-muted-foreground">
+                            {/* {Number(s.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })} */}
+                      {s.totalAmount}
+                          </span>
+                          <IndianRupee className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span>{s.date}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="px-5 pb-5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full  transition-colors"
+                    onClick={() => navigate(`/customers/services/${s.id}`)}
+                  >
+                    View Details
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          renderRow={(s) => (
+            <TableRow key={s.id} className="hover:bg-muted! transition group">
+              <TableCell className="font-medium">{s.name}</TableCell>
+              <TableCell>
+                <span className="whitespace-nowrap">{s.date}</span>
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={s.status} />
+              </TableCell>
+              <TableCell className="text-muted-foreground max-w-xs truncate">{s.desc}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {s.vehicle ? s.vehicle.display : 'N/A'}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full hover:bg-accent"
+                  onClick={() => navigate(`/customers/services/${s.id}`)}
+                  aria-label={`View service for ${s.name}`}
+                >
+                  View
+                </Button>
+              </TableCell>
+            </TableRow>
+          )}
+          emptyContent={
+            <div className="flex flex-col items-center text-center py-14">
+              <span className="text-5xl mb-2">🫥</span>
+              <span className="text-lg font-semibold text-card-foreground">No services found</span>
+              <p className="text-sm text-muted-foreground mt-1">
+                You haven&apos;t booked any services in this category yet.
+              </p>
             </div>
-          </div>
-        )}
-        renderRow={(s) => (
-          <TableRow key={s.id}>
-            <TableCell className="font-medium">{s.name}</TableCell>
-            <TableCell>{s.date}</TableCell>
-            <TableCell>
-              <span className="text-xs font-medium px-2 py-1 bg-secondary text-secondary-foreground rounded">{s.status}</span>
-            </TableCell>
-            <TableCell className="text-muted-foreground">{s.desc}</TableCell>
-            <TableCell className="text-muted-foreground">{s.car}</TableCell>
-            <TableCell className="text-right">
-              <Button size="sm" onClick={() => alert(`View details for ${s.name}`)} variant="ghost">View</Button>
-            </TableCell>
-          </TableRow>
-        )}
-      />
-    </div>
+          }
+        />
+      </section>
+    </main>
   )
 }

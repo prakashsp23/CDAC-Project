@@ -35,16 +35,16 @@ const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string()
-    .min(8, ' Password must be at least 8 characters')
+    .min(1, ' Password must be at least 8 characters')
     .max(20, 'Password must not exceed 20 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+    // .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    // .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    // .regex(/[0-9]/, 'Password must contain at least one number')
+    // .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
     .refine(val => !val.includes(' '), 'Password must not contain spaces'),
   confirmPassword: z.string(),
   phone: z.string().length(10, 'Phone number must be exactly 10 digits'),
-  role: z.enum(['admin', 'customer', 'mechanic'], {
+  role: z.enum(['ADMIN', 'CUSTOMER', 'MECHANIC'], {
     required_error: 'Please select a role',
   })
 }).refine((data) => data.password === data.confirmPassword, {
@@ -178,9 +178,9 @@ function RegisterPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="customer">Customer</SelectItem>
-                        <SelectItem value="mechanic">Mechanic</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="CUSTOMER">Customer</SelectItem>
+                        <SelectItem value="MECHANIC">Mechanic</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

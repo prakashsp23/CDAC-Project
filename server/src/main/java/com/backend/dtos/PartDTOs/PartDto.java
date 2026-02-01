@@ -1,10 +1,7 @@
 package com.backend.dtos.PartDTOs;
 
-import lombok.Data;
-
 import lombok.*;
 
-@Data
 @Getter
 @Setter
 @NoArgsConstructor
