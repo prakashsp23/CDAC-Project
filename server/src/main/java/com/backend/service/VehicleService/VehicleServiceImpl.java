@@ -70,6 +70,9 @@ public class VehicleServiceImpl implements VehicleService {
         if (carData.getYear() != null) {
             car.setYear(carData.getYear());
         }
+        if (carData.getLicenseNumber() != null) {
+            car.setLicenseNumber(carData.getLicenseNumber());
+        }
 
         Car savedCar = carRepository.save(car);
         CarResponse carResponse = modelMapper.map(savedCar, CarResponse.class);

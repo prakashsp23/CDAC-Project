@@ -6,16 +6,17 @@ import UniversalDisplay from '../../ui/universal-display'
 import { useNavigate } from 'react-router-dom'
 import ViewToggle from '../../ui/ViewToggle'
 import { useGetMyServices } from '../../../query/queries/serviceQueries'
-import { Car, Calendar, User, IndianRupee, ArrowRight, Wrench } from 'lucide-react'
+import { Car, Calendar, User, IndianRupee, ArrowRight, Wrench, Star } from 'lucide-react'
 import { Card, CardContent } from '../../ui/card'
+import FeedbackDialog from './components/FeedbackDialog'
 
 // Status color coding for badge only
 const STATUS_UI = {
-  Pending:    { label: 'Pending',    class: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
-  Accepted:   { label: 'Accepted',   class: 'bg-blue-50 text-blue-800 border-blue-200' },
+  Pending: { label: 'Pending', class: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
+  Accepted: { label: 'Accepted', class: 'bg-blue-50 text-blue-800 border-blue-200' },
   'In Progress': { label: 'In Progress', class: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
-  Completed:  { label: 'Completed',  class: 'bg-green-50 text-green-800 border-green-200' },
-  Cancelled:  { label: 'Cancelled',  class: 'bg-red-50 text-red-800 border-red-200' }
+  Completed: { label: 'Completed', class: 'bg-green-50 text-green-800 border-green-200' },
+  Cancelled: { label: 'Cancelled', class: 'bg-red-50 text-red-800 border-red-200' }
 }
 
 function StatusBadge({ status }) {
@@ -35,11 +36,14 @@ export default function MyServicesPage() {
   const [filter, setFilter] = useState('All')
   const [viewLocal, setViewLocal] = useState(() => window.localStorage.getItem('univ_view') || 'grid')
 
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackService, setFeedbackService] = useState(null)
+
   const { data: servicesData, isLoading: loading, error: servicesError } = useGetMyServices()
 
   const services = useMemo(() => {
     if (!servicesData?.data) return []
-    
+
     return servicesData.data.map(s => {
       // Safely format date
       let formattedDate = 'N/A'
@@ -65,13 +69,13 @@ export default function MyServicesPage() {
       }
 
       // Format vehicle info safely
-      const vehicleInfo = s.vehicle 
+      const vehicleInfo = s.vehicle
         ? {
-            brand: s.vehicle.brand || '',
-            model: s.vehicle.model || '',
-            regNumber: s.vehicle.regNumber || '',
-            display: `${s.vehicle.brand || ''} ${s.vehicle.model || ''} (${s.vehicle.regNumber || 'N/A'})`
-          }
+          brand: s.vehicle.brand || '',
+          model: s.vehicle.model || '',
+          regNumber: s.vehicle.regNumber || '',
+          display: `${s.vehicle.brand || ''} ${s.vehicle.model || ''} (${s.vehicle.regNumber || 'N/A'})`
+        }
         : null
 
       return {
@@ -84,16 +88,17 @@ export default function MyServicesPage() {
         vehicle: vehicleInfo,
         paymentStatus: s.paymentStatus,
         totalAmount: s.totalAmount,
-        mechanic: s.mechanic 
+        mechanic: s.mechanic,
+        hasFeedback: s.hasFeedback
       }
     })
   }, [servicesData])
 
   const TABS = [
-    { key: 'All',        label: 'All',        indicator: '' },
-    { key: 'Ongoing',    label: 'Ongoing',    indicator: 'bg-cyan-100' },
-    { key: 'Completed',  label: 'Completed',  indicator: 'bg-green-100' },
-    { key: 'Cancelled',  label: 'Cancelled',  indicator: 'bg-red-100' }
+    { key: 'All', label: 'All', indicator: '' },
+    { key: 'Ongoing', label: 'Ongoing', indicator: 'bg-cyan-100' },
+    { key: 'Completed', label: 'Completed', indicator: 'bg-green-100' },
+    { key: 'Cancelled', label: 'Cancelled', indicator: 'bg-red-100' }
   ]
 
   const counts = useMemo(() => {
@@ -153,11 +158,10 @@ export default function MyServicesPage() {
               <button
                 key={tab.key}
                 onClick={() => setFilter(tab.key)}
-                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border transition-all outline-none  ${
-                  selected
-                    ? `bg-background border-muted-foreground text-muted-foreground `
-                    : 'bg-muted'
-                }`}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border transition-all outline-none  ${selected
+                  ? `bg-background border-muted-foreground text-muted-foreground `
+                  : 'bg-muted'
+                  }`}
                 aria-pressed={selected}
                 aria-label={`Show ${tab.label} services`}
               >
@@ -224,7 +228,7 @@ export default function MyServicesPage() {
                       <span className="text-muted-foreground">N/A</span>
                     </div>
                   )}
-                  
+
                   {s.mechanic ? (
                     <div className="flex items-center gap-2 text-sm w-full">
                       <User className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -245,12 +249,12 @@ export default function MyServicesPage() {
                   )}
                   <div className="flex items-center justify-between pt-2 border-t">
                     <div className="flex items-center justify-between w-full gap-4 text-sm">
-                    {s.totalAmount != null && (
+                      {s.totalAmount != null && (
                         <div className="flex items-center font-semibold ">
-                          Base Amount: 
+                          Base Amount:
                           <span className="pl-2 text-muted-foreground">
                             {/* {Number(s.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })} */}
-                      {s.totalAmount}
+                            {s.totalAmount}
                           </span>
                           <IndianRupee className="w-3 h-3 text-muted-foreground" />
                         </div>
@@ -264,16 +268,31 @@ export default function MyServicesPage() {
                 </div>
 
                 {/* Footer Action */}
-                <div className="px-5 pb-5">
+                <div className="px-5 pb-5 flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full  transition-colors"
+                    className="flex-1  transition-colors"
                     onClick={() => navigate(`/customers/services/${s.id}`)}
                   >
                     View Details
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
+
+                  {s.status === 'Completed' && !s.hasFeedback && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 border-dashed"
+                      onClick={() => {
+                        setFeedbackService(s)
+                        setFeedbackOpen(true)
+                      }}
+                    >
+                      <Star className="w-3 h-3 mr-2" />
+                      Feedback
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -291,7 +310,21 @@ export default function MyServicesPage() {
               <TableCell className="text-muted-foreground">
                 {s.vehicle ? s.vehicle.display : 'N/A'}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right flex items-center justify-end gap-2">
+                {s.status === 'Completed' && !s.hasFeedback && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    title="Provide Feedback"
+                    onClick={() => {
+                      setFeedbackService(s)
+                      setFeedbackOpen(true)
+                    }}
+                  >
+                    <Star className="w-4 h-4 text-muted-foreground hover:text-yellow-500" />
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -315,6 +348,12 @@ export default function MyServicesPage() {
           }
         />
       </section>
+
+      <FeedbackDialog
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
+        service={feedbackService}
+      />
     </main>
   )
 }

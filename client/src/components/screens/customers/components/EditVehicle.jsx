@@ -43,6 +43,7 @@ const vehicleSchema = z.object({
       const year = parseInt(val);
       return year >= 1900 && year <= currentYear + 1;
     }, `Must be between 1900 and ${currentYear + 1}`),
+  licenseNumber: z.string().min(1, "License Number is required"),
 });
 
 export default function EditVehicle({ vehicle, children }) {
@@ -67,6 +68,7 @@ export default function EditVehicle({ vehicle, children }) {
         model: vehicle.model,
         registration: vehicle.registration,
         year: String(vehicle.year),
+        licenseNumber: vehicle.licenseNumber || ''
       });
     }
   }, [open, vehicle, form]);
@@ -78,7 +80,8 @@ export default function EditVehicle({ vehicle, children }) {
         brand: data.brand,
         model: data.model,
         regNumber: data.registration,
-        year: parseInt(data.year)
+        year: parseInt(data.year),
+        licenseNumber: data.licenseNumber
       }
     }, {
       onSuccess: () => {
@@ -115,7 +118,7 @@ export default function EditVehicle({ vehicle, children }) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            
+
             <FormField
               control={form.control}
               name="brand"
@@ -123,8 +126,8 @@ export default function EditVehicle({ vehicle, children }) {
                 <FormItem>
                   <FormLabel>Brand</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Toyota" 
+                    <Input
+                      placeholder="Toyota"
                       {...field}
                       disabled={updateVehicleMutation.isPending}
                     />
@@ -141,8 +144,8 @@ export default function EditVehicle({ vehicle, children }) {
                 <FormItem>
                   <FormLabel>Model</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Camry" 
+                    <Input
+                      placeholder="Camry"
                       {...field}
                       disabled={updateVehicleMutation.isPending}
                     />
@@ -159,8 +162,8 @@ export default function EditVehicle({ vehicle, children }) {
                 <FormItem>
                   <FormLabel>Registration Number</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="ABC123" 
+                    <Input
+                      placeholder="ABC123"
                       {...field}
                       disabled={updateVehicleMutation.isPending}
                       className="uppercase"
@@ -178,8 +181,8 @@ export default function EditVehicle({ vehicle, children }) {
                 <FormItem>
                   <FormLabel>Year</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="2024" 
+                    <Input
+                      placeholder="2024"
                       type="number"
                       {...field}
                       disabled={updateVehicleMutation.isPending}
@@ -190,16 +193,34 @@ export default function EditVehicle({ vehicle, children }) {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="licenseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>License Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="DL123456789"
+                      {...field}
+                      disabled={updateVehicleMutation.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="flex justify-end gap-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={updateVehicleMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={updateVehicleMutation.isPending}
               >

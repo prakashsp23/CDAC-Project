@@ -110,9 +110,9 @@ export default function ServiceDetailsPage() {
   // Loading state
   if (serviceLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <p className="text-lg text-muted-foreground">Loading service details...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading service details...</span>
       </div>
     )
   }
@@ -242,7 +242,7 @@ export default function ServiceDetailsPage() {
             <InfoRow
               icon={IndianRupee}
               label="Base Price"
-              value={service?.totalAmount ? `₹${Number(service.totalAmount).toLocaleString('en-IN')}` : 'N/A'}
+              value={service?.totalAmount ? `₹${Number(service.catalog.basePrice).toLocaleString('en-IN')}` : 'N/A'}
             />
             <InfoRow
               icon={Calendar}
@@ -278,6 +278,11 @@ export default function ServiceDetailsPage() {
                     <p className="text-sm text-muted-foreground">
                       {service.vehicle.regNumber}
                     </p>
+                    {service.vehicle.licenseNumber && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        License: {service.vehicle.licenseNumber}
+                      </p>
+                    )}
                     {/* {service.vehicle.year && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Year: {service.vehicle.year}
@@ -307,9 +312,9 @@ export default function ServiceDetailsPage() {
                     <h4 className="font-semibold text-base">
                       {service.mechanic.name}
                     </h4>
-                    {service.mechanic.phoneNumber && (
+                    {service.mechanic.phone && (
                       <p className="text-sm text-muted-foreground">
-                        {service.mechanic.phoneNumber}
+                        {service.mechanic.phone}
                       </p>
                     )}
                   </div>
@@ -359,7 +364,8 @@ export default function ServiceDetailsPage() {
               <div className="flex items-center justify-between py-2">
                 <span className="text-muted-foreground">Service Charge</span>
                 <span className="font-semibold">
-                  ₹{service.catalog?.basePrice ? Number(service.catalog.basePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+
+                  ₹{service.catalog?.basePrice ? Number(service.catalog.basePrice) : '0.00'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -368,9 +374,9 @@ export default function ServiceDetailsPage() {
                   ₹{service.partsTotal != null ? Number(service.partsTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
                 </span>
               </div>
-              
+
               <Separator />
-              
+
               {/* Total */}
               <div className="flex items-center justify-between py-3 bg-muted/50 px-4 rounded-lg">
                 <span className="text-lg font-semibold">Total Amount</span>
@@ -386,10 +392,10 @@ export default function ServiceDetailsPage() {
                 <span className="text-sm text-muted-foreground">Status:</span>
                 <PaymentBadge status={service.paymentStatus} />
               </div>
-              
+
               {/* Pay Now Button */}
               {service.status === 'COMPLETED' && service.paymentStatus !== 'PAID' && (
-                <Button 
+                <Button
                   onClick={() => {
                     alert('Payment gateway integration coming soon!')
                   }}

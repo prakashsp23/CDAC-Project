@@ -10,5 +10,5 @@ public class FeedbackHistoryDto {
     private Integer rating;
     private String comments;
     private LocalDate createdOn;
-    private String adminNote;
+    private String mechanicNote;
 }
