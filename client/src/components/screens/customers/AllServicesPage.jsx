@@ -68,7 +68,12 @@ export default function AllServicesPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading services...</div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading services...</span>
+      </div>
+    )
   }
 
   if (catalogData?.error) {

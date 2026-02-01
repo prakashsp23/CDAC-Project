@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
 import org.springframework.stereotype.Repository;
 import com.backend.entity.Services;
 import com.backend.entity.ServiceStatus;
@@ -32,12 +32,4 @@ public interface ServiceRepository extends JpaRepository<Services, Long> {
       """)
   List<Services> findUnassignedServices();
 
-  @Query("""
-          SELECT s
-          FROM Services s
-          WHERE s.status = :status
-            AND s.user.id = :id
-            AND NOT EXISTS (SELECT f FROM Feedback f WHERE f.service = s)
-      """)
-  List<Services> findServiceWithoutFeedback(@Param("id") Long id, @Param("status") ServiceStatus status);
 }

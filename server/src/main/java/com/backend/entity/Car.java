@@ -32,6 +32,7 @@ public class Car extends BaseEntity {
     private String brand;
     private String model;
     private Integer year;
+    private String licenseNumber;
     // vin is out of scope
 
     // Bidirectional: Car has many Services

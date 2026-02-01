@@ -43,6 +43,7 @@ const vehicleSchema = z.object({
       const year = parseInt(val);
       return year >= 1900 && year <= currentYear + 1;
     }, `Must be between 1900 and ${currentYear + 1}`),
+  licenseNumber: z.string().min(1, "License Number is required"),
 });
 
 export default function AddVehicle() {
@@ -56,6 +57,7 @@ export default function AddVehicle() {
       model: "",
       registration: "",
       year: "",
+      licenseNumber: ""
     },
   });
 
@@ -64,7 +66,8 @@ export default function AddVehicle() {
       brand: data.brand,
       model: data.model,
       regNumber: data.registration,
-      year: parseInt(data.year)
+      year: parseInt(data.year),
+      licenseNumber: data.licenseNumber
     }, {
       onSuccess: () => {
         form.reset();
@@ -99,7 +102,7 @@ export default function AddVehicle() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            
+
             <FormField
               control={form.control}
               name="brand"
@@ -107,8 +110,8 @@ export default function AddVehicle() {
                 <FormItem>
                   <FormLabel>Brand</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Toyota" 
+                    <Input
+                      placeholder="Toyota"
                       {...field}
                       disabled={addVehicleMutation.isPending}
                     />
@@ -125,8 +128,8 @@ export default function AddVehicle() {
                 <FormItem>
                   <FormLabel>Model</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Camry" 
+                    <Input
+                      placeholder="Camry"
                       {...field}
                       disabled={addVehicleMutation.isPending}
                     />
@@ -143,8 +146,8 @@ export default function AddVehicle() {
                 <FormItem>
                   <FormLabel>Registration Number</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="ABC123" 
+                    <Input
+                      placeholder="ABC123"
                       {...field}
                       disabled={addVehicleMutation.isPending}
                       className="uppercase"
@@ -162,8 +165,8 @@ export default function AddVehicle() {
                 <FormItem>
                   <FormLabel>Year</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="2024" 
+                    <Input
+                      placeholder="2024"
                       type="number"
                       {...field}
                       disabled={addVehicleMutation.isPending}
@@ -174,16 +177,34 @@ export default function AddVehicle() {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="licenseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>License Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="DL123456789"
+                      {...field}
+                      disabled={addVehicleMutation.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="flex justify-end gap-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={addVehicleMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={addVehicleMutation.isPending}
               >

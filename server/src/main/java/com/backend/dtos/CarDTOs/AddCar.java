@@ -12,4 +12,5 @@ public class AddCar {
     private String brand;
     private String model;
     private Integer year;
+    private String licenseNumber;
 }

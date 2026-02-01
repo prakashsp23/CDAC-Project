@@ -45,7 +45,6 @@ export default function ProfilePage() {
     const updateProfileMutation = useUpdateCurrentUserMutation()
 
     const [showChangePassword, setShowChangePassword] = useState(false)
-    const [isEditing, setIsEditing] = useState(false)
 
     const form = useForm({
         resolver: zodResolver(profileSchema),
@@ -68,11 +67,7 @@ export default function ProfilePage() {
     }, [profile, form])
 
     const onSubmit = async (data) => {
-        updateProfileMutation.mutate(data, {
-            onSuccess: () => {
-                setIsEditing(false)
-            }
-        })
+        updateProfileMutation.mutate(data)
     }
 
     if (isLoading) {
@@ -148,21 +143,6 @@ export default function ProfilePage() {
                         <div className="md:col-span-8 p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-semibold">Profile Information</h3>
-                                <Button
-                                    type="button"
-                                    variant={isEditing ? "ghost" : "outline"}
-                                    size="sm"
-                                    onClick={() => {
-                                        if (isEditing) {
-                                            form.reset() // Cancel edits
-                                            setIsEditing(false)
-                                        } else {
-                                            setIsEditing(true)
-                                        }
-                                    }}
-                                >
-                                    {isEditing ? 'Cancel Edit' : 'Edit Details'}
-                                </Button>
                             </div>
 
                             <Form {...form}>
@@ -178,8 +158,7 @@ export default function ProfilePage() {
                                                     <FormControl>
                                                         <Input
                                                             placeholder="John Doe"
-                                                            disabled={!isEditing}
-                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            disabled={updateProfileMutation.isPending}
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -199,8 +178,7 @@ export default function ProfilePage() {
                                                         <Input
                                                             type="email"
                                                             placeholder="john@example.com"
-                                                            disabled={!isEditing}
-                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            disabled={updateProfileMutation.isPending}
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -220,8 +198,7 @@ export default function ProfilePage() {
                                                         <Input
                                                             type="tel"
                                                             placeholder="+1 (555) 000-0000"
-                                                            disabled={!isEditing}
-                                                            className={!isEditing ? "bg-muted/50 border-transparent" : ""}
+                                                            disabled={updateProfileMutation.isPending}
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -231,13 +208,11 @@ export default function ProfilePage() {
                                         />
                                     </div>
 
-                                    {isEditing && (
-                                        <div className="flex justify-end pt-4 animate-in fade-in slide-in-from-bottom-2">
-                                            <Button type="submit" disabled={updateProfileMutation.isPending}>
-                                                {updateProfileMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
-                                            </Button>
-                                        </div>
-                                    )}
+                                    <div className="flex justify-end pt-4">
+                                        <Button type="submit" disabled={updateProfileMutation.isPending}>
+                                            {updateProfileMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
+                                        </Button>
+                                    </div>
                                 </form>
                             </Form>
                         </div>
