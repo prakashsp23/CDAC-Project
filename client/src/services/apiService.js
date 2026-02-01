@@ -205,7 +205,9 @@ export const MechanicApi = {
 
   // POST /service/{serviceId}/note - Add note to service (reuses ServiceApi)
   addNote: async (serviceId, noteData) => {
-    const response = await apiClient.post(`/service/${serviceId}/note`, noteData)
+    const response = await apiClient.post(`/service/${serviceId}/note`, noteData, {
+      headers: { 'Content-Type': 'text/plain' }
+    })
     return response.data
   },
 }
@@ -257,7 +259,7 @@ export const AdminApi = {
   // Reuse user endpoints
   fetchAllUsers: UserApi.fetchAllUsers,
   fetchMechanics: UserApi.fetchMechanics,
-  
+
   // Reuse service endpoints
   fetchAllServiceRequests: ServiceApi.fetchAllServices,
   assignMechanicToService: ServiceApi.assignMechanic,
