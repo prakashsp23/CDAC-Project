@@ -47,7 +47,7 @@ export default function AllServicesPage() {
 
   // Transform vehicles data
   const vehicles = vehiclesData?.data?.map(v => ({
-    id: v.carId,
+    id: v.id,
     brand: v.brand,
     model: v.model,
     registration: v.regNumber,
