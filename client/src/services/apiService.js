@@ -205,9 +205,7 @@ export const MechanicApi = {
 
   // POST /service/{serviceId}/note - Add note to service (reuses ServiceApi)
   addNote: async (serviceId, noteData) => {
-    const response = await apiClient.post(`/service/${serviceId}/note`, noteData, {
-      headers: { 'Content-Type': 'text/plain' }
-    })
+    const response = await apiClient.post(`/service/${serviceId}/note`, noteData)
     return response.data
   },
 }
