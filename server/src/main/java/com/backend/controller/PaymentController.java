@@ -1,8 +1,9 @@
-package com.backend.controllers;
+package com.backend.controller;
 
+import com.backend.aop.annotation.Customer;
 import com.backend.dtos.PaymentDTOs.PaymentRequest;
 import com.backend.dtos.PaymentDTOs.PaymentResponse;
-import com.backend.services.PaymentService;
+import com.backend.service.PaymentService.PaymentService;
 import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @Customer
     @PostMapping("/create-payment-intent")
     public ResponseEntity<PaymentResponse> createPaymentIntent(@RequestBody PaymentRequest paymentRequest)
             throws StripeException {
@@ -25,6 +27,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @Customer
     @PostMapping("/confirm-payment")
     public ResponseEntity<?> confirmPayment(@RequestBody Map<String, String> payload) {
         String paymentIntentId = payload.get("paymentIntentId");

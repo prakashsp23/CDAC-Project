@@ -54,6 +54,8 @@ public class SecurityConfig {
                                                                 "/swagger-ui/**",
                                                                 "/v3/api-docs/**")
                                                 .permitAll()
+                                                // CUSTOMER ENDPOINTS
+                                                .requestMatchers("/vehicle/**").hasRole("CUSTOMER")
 
                                                 // EVERYTHING ELSE SECURED
                                                 .anyRequest().authenticated())

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.aop.annotation.Admin;
+import com.backend.aop.annotation.Customer;
 import com.backend.dtos.ServiceCatalogDTO.CreateServiceCatalogDto;
 import com.backend.dtos.ServiceCatalogDTO.ServiceCatalogDto;
 import com.backend.dtos.ServiceCatalogDTO.UpdateServiceCatalogDto;
@@ -28,6 +29,7 @@ public class ServiceCatalogController {
 
     private final ServiceCatalogService serviceCatalogService;
 
+    @Customer
     @GetMapping
     public ResponseEntity<?> getAllServiceCatalogs() {
         List<ServiceCatalogDto> catalogs = serviceCatalogService.getAllServiceCatalogs();
@@ -49,7 +51,8 @@ public class ServiceCatalogController {
 
     @Admin
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateServiceCatalog(@PathVariable Long id, @RequestBody UpdateServiceCatalogDto updateDto) {
+    public ResponseEntity<?> updateServiceCatalog(@PathVariable Long id,
+            @RequestBody UpdateServiceCatalogDto updateDto) {
         ServiceCatalogDto updatedCatalog = serviceCatalogService.updateServiceCatalog(id, updateDto);
         return ResponseBuilder.success("Service catalog updated successfully", updatedCatalog);
     }
