@@ -30,17 +30,18 @@ pipeline {
                     def backendImage  = "${dockerHubUser}/carservice-backend:${env.IMAGE_TAG}"
                     def frontendImage = "${dockerHubUser}/carservice-frontend:${env.IMAGE_TAG}"
 
-                    withCredentials([string(credentialsId: 'stripe-publishable-key', variable: 'VITE_STRIPE_PUBLISHABLE_KEY')]) {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
 
-                        def frontendBuildArgs = "--build-arg VITE_API_URL=/api " +
-                                                "--build-arg VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}"
+                        echo "Building Backend Image: ${backendImage}"
+                        def backendBuild = docker.build(backendImage, '-f server/Dockerfile server/')
+                        backendBuild.push()
+                        backendBuild.push('latest')
 
-                        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        
+                        withCredentials([string(credentialsId: 'VITE_STRIPE_PUBLISHABLE_KEY', variable: 'VITE_STRIPE_PUBLISHABLE_KEY')]) {
 
-                            echo "Building Backend Image: ${backendImage}"
-                            def backendBuild = docker.build(backendImage, '-f server/Dockerfile server/')
-                            backendBuild.push()
-                            backendBuild.push('latest')
+                            def frontendBuildArgs = "--build-arg VITE_API_URL=/api " +
+                                                    "--build-arg VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}"
 
                             echo "Building Frontend Image: ${frontendImage}"
                             def frontendBuild = docker.build(frontendImage, "${frontendBuildArgs} -f client/Dockerfile client/")
@@ -67,11 +68,6 @@ pipeline {
                             MANIFEST_BASE=k8s
 
                             echo "Updating manifests with tag ${IMAGE_TAG}"
-
-                            for f in \$MANIFEST_BASE/backend-deployment.yaml \$MANIFEST_BASE/frontend-deployment.yaml; do
-                              sed -i 's|DOCKER_HUB_PLACEHOLDER|${dockerHubUser}|g' \$f
-                              sed -i 's|IMAGE_TAG_PLACEHOLDER|${IMAGE_TAG}|g' \$f
-                            done
 
                             sed -i 's|image: .*/carservice-backend:.*|image: ${dockerHubUser}/carservice-backend:${IMAGE_TAG}|g' \$MANIFEST_BASE/backend-deployment.yaml
                             sed -i 's|image: .*/carservice-frontend:.*|image: ${dockerHubUser}/carservice-frontend:${IMAGE_TAG}|g' \$MANIFEST_BASE/frontend-deployment.yaml
