@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -28,26 +27,26 @@ pipeline {
                 script {
                     def dockerHubUser = getDockerHubUsername()
 
-                    def backendImage = "${dockerHubUser}/carservice-backend:${env.IMAGE_TAG}"
+                    def backendImage  = "${dockerHubUser}/carservice-backend:${env.IMAGE_TAG}"
                     def frontendImage = "${dockerHubUser}/carservice-frontend:${env.IMAGE_TAG}"
 
-                    // Build args for frontend (Vite)
-                    def frontendBuildArgs = "--build-arg VITE_API_URL=/api"
-                    if (env.VITE_STRIPE_PUBLISHABLE_KEY) {
-                        frontendBuildArgs += " --build-arg VITE_STRIPE_PUBLISHABLE_KEY=${env.VITE_STRIPE_PUBLISHABLE_KEY}"
-                    }
+                    withCredentials([string(credentialsId: 'stripe-publishable-key', variable: 'VITE_STRIPE_PUBLISHABLE_KEY')]) {
 
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        def frontendBuildArgs = "--build-arg VITE_API_URL=/api " +
+                                                "--build-arg VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}"
 
-                        echo "Building Backend Image: ${backendImage}"
-                        def backendBuild = docker.build(backendImage, '-f server/Dockerfile server/')
-                        backendBuild.push()
-                        backendBuild.push('latest')
+                        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
 
-                        echo "Building Frontend Image: ${frontendImage}"
-                        def frontendBuild = docker.build(frontendImage, "${frontendBuildArgs} -f client/Dockerfile client/")
-                        frontendBuild.push()
-                        frontendBuild.push('latest')
+                            echo "Building Backend Image: ${backendImage}"
+                            def backendBuild = docker.build(backendImage, '-f server/Dockerfile server/')
+                            backendBuild.push()
+                            backendBuild.push('latest')
+
+                            echo "Building Frontend Image: ${frontendImage}"
+                            def frontendBuild = docker.build(frontendImage, "${frontendBuildArgs} -f client/Dockerfile client/")
+                            frontendBuild.push()
+                            frontendBuild.push('latest')
+                        }
                     }
                 }
             }
@@ -63,7 +62,6 @@ pipeline {
                         sh """
                             set -e
                             MANIFESTS_REPO_URL='${manifestsRepo.replaceAll("'", "'\\\\''")}'
-
                             git clone "https://\${GIT_USER}:\${GIT_PASS}@\${MANIFESTS_REPO_URL#https://}" manifests-repo
                             cd manifests-repo
                             MANIFEST_BASE=k8s
@@ -74,6 +72,7 @@ pipeline {
                               sed -i 's|DOCKER_HUB_PLACEHOLDER|${dockerHubUser}|g' \$f
                               sed -i 's|IMAGE_TAG_PLACEHOLDER|${IMAGE_TAG}|g' \$f
                             done
+
                             sed -i 's|image: .*/carservice-backend:.*|image: ${dockerHubUser}/carservice-backend:${IMAGE_TAG}|g' \$MANIFEST_BASE/backend-deployment.yaml
                             sed -i 's|image: .*/carservice-frontend:.*|image: ${dockerHubUser}/carservice-frontend:${IMAGE_TAG}|g' \$MANIFEST_BASE/frontend-deployment.yaml
 
@@ -82,7 +81,6 @@ pipeline {
 
                             git add .
                             git commit -m "Deploy image tag ${IMAGE_TAG}" || echo "No changes to commit"
-
                             git push origin HEAD:main
                         """
                     }
