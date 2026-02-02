@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class ServiceCatalogInfo {
     private Long id;
     private String serviceName;
+    private Double basePrice;
 }

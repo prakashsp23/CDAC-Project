@@ -3,64 +3,66 @@ import { Card, CardContent } from "../../../ui/card";
 import { Button } from "../../../ui/button";
 import { Search, Filter, Calendar } from "lucide-react";
 import UpdateServiceModal from "./UpdateServiceModal";
+import {
+  useGetMechanicAssignedJobs,
+  useUpdateServiceExecutionMutation,
+  useAddMechanicNoteMutation
+} from "../../../../query/queries/mechanicQueries";
+import { format } from "date-fns";
 
 export default function AssignedJobs() {
-  const initialJobs = [
-    {
-      id: "SRV-001",
-      customer: "Michael Johnson",
-      car: "Toyota Camry 2022",
-      plate: "ABC-1234",
-      service: "Oil Change & Filter Replacement",
-      start: "09:00 AM",
-      expected: "11:00 AM",
-      status: "Pending",
-      note: "",
-    },
-    {
-      id: "SRV-002",
-      customer: "Sarah Williams",
-      car: "Honda Accord 2021",
-      plate: "XYZ-5678",
-      service: "Engine Diagnostics",
-      start: "08:30 AM",
-      expected: "12:30 PM",
-      status: "In Progress",
-      note: "Initial diagnostic shows possible sensor malfunction",
-    },
-    {
-      id: "SRV-003",
-      customer: "Emily Davis",
-      car: "Ford Focus 2020",
-      plate: "DEF-7890",
-      service: "Brake Pad Replacement",
-      start: "10:00 AM",
-      expected: "01:00 PM",
-      status: "Pending",
-      note: "",
-    },
-  ];
-
-  const [jobsList, setJobsList] = useState(initialJobs);
   const [filterStatus, setFilterStatus] = useState("All");
-
   const [selectedJob, setSelectedJob] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
-  // draft notes (saved only when Update is clicked)
   const [noteDrafts, setNoteDrafts] = useState({});
 
+  // Queries & Mutations
+  const { data: jobsList = [], isLoading } = useGetMechanicAssignedJobs();
+  const updateMutation = useUpdateServiceExecutionMutation();
+  const addNoteMutation = useAddMechanicNoteMutation();
+
   const handleJobUpdate = (updatedJob) => {
-    const updatedList = jobsList.map((job) =>
-      job.id === updatedJob.id ? updatedJob : job
-    );
-    setJobsList(updatedList);
+    const payload = {
+      serviceId: updatedJob.id,
+      executionData: {
+        status: updatedJob.status,
+        parts: updatedJob.parts.map(p => ({
+          id: p.id,
+          quantity: p.quantity
+        }))
+      }
+    };
+
+    updateMutation.mutate(payload, {
+      onSuccess: () => {
+        setOpenModal(false);
+        setSelectedJob(null);
+      }
+    });
+  };
+
+  const saveNote = (jobId) => {
+    const noteContent = noteDrafts[jobId] ?? jobsList.find(j => j.id === jobId)?.notes;
+    if (!noteContent?.trim()) return;
+
+    addNoteMutation.mutate({
+      serviceId: jobId,
+      noteData: noteContent
+    }, {
+      onSuccess: () => {
+        setNoteDrafts(prev => {
+          const newState = { ...prev };
+          delete newState[jobId];
+          return newState;
+        });
+      }
+    });
   };
 
   const filteredJobs =
     filterStatus === "All"
       ? jobsList
-      : jobsList.filter((job) => job.status === filterStatus);
+      : jobsList.filter((job) => job.status === filterStatus.toUpperCase());
 
   return (
     <div className="py-6 px-8 w-[90%] mx-auto space-y-6">
@@ -90,23 +92,26 @@ export default function AssignedJobs() {
             onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="All">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
+            <option value="ONGOING">Ongoing</option>
+            <option value="COMPLETED">Completed</option>
           </select>
         </div>
       </div>
 
       {/* Jobs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredJobs.map((job) => (
+        {isLoading ? (
+          <p className="text-muted-foreground">Loading assigned jobs...</p>
+        ) : filteredJobs.length === 0 ? (
+          <p className="text-muted-foreground">No assigned jobs found.</p>
+        ) : filteredJobs.map((job) => (
           <Card key={job.id} className="rounded-xl">
             <CardContent className="p-4">
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="font-semibold text-lg">{job.customer}</h2>
-                  <p className="text-xs text-muted-foreground">{job.id}</p>
+                  <h2 className="font-semibold text-lg">{job.customerName}</h2>
+                  <p className="text-xs text-muted-foreground">ID: {job.id}</p>
                 </div>
 
                 <span className="px-3 py-1 text-xs rounded-full bg-muted/50">
@@ -116,26 +121,22 @@ export default function AssignedJobs() {
 
               {/* Vehicle */}
               <div className="mt-3">
-                <p className="text-sm text-muted-foreground">{job.car}</p>
+                <p className="text-sm text-muted-foreground">{job.carBrand} {job.carModel}</p>
                 <span className="inline-block mt-2 bg-muted/50 px-3 py-1 text-xs rounded-md">
-                  {job.plate}
+                  {job.carPlate}
                 </span>
               </div>
 
               {/* Service */}
               <div className="mt-4 bg-muted/20 p-3 rounded-lg">
-                <p className="text-sm font-medium">{job.service}</p>
+                <p className="text-sm font-medium">{job.serviceName}</p>
               </div>
 
               {/* Time */}
               <div className="flex justify-between mt-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Start: {job.start}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Expected: {job.expected}
+                  Assigned: {job.createdOn ? format(new Date(job.createdOn), 'PPP') : 'N/A'}
                 </div>
               </div>
 
@@ -149,26 +150,17 @@ export default function AssignedJobs() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      handleJobUpdate({
-                        ...job,
-                        note: noteDrafts[job.id] ?? job.note,
-                      });
-
-                      setNoteDrafts({
-                        ...noteDrafts,
-                        [job.id]: undefined,
-                      });
-                    }}
+                    onClick={() => saveNote(job.id)}
+                    disabled={!noteDrafts[job.id]}
                   >
-                    Update
+                    Save Note
                   </Button>
                 </div>
 
                 <textarea
-                  placeholder="e.g. Oil filter replaced, diagnostics completed..."
+                  placeholder={job.notes || "e.g. Oil filter replaced, diagnostics completed..."}
                   className="w-full border rounded-lg px-3 py-2 text-sm bg-muted/50"
-                  value={noteDrafts[job.id] ?? job.note}
+                  value={noteDrafts[job.id] ?? job.notes ?? ""}
                   onChange={(e) =>
                     setNoteDrafts({
                       ...noteDrafts,
@@ -183,7 +175,14 @@ export default function AssignedJobs() {
                 <Button
                   className="w-full"
                   onClick={() => {
-                    setSelectedJob(job);
+                    setSelectedJob({
+                      id: job.id,
+                      customer: job.customerName,
+                      car: `${job.carBrand} ${job.carModel}`,
+                      plate: job.carPlate,
+                      service: job.serviceName,
+                      status: job.status,
+                    });
                     setOpenModal(true);
                   }}
                 >

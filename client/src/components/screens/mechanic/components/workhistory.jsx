@@ -1,11 +1,11 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookingApi } from "../../../../services/apiService";
+import { MechanicApi } from "../../../../services/apiService";
 
 export default function WorkHistory() {
-  const { data: workLogs , isLoading, error } = useQuery({
-    queryKey: ["fetchBookings"],
-    queryFn: BookingApi.fetchBookings,
+  const { data: workLogs, isLoading, error } = useQuery({
+    queryKey: ["mechanicWorkLogs"],
+    queryFn: MechanicApi.fetchWorkLogs,
   });
   console.log(workLogs)
 
@@ -61,7 +61,7 @@ export default function WorkHistory() {
                 <tr key={index} className="border-b hover:bg-muted/10 transition">
                   <td className="p-3 whitespace-nowrap">
                     <span className="px-2 py-1 bg-muted/50 border rounded text-sm font-semibold">
-                      {job.serviceId}
+                      {job.id}
                     </span>
                   </td>
 

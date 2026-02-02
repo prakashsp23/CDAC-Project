@@ -32,16 +32,16 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
 
   function handleSubmit() {
     if (!form.vehicleId || !form.service) return
-    
+
     const catalogId = parseInt(form.service)
     const carId = parseInt(form.vehicleId)
-    
+
     // Validate parsed values
     if (isNaN(catalogId) || isNaN(carId)) {
       console.error('Invalid IDs:', { catalogId, carId, form })
       return
     }
-    
+
     createServiceMutation.mutate({
       catalogId,
       carId,
@@ -67,7 +67,7 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-muted-foreground">Select Vehicle</label>
-              <Select value={String(form.vehicleId)} onValueChange={(v) => setForm(f => ({ ...f, vehicleId: Number(v) }))}>
+              <Select value={String(form.vehicleId)} onValueChange={(v) => setForm(f => ({ ...f, vehicleId: v }))}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select vehicle" />
                 </SelectTrigger>
@@ -96,8 +96,8 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
 
           <div>
             <label className="text-sm text-muted-foreground">Notes (Optional)</label>
-            <Textarea 
-              value={form.notes} 
+            <Textarea
+              value={form.notes}
               onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Any specific requirements or issues..."
               disabled={createServiceMutation.isPending}
@@ -111,15 +111,15 @@ export default function BookService({ open, onOpenChange, vehicles = DUMMY_VEHIC
           </div>
 
           <div className="flex justify-end gap-2 mt-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={createServiceMutation.isPending}
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={!form.vehicleId || !form.service || createServiceMutation.isPending}
             >
               {createServiceMutation.isPending ? (

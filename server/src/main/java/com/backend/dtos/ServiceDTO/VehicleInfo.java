@@ -14,4 +14,5 @@ public class VehicleInfo {
     private String brand;
     private String model;
     private String regNumber;
+    private String licenseNumber;
 }

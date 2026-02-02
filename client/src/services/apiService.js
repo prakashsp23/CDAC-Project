@@ -52,6 +52,18 @@ export const UserApi = {
     const response = await apiClient.get('/user/mechanics')
     return response.data
   },
+
+  // GET /user/mechanics/summary - Get mechanics summary for admin
+  fetchMechanicsSummary: async () => {
+    const response = await apiClient.get('/user/mechanics/summary')
+    return response.data
+  },
+
+  // DELETE /user/mechanics/{id} - Delete mechanic by ID
+  deleteMechanic: async (id) => {
+    const response = await apiClient.delete(`/user/mechanics/${id}`)
+    return response.data
+  },
 }
 
 // ==================== VEHICLE SERVICES ====================
@@ -218,6 +230,18 @@ export const PartApi = {
     return response.data
   },
 
+  // POST /parts - Create new part (Admin)
+  createPart: async (partData) => {
+    const response = await apiClient.post('/parts', partData)
+    return response.data
+  },
+
+  // PUT /parts/{id} - Update part (Admin)
+  updatePart: async (id, partData) => {
+    const response = await apiClient.put(`/parts/${id}`, partData)
+    return response.data
+  },
+
   // DELETE /parts/{id} - Delete part by ID (Admin)
   deletePart: async (partId) => {
     const response = await apiClient.delete(`/parts/${partId}`)
@@ -246,6 +270,21 @@ export const FeedbackApi = {
   },
 }
 
+// ==================== PAYMENT SERVICES ====================
+export const PaymentApi = {
+  // POST /payment/create-payment-intent
+  createPaymentIntent: async (paymentRequest) => {
+    const response = await apiClient.post('/payment/create-payment-intent', paymentRequest)
+    return response.data
+  },
+
+  // POST /payment/confirm-payment
+  confirmPaymentOnBackend: async (paymentIntentId) => {
+    const response = await apiClient.post('/payment/confirm-payment', { paymentIntentId })
+    return response.data
+  },
+}
+
 // ==================== ADMIN DASHBOARD SERVICES ====================
 export const AdminApi = {
   // GET /admin/dashboard - Get admin dashboard data
@@ -257,7 +296,7 @@ export const AdminApi = {
   // Reuse user endpoints
   fetchAllUsers: UserApi.fetchAllUsers,
   fetchMechanics: UserApi.fetchMechanics,
-  
+
   // Reuse service endpoints
   fetchAllServiceRequests: ServiceApi.fetchAllServices,
   assignMechanicToService: ServiceApi.assignMechanic,
