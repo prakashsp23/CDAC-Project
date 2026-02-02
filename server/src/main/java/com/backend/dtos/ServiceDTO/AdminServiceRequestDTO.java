@@ -1,6 +1,6 @@
 package com.backend.dtos.ServiceDTO;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.backend.entity.PaymentStatus;
 
@@ -29,5 +29,5 @@ public class AdminServiceRequestDTO {
 
     private PaymentStatus paymentStatus;
 
-    private LocalDateTime createdAt;
+    private LocalDate createdOn;
 }
