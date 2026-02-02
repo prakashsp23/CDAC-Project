@@ -20,7 +20,8 @@ import {
   XCircle,
   ClipboardList,
   CreditCard,
-  Ban
+  Ban,
+  Phone
 } from 'lucide-react'
 
 // Status configuration
@@ -275,12 +276,12 @@ export default function ServiceDetailsPage() {
                     <h4 className="font-semibold text-base">
                       {service.vehicle.brand} {service.vehicle.model}
                     </h4>
-                    <p className="text-sm text-muted-foreground">
+                    {/* <p className="text-sm text-muted-foreground">
                       {service.vehicle.regNumber}
-                    </p>
+                    </p> */}
                     {service.vehicle.licenseNumber && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        License: {service.vehicle.licenseNumber}
+                      <p className="text-sm text-muted-foreground">
+                        {service.vehicle.licenseNumber}
                       </p>
                     )}
                     {/* {service.vehicle.year && (
@@ -308,13 +309,18 @@ export default function ServiceDetailsPage() {
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <User className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex flex-1 items-center justify-between min-w-0">
                     <h4 className="font-semibold text-base">
                       {service.mechanic.name}
                     </h4>
                     {service.mechanic.phone && (
                       <p className="text-sm text-muted-foreground">
-                        {service.mechanic.phone}
+                        <span className="flex items-center gap-1">
+                        <span>
+                            <Phone className="inline w-4 h-4 mr-1 text-muted-foreground" />
+                          </span>
+                          {service.mechanic.phone}
+                        </span>
                       </p>
                     )}
                   </div>
