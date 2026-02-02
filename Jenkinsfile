@@ -100,7 +100,6 @@ pipeline {
         }
         always {
             cleanWs(deleteDirs: true)
-            // Free disk on Jenkins node: remove dangling images and stopped containers (prevents disk fill over time)
             sh 'docker system prune -f || true'
         }
     }
