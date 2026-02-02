@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import MechanicForm from "../../components/MechanicForm";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { Badge } from "@/components/ui/badge";
@@ -12,18 +12,31 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { useGetAllMechanics, useDeleteMechanicMutation } from "@/query/queries/adminQueries";
+import { Loader2 } from "lucide-react";
 
 export default function MechanicsPage() {
-  const [mechanics, setMechanics] = useState([
-    { id: 1, mechanicId: "MECH-001", name: "John Davis", email: "john.davis@carservice.com", phone: "+1 555 123-4567", status: "active", assignedJobs: 4 },
-    { id: 2, mechanicId: "MECH-002", name: "Michael Torres", email: "michael.torres@carservice.com", phone: "+1 555 234-5678", status: "active", assignedJobs: 6 },
-    { id: 3, mechanicId: "MECH-003", name: "David Chen", email: "david.chen@carservice.com", phone: "+91 2570297252", status: "active", assignedJobs: 3 },
-    { id: 4, mechanicId: "MECH-004", name: "Robert Smith", email: "robert.smith@carservice.com", phone: "+1 555 456-7890", status: "inactive", assignedJobs: 0 },
-  ]);
-
   const [query, setQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+
+  // React Query Hooks
+  const { data: response, isLoading, isError } = useGetAllMechanics();
+  const deleteMutation = useDeleteMechanicMutation();
+
+  // Map Backend Data
+  const mechanics = useMemo(() => {
+    const rawMechanics = response?.data || [];
+    return rawMechanics.map(m => ({
+      id: m.id,
+      mechanicId: `MECH-${String(m.id).padStart(3, "0")}`,
+      name: m.name || "N/A",
+      email: m.email || "N/A",
+      phone: m.phone || "N/A",
+      status: (m.status || "Inactive").toLowerCase(),
+      assignedJobs: m.assignedJobs || 0
+    }));
+  }, [response]);
 
   // Derived counts
   const total = mechanics.length;
@@ -32,15 +45,15 @@ export default function MechanicsPage() {
 
   // Handlers
   function handleAdd(newMech) {
-    const nextId = mechanics.length ? Math.max(...mechanics.map(m => m.id)) + 1 : 1;
-    const mechanicId = `MECH-${String(nextId).padStart(3, "0")}`;
-    setMechanics([{ id: nextId, mechanicId, assignedJobs: 0, status: "active", ...newMech }, ...mechanics]);
+    // Skipping implementation as per request
+    console.log("Add mechanic skip requested", newMech);
     setShowAdd(false);
   }
 
   function handleDeleteConfirmed(id) {
-    setMechanics(mechanics.filter(m => m.id !== id));
-    setToDelete(null);
+    deleteMutation.mutate(id, {
+      onSuccess: () => setToDelete(null)
+    });
   }
 
   // Filter
@@ -54,6 +67,22 @@ export default function MechanicsPage() {
      bg-white dark:bg-neutral-800 
      border-neutral-300 dark:border-neutral-700
      shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer`;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Failed to load mechanics. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div className="
@@ -134,8 +163,9 @@ export default function MechanicsPage() {
                       variant="destructive"
                       size="sm"
                       onClick={() => setToDelete(m)}
+                      disabled={deleteMutation.isPending}
                     >
-                      Delete
+                      {deleteMutation.isPending && toDelete?.id === m.id ? "Delet..." : "Delete"}
                     </Button>
                   </TableCell>
                 </TableRow>

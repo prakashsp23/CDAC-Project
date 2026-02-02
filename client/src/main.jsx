@@ -27,6 +27,7 @@ import ServiceDetailsPage from "./components/screens/customers/ServiceDetailsPag
 import MyVehicles from "./components/screens/customers/MyVehicles.jsx"
 import AllServicesPage from "./components/screens/customers/AllServicesPage.jsx"
 import FeedBackPage from "./components/screens/customers/ServiceFeedback.jsx"
+import PaymentPage from "./components/payment/PaymentPage.jsx"
 
 import Dashboard from "./components/screens/mechanic/components/dashboard.jsx"
 import WorkHistory from "./components/screens/mechanic/components/workhistory.jsx"
@@ -71,6 +72,7 @@ const router = createBrowserRouter(
           <Route path="services/:serviceId" element={<ServiceDetailsPage />} />
           <Route path="vehicles" element={<MyVehicles />} />
           <Route path="feedback" element={<FeedBackPage />} />
+          <Route path="payment" element={<PaymentPage />} />
         </Route>
 
         {/* Mechanic routes - only accessible by MECHANIC */}

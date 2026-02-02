@@ -110,9 +110,9 @@ export default function ServiceDetailsPage() {
   // Loading state
   if (serviceLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <p className="text-lg text-muted-foreground">Loading service details...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading service details...</span>
       </div>
     )
   }
@@ -242,7 +242,7 @@ export default function ServiceDetailsPage() {
             <InfoRow
               icon={IndianRupee}
               label="Base Price"
-              value={service?.totalAmount ? `₹${Number(service.totalAmount).toLocaleString('en-IN')}` : 'N/A'}
+              value={service?.totalAmount ? `₹${Number(service.catalog.basePrice).toLocaleString('en-IN')}` : 'N/A'}
             />
             <InfoRow
               icon={Calendar}
@@ -278,6 +278,11 @@ export default function ServiceDetailsPage() {
                     <p className="text-sm text-muted-foreground">
                       {service.vehicle.regNumber}
                     </p>
+                    {service.vehicle.licenseNumber && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        License: {service.vehicle.licenseNumber}
+                      </p>
+                    )}
                     {/* {service.vehicle.year && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Year: {service.vehicle.year}
@@ -307,9 +312,9 @@ export default function ServiceDetailsPage() {
                     <h4 className="font-semibold text-base">
                       {service.mechanic.name}
                     </h4>
-                    {service.mechanic.phoneNumber && (
+                    {service.mechanic.phone && (
                       <p className="text-sm text-muted-foreground">
-                        {service.mechanic.phoneNumber}
+                        {service.mechanic.phone}
                       </p>
                     )}
                   </div>
@@ -359,7 +364,8 @@ export default function ServiceDetailsPage() {
               <div className="flex items-center justify-between py-2">
                 <span className="text-muted-foreground">Service Charge</span>
                 <span className="font-semibold">
-                  ₹{service.catalog?.basePrice ? Number(service.catalog.basePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+
+                  ₹{service.catalog?.basePrice ? Number(service.catalog.basePrice) : '0.00'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -368,9 +374,9 @@ export default function ServiceDetailsPage() {
                   ₹{service.partsTotal != null ? Number(service.partsTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
                 </span>
               </div>
-              
+
               <Separator />
-              
+
               {/* Total */}
               <div className="flex items-center justify-between py-3 bg-muted/50 px-4 rounded-lg">
                 <span className="text-lg font-semibold">Total Amount</span>
@@ -386,13 +392,11 @@ export default function ServiceDetailsPage() {
                 <span className="text-sm text-muted-foreground">Status:</span>
                 <PaymentBadge status={service.paymentStatus} />
               </div>
-              
-              {/* Pay Now Button */}
-              {service.status === 'COMPLETED' && service.paymentStatus !== 'PAID' && (
-                <Button 
-                  onClick={() => {
-                    alert('Payment gateway integration coming soon!')
-                  }}
+
+              {service.paymentStatus !== 'PAID' && service.status === 'COMPLETED' && (
+                <Button
+                  onClick={() => navigate('/customers/payment', { state: { serviceId: service.id } })}
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Pay Now
@@ -409,95 +413,100 @@ export default function ServiceDetailsPage() {
             )}
           </CardContent>
         </Card>
-      )}
+      )
+      }
 
       {/* Cancellation Information (if cancelled) */}
-      {service.status === 'CANCELLED' && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Ban className="w-5 h-5" />
-              Cancellation Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoRow
-                icon={AlertCircle}
-                label="Cancelled By"
-                value={service.cancelledByAdmin ? 'Admin' : 'System'}
-              />
-              <InfoRow
-                icon={Calendar}
-                label="Cancelled At"
-                value={formatDateTime(service.cancelledAt)}
-              />
-            </div>
-            {service.cancellationReason && (
-              <>
-                <Separator />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Reason</p>
-                  <p className="text-sm bg-background p-3 rounded-lg border border-destructive/30">
-                    {service.cancellationReason}
-                  </p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {
+        service.status === 'CANCELLED' && (
+          <Card className="border-destructive/50 bg-destructive/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <Ban className="w-5 h-5" />
+                Cancellation Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InfoRow
+                  icon={AlertCircle}
+                  label="Cancelled By"
+                  value={service.cancelledByAdmin ? 'Admin' : 'System'}
+                />
+                <InfoRow
+                  icon={Calendar}
+                  label="Cancelled At"
+                  value={formatDateTime(service.cancelledAt)}
+                />
+              </div>
+              {service.cancellationReason && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Reason</p>
+                    <p className="text-sm bg-background p-3 rounded-lg border border-destructive/30">
+                      {service.cancellationReason}
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
 
       {/* Work Logs */}
-      {worklogs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5" />
-              Work Progress
-              <Badge variant="secondary" className="ml-2">{worklogs.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {worklogsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {worklogs.map((log, index) => (
-                  <div
-                    key={log.id || index}
-                    className="flex gap-4 p-4 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Wrench className="w-4 h-4 text-primary" />
+      {
+        worklogs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5" />
+                Work Progress
+                <Badge variant="secondary" className="ml-2">{worklogs.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {worklogsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {worklogs.map((log, index) => (
+                    <div
+                      key={log.id || index}
+                      className="flex gap-4 p-4 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Wrench className="w-4 h-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <p className="font-semibold">{log.description || 'Work Update'}</p>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDateTime(log.createdAt)}
+                          </span>
+                        </div>
+                        {log.notes && (
+                          <p className="text-sm text-muted-foreground">{log.notes}</p>
+                        )}
+                        {log.mechanicName && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            By: {log.mechanicName}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <p className="font-semibold">{log.description || 'Work Update'}</p>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDateTime(log.createdAt)}
-                        </span>
-                      </div>
-                      {log.notes && (
-                        <p className="text-sm text-muted-foreground">{log.notes}</p>
-                      )}
-                      {log.mechanicName && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          By: {log.mechanicName}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
+    </div >
   )
 }

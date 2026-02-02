@@ -49,6 +49,7 @@ export function useSubmitFeedbackMutation() {
       queryClient.invalidateQueries({ queryKey: feedbackKeys.lists() })
       queryClient.invalidateQueries({ queryKey: feedbackKeys.myFeedbacks() })
       queryClient.invalidateQueries({ queryKey: serviceKeys.completed() })
+      queryClient.invalidateQueries({ queryKey: serviceKeys.myServices() })
       toast.success(data?.message || 'Feedback submitted successfully')
     },
     onError: (err) => {

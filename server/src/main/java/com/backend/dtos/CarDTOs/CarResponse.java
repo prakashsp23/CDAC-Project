@@ -9,4 +9,5 @@ public class CarResponse {
     private String brand;
     private String model;
     private Integer year;
+    private String licenseNumber;
 }

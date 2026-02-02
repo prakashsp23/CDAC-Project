@@ -1,58 +1,31 @@
 import React from "react";
 import { Card, CardContent } from "../../../ui/card";
-import { Button } from "../../../ui/button";
-import { Timer, Wrench, CheckCircle, Tag, Clock } from "lucide-react";
+import { Timer, CheckCircle, Tag } from "lucide-react";
 import { useTheme } from "../../../theme-provider";
+import { useGetMechanicAssignedJobs, useGetMechanicWorkLogs } from "../../../../query/queries/mechanicQueries";
+import { useGetCurrentUser } from "../../../../query/queries/userQueries";
+import { format } from "date-fns";
 
 export default function Dashboard() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
-  const toggleTheme = () => {
-    if (theme === "dark") setTheme("light")
-    else setTheme("dark")
-  }
+  // Queries
+  const { data: user } = useGetCurrentUser();
+  const { data: assignedJobs, isLoading: isLoadingJobs } = useGetMechanicAssignedJobs();
+  const { data: workLogs, isLoading: isLoadingLogs } = useGetMechanicWorkLogs();
+
   const stats = [
     {
       title: "Jobs Assigned",
-      value: 4,
+      value: assignedJobs?.length || 0,
       icon: <Timer className="w-6 h-6 text-gray-700" />,
       iconBg: "bg-gray-100",
     },
     {
       title: "Jobs Completed",
-      value: 15,
+      value: workLogs?.length || 0,
       icon: <CheckCircle className="w-6 h-6 text-green-700" />,
       iconBg: "bg-green-100",
-    },
-  ];
-
-  const recentJobs = [
-    {
-      name: "Sarah Williams",
-      id: "SRV-002",
-      car: "Honda Accord 2021",
-      plate: "XYZ-5678",
-      task: "Engine Diagnostics",
-      status: "In Progress",
-      time: "08:30 AM",
-    },
-    {
-      name: "Robert Brown",
-      id: "SRV-003",
-      car: "Ford F-150 2020",
-      plate: "DEF-9012",
-      task: "Brake System Inspection",
-      status: "In Progress",
-      time: "10:00 AM",
-    },
-    {
-      name: "Robert Brown",
-      id: "SRV-003",
-      car: "Ford F-150 2020",
-      plate: "DEF-9012",
-      task: "Brake System Inspection",
-      status: "In Progress",
-      time: "10:00 AM",
     },
   ];
 
@@ -61,12 +34,12 @@ export default function Dashboard() {
 
       <div>
         <div>
-          <h1 className="text-2xl font-semibold">Welcome back, John!</h1>
-          <p className="text-muted-foreground mt-1">Sunday, November 7, 2025</p>
+          <h1 className="text-2xl font-semibold">Welcome back, {user?.name || 'Mechanic'}!</h1>
+          <p className="text-muted-foreground mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
         </div>
       </div>
 
-  
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((item, index) => (
           <Card key={index} className="rounded-xl self-start">
@@ -85,38 +58,45 @@ export default function Dashboard() {
 
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Recent Active Jobs</h2>
-        <Button size="sm" variant="ghost">View All →</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {recentJobs.map((job, index) => (
-          <Card key={index} className="rounded-xl self-start">
-            <CardContent>
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-sm">{job.name}</h3>
-                  <p className="text-xs text-muted-foreground">{job.id}</p>
+        {isLoadingJobs ? (
+          <p className="text-muted-foreground">Loading jobs...</p>
+        ) : assignedJobs?.length === 0 ? (
+          <p className="text-muted-foreground">No active jobs assigned.</p>
+        ) : (
+          assignedJobs?.map((job, index) => (
+            <Card key={index} className="rounded-xl self-start">
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-sm">{job.customerName}</h3>
+                    <p className="text-xs text-muted-foreground">ID: {job.id}</p>
+                  </div>
+
+                  <span className="px-2 py-1 text-[10px] rounded-full font-medium bg-muted/50 text-muted-foreground">
+                    {job.status}
+                  </span>
                 </div>
 
-                <span className="px-2 py-1 text-[10px] rounded-full font-medium bg-muted/50 text-muted-foreground">
-                  {job.status}
+                <p className="mt-3 text-sm text-muted-foreground">{job.carBrand} {job.carModel}</p>
+
+                <span className="inline-block mt-2 bg-muted/50 text-xs px-2 py-1 rounded-md text-muted-foreground">
+                  {job.carPlate}
                 </span>
-              </div>
 
-              <p className="mt-3 text-sm text-muted-foreground">{job.car}</p>
+                <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-muted/20">
+                  <Tag className="w-3 h-3 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground truncate">{job.serviceName}</p>
+                </div>
 
-              <span className="inline-block mt-2 bg-muted/50 text-xs px-2 py-1 rounded-md text-muted-foreground">
-                {job.plate}
-              </span>
-
-              <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-muted/20">
-                <Tag className="w-3 h-3 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground truncate">{job.task}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
+
     </div>
   );
 }

@@ -18,6 +18,7 @@ public class AdminServiceRequestDTO {
 
     private String carBrand;
     private String carModel;
+    private String licenseNumber;
 
     private String serviceName;
 

@@ -10,17 +10,17 @@ import java.util.List;
 
 @Entity
 @Table(name = "services")
-@AttributeOverride(name="id",column = @Column(name="service_id"))
+@AttributeOverride(name = "id", column = @Column(name = "service_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 // @ToString(exclude = {"serviceParts", "feedbacks", "mechanicNotes"})
-public class Services extends BaseEntity{
+public class Services extends BaseEntity {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long serviceId;
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private Long serviceId;
 
     @ManyToOne
     @JoinColumn(name = "catalog_id")
@@ -38,11 +38,14 @@ public class Services extends BaseEntity{
     @JoinColumn(name = "mechanic_id")
     private User mechanic;
 
-//    @CreationTimestamp
-//    private LocalDateTime createdAt;
+    // @CreationTimestamp
+    // private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private ServiceStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     private Double partsTotal;
     private Double totalAmount;
@@ -55,18 +58,20 @@ public class Services extends BaseEntity{
 
     private String customerNotes;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
-
     // Bidirectional: Service has many ServiceParts
-    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval =
+    // true)
     // private List<ServicePart> serviceParts = new ArrayList<>();
 
     // // Bidirectional: Service has many Feedbacks
     // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     // private List<Feedback> feedbacks = new ArrayList<>();
 
-    // // Bidirectional: Service has many MechanicNotes
-    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Bidirectional: Service has many MechanicNotes
+    // @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval =
+    // true)
     // private List<MechanicNote> mechanicNotes = new ArrayList<>();
+
+    @OneToOne(mappedBy = "service", cascade = CascadeType.ALL)
+    private Payment payment;
 }

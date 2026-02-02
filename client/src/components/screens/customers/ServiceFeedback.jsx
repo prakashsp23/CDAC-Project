@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from '../../ui/select'
@@ -6,10 +6,10 @@ import { Textarea } from '../../ui/textarea'
 import { TableRow, TableCell } from '../../ui/table'
 import StarRating from '../../ui/star-rating'
 import UniversalDisplay from '../../ui/universal-display'
-import { toast } from 'sonner'
 import ViewToggle from '../../ui/ViewToggle'
 import { useGetCompletedServices } from '../../../query/queries/serviceQueries'
 import { useGetMyFeedbacks, useSubmitFeedbackMutation } from '../../../query/queries/feedbackQueries'
+import { QueryClient } from '@tanstack/react-query'
 
 export default function ServiceFeedback() {
 
@@ -38,6 +38,7 @@ export default function ServiceFeedback() {
       comments
     }, {
       onSuccess: () => {
+
         // toast is handled in the mutation
         setRating(0);
         setComments('');
@@ -51,7 +52,14 @@ export default function ServiceFeedback() {
     window.localStorage.setItem('feedback-view', newView);
   }
 
-  if (isLoading) return <div className="p-8">Loading feedback...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading feedback...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="py-6 px-8 w-[90%] mx-auto">
@@ -81,8 +89,8 @@ export default function ServiceFeedback() {
                       ) : (
                         <>
                           <SelectLabel>Recent Services</SelectLabel>
-                          {completedServices.length > 0 ? (
-                            completedServices.map((s) => (
+                          {completedServices?.filter(s => !s.hasFeedback).length > 0 ? (
+                            completedServices.filter(s => !s.hasFeedback).map((s) => (
                               <SelectItem key={s.id} value={String(s.id)}>
                                 {s.catalog.serviceName} — {String(s.createdOn)}
                               </SelectItem>
@@ -128,7 +136,7 @@ export default function ServiceFeedback() {
           { key: 'createdOn', title: 'Date' },
           { key: 'rating', title: 'Rating' },
           { key: 'comments', title: 'Comment' },
-          { key: 'adminNote', title: 'Admin Note' },
+          { key: 'mechanicNote', title: 'Mechanic Note' },
         ]}
         perRow={3}
         renderCard={(f) => (
@@ -136,16 +144,16 @@ export default function ServiceFeedback() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <p className="font-semibold text-card-foreground">{f.serviceName}</p>
+                  <p className="text-gray-500 mt-2">No past services found. Book a service to get started!</p>
                   <p className="text-sm text-muted-foreground">{String(f.createdOn)}</p>
                 </div>
                 <StarRating value={f.rating} readOnly size={16} />
               </div>
-              <p className="text-sm mt-3 text-muted-foreground italic border-l-2 border-border pl-3">"{f.comments}"</p>
-              {f.adminNote && (
+              <p className="text-sm mt-3 text-muted-foreground italic border-l-2 border-border pl-3">&quot;{f.comments}&quot;</p>
+              {f.mechanicNote && (
                 <div className="text-xs mt-3 bg-muted/50 p-2 rounded-md">
-                  <p className="font-semibold">Admin's Notes:</p>
-                  <p className="text-muted-foreground">{f.adminNote}</p>
+                  <p className="font-semibold">Mechanic's Notes:</p>
+                  <p className="text-muted-foreground">{f.mechanicNote}</p>
                 </div>
               )}
             </CardContent>
@@ -157,7 +165,7 @@ export default function ServiceFeedback() {
             <TableCell>{String(f.createdOn)}</TableCell>
             <TableCell><StarRating value={f.rating} readOnly size={16} /></TableCell>
             <TableCell>{f.comments}</TableCell>
-            <TableCell>{f.adminNote}</TableCell>
+            <TableCell>{f.mechanicNote}</TableCell>
           </TableRow>
         )}
       />

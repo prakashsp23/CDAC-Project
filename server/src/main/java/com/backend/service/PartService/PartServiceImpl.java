@@ -29,16 +29,25 @@ public class PartServiceImpl implements PartService {
 
     @Override
     public List<PartDto> getAllParts() {
-        List<PartDto> partDtos = new ArrayList<>();
         List<Part> parts = partRepo.findAll();
+        List<PartDto> result = new ArrayList<>();
 
         for (Part p : parts) {
-            PartDto dto = modelMapper.map(p, PartDto.class);
-            partDtos.add(dto);
+            PartDto dto = new PartDto(
+                p.getId(),                     // from BaseEntity
+                p.getPartName(),
+                p.getDescription(),
+                p.getUnitPrice(),
+                p.getStockQuantity(),
+                p.getStockQuantity() != null && p.getStockQuantity() > 0
+                    ? "In Stock"
+                    : "Out of Stock"
+            );
+            result.add(dto);
         }
-
-        return partDtos;
+        return result;
     }
+
     
 
     @Override

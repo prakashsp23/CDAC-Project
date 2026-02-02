@@ -1,22 +1,19 @@
 import React, { useState } from "react";
 import { X, Package } from "lucide-react";
 import { Button } from "../../../ui/button";
+import { useGetAllParts } from "../../../../query/queries/partQueries";
 
 export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
   if (!isOpen || !job) return null;
 
-  const [status, setStatus] = useState(job.status);
+  const [status, setStatus] = useState(job.status || "IN_PROGRESS");
   const [selectedParts, setSelectedParts] = useState([]);
 
-  // Demo parts data - replace with actual data from API when ready
-  const availableParts = [
-    { id: 1, name: "Engine Oil (5L)", cost: 45.00, stockQuantity: 25 },
-    { id: 2, name: "Oil Filter", cost: 12.50, stockQuantity: 50 },
-    { id: 3, name: "Spark Plugs", cost: 8.75, stockQuantity: 100 },
-    { id: 4, name: "Air Filter", cost: 15.00, stockQuantity: 45 },
-    { id: 5, name: "Brake Pads", cost: 35.00, stockQuantity: 30 },
-    { id: 6, name: "Battery", cost: 85.00, stockQuantity: 15 },
-  ];
+  const { data: partsData, isLoading: isLoadingParts } = useGetAllParts();
+
+  // Use fetched parts or empty array
+  // Extract parts list from response (handling ResponseBuilder wrapper)
+  const availableParts = partsData?.data || [];
 
   const handleAddPart = (partId) => {
     const part = availableParts.find(p => p.id === partId);
@@ -37,7 +34,7 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
     }
   };
 
-  const partsTotalCost = selectedParts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
+  const partsTotalCost = selectedParts.reduce((sum, part) => sum + (part.unitPrice * part.quantity), 0);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto">
@@ -86,7 +83,6 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
-          <option>Pending</option>
           <option>In Progress</option>
           <option>Completed</option>
         </select>
@@ -113,7 +109,7 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
               <option value="">-- Select a part --</option>
               {availableParts.map(part => (
                 <option key={part.id} value={part.id}>
-                  {part.name} - ${part.cost.toFixed(2)} (Stock: {part.stockQuantity})
+                  {part.partName} - ₹{part.unitPrice?.toFixed(2)} (Stock: {part.stockQuantity})
                 </option>
               ))}
             </select>
@@ -136,7 +132,7 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
                 <tbody>
                   {selectedParts.map((part) => (
                     <tr key={part.id} className="border-b hover:bg-muted/20 transition">
-                      <td className="p-3">{part.name}</td>
+                      <td className="p-3">{part.partName}</td>
                       <td className="p-3 text-center text-muted-foreground">{part.stockQuantity}</td>
                       <td className="p-3 text-center">
                         <input
@@ -147,9 +143,9 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
                           className="w-12 px-2 py-1 border rounded text-center bg-muted/50"
                         />
                       </td>
-                      <td className="p-3 text-right">${part.cost.toFixed(2)}</td>
+                      <td className="p-3 text-right">₹{part.unitPrice?.toFixed(2)}</td>
                       <td className="p-3 text-right font-medium">
-                        ${(part.cost * part.quantity).toFixed(2)}
+                        ₹{(part.unitPrice * part.quantity).toFixed(2)}
                       </td>
                       <td className="p-3 text-center">
                         <button
@@ -174,7 +170,7 @@ export default function UpdateServiceModal({ job, isOpen, onClose, onUpdate }) {
             <div className="flex justify-end bg-muted/20 p-3 rounded-lg">
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Total Parts Cost</p>
-                <p className="text-lg font-bold">${partsTotalCost.toFixed(2)}</p>
+                <p className="text-lg font-bold">₹{partsTotalCost.toFixed(2)}</p>
               </div>
             </div>
           )}

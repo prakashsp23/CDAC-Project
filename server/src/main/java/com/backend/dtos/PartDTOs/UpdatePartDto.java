@@ -9,12 +9,12 @@ import lombok.*;
 @AllArgsConstructor
 public class UpdatePartDto {
 
-    private String name;
+    private String partName;
     private String description;
 
     @Min(0)
-    private Double price;
+    private Double unitPrice;
 
     @Min(0)
-    private Integer stock;
+    private Integer stockQuantity;
 }

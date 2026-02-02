@@ -14,4 +14,5 @@ public class UpdateCar {
     private String brand;
     private String model;
     private Integer year;
+    private String licenseNumber;
 }

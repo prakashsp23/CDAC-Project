@@ -42,6 +42,8 @@ import org.modelmapper.ModelMapper;
 
 import lombok.RequiredArgsConstructor;
 
+import com.backend.repository.FeedbackRepository;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -57,6 +59,7 @@ public class ServiceServiceImpl implements ServiceService {
         private final PartRepository partRepo;
         private final MechanicNoteRepository mechanicNoteRepo;
         private final ServicePartRepository servicePartRepo;
+        private final FeedbackRepository feedbackRepo;
 
         @Override
         public ServiceDto createService(CreateServiceDto createDto, Long userId) {
@@ -85,7 +88,6 @@ public class ServiceServiceImpl implements ServiceService {
                 service.setUser(user);
                 service.setCar(car);
                 service.setStatus(ServiceStatus.PENDING);
-                service.setPaymentStatus(PaymentStatus.PENDING);
                 service.setCustomerNotes(createDto.getCustomerNotes());
 
                 // Set initial pricing
@@ -118,6 +120,10 @@ public class ServiceServiceImpl implements ServiceService {
                                         dto.setCarModel(
                                                         service.getCar() != null ? service.getCar().getModel() : null);
 
+                                        dto.setLicenseNumber(
+                                                        service.getCar() != null ? service.getCar().getLicenseNumber()
+                                                                        : null);
+
                                         dto.setServiceName(
                                                         service.getCatalog() != null
                                                                         ? service.getCatalog().getServiceName()
@@ -136,6 +142,7 @@ public class ServiceServiceImpl implements ServiceService {
         @Override
         public List<ServiceDto> getMyServices(Long userId) {
                 List<Services> services = serviceRepository.findByUser_Id(userId);
+
                 return services.stream()
                                 .map(this::convertToDto)
                                 .collect(Collectors.toList());
@@ -167,6 +174,9 @@ public class ServiceServiceImpl implements ServiceService {
                 if (service.getMechanic() != null) {
                         dto.setMechanic(modelMapper.map(service.getMechanic(), MechanicInfo.class));
                 }
+
+                // Set hasFeedback flag
+                dto.setHasFeedback(feedbackRepo.existsByService(service));
 
                 return dto;
         }
@@ -252,10 +262,17 @@ public class ServiceServiceImpl implements ServiceService {
                         dto.setCarBrand(s.getCar().getBrand());
                         dto.setCarModel(s.getCar().getModel());
                         dto.setCarPlate(s.getCar().getRegNumber());
+                        dto.setLicenseNumber(s.getCar().getLicenseNumber());
                         dto.setServiceName(s.getCatalog().getServiceName());
                         dto.setServiceDate(s.getCreatedOn());
                         dto.setStatus(s.getStatus().toString());
-                        dto.setNotes(s.getCustomerNotes());
+                        // Fetch mechanic notes
+                        java.util.List<MechanicNote> notes = mechanicNoteRepo.findByService_Id(s.getId());
+                        if (!notes.isEmpty()) {
+                                dto.setNotes(notes.get(notes.size() - 1).getNotes());
+                        } else {
+                                dto.setNotes("");
+                        }
                         dto.setCreatedOn(s.getCreatedOn());
 
                         assignedJobs.add(dto);
@@ -338,21 +355,30 @@ public class ServiceServiceImpl implements ServiceService {
                         throw new SecurityException("You are not assigned to this service");
                 }
 
-                User mechanic = new User();
-                mechanic.setId(userId);
+                java.util.List<MechanicNote> existingNotes = mechanicNoteRepo.findByService_Id(serviceId);
+                MechanicNote note;
 
-                MechanicNote note = new MechanicNote();
-                note.setService(service);
-                note.setMechanic(mechanic);
+                if (existingNotes.isEmpty()) {
+                        note = new MechanicNote();
+                        note.setService(service);
+                        User mechanic = new User();
+                        mechanic.setId(userId);
+                        note.setMechanic(mechanic);
+                } else {
+                        // If multiple notes exist (legacy data), update the last one
+                        note = existingNotes.get(existingNotes.size() - 1);
+                }
+
                 note.setNotes(noteContent);
-
                 mechanicNoteRepo.save(note);
         }
 
         @Override
         public List<ServiceDto> getMyCompletedServicesWithoutFeedback(Long userId) {
-                List<Services> services = serviceRepository.findServiceWithoutFeedback(userId, ServiceStatus.COMPLETED);
-                System.out.println("values are:" + services);
+                // Return all completed services. Frontend will filter based on hasFeedback
+                // flag.
+                List<Services> services = serviceRepository.findByStatusInAndUser_Id(List.of(ServiceStatus.COMPLETED),
+                                userId);
                 List<ServiceDto> completedServices = new ArrayList<>();
                 for (Services service : services) {
                         completedServices.add(convertToDto(service));

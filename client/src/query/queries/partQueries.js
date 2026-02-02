@@ -27,6 +27,38 @@ export function useGetAllParts(options = {}) {
  * PARTS MUTATIONS
  */
 
+// Create part (Admin)
+export function useCreatePartMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: PartApi.createPart,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: partKeys.lists() })
+      toast.success(data?.message || 'Part created successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to create part')
+    },
+  })
+}
+
+// Update part (Admin)
+export function useUpdatePartMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, partData }) => PartApi.updatePart(id, partData),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: partKeys.lists() })
+      toast.success(data?.message || 'Part updated successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to update part')
+    },
+  })
+}
+
 // Delete part (Admin)
 export function useDeletePartMutation() {
   const queryClient = useQueryClient()
