@@ -9,7 +9,6 @@ pipeline {
     }
 
     environment {
-        IMAGE_TAG = "latest"
         MANIFESTS_REPO_URL = "https://github.com/prakashsp23/cdac-project-manifest"
     }
 
@@ -18,8 +17,8 @@ pipeline {
         stage('Prepare Build Variables') {
             steps {
                 script {
-                    env.IMAGE_TAG = env.BUILD_NUMBER ?: "latest"
-                    echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    echo "Using IMAGE_TAG=${env.IMAGE_TAG} (build number)"
                 }
             }
         }
