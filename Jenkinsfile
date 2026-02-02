@@ -94,6 +94,7 @@ pipeline {
         }
         always {
             cleanWs(deleteDirs: true)
+            sh 'docker system prune -f || true'
         }
     }
 }
