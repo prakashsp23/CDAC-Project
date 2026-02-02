@@ -25,7 +25,7 @@ export default function ServiceRequestsTable() {
   const [filter, setFilter] = useState("All");
 
   // Fetch all service requests using shared hook
-  const { data: response, isLoading, isError } = useGetAllServices()
+  const { data: response, isLoading, isError } = useGetAllServices();
   const requests = response?.data || [];
 
   // Mutations
@@ -50,7 +50,14 @@ export default function ServiceRequestsTable() {
       ? requests
       : requests.filter((req) => req.status === filter);
 
-  const filters = ["All", "PENDING", "ACCEPTED", "ONGOING", "COMPLETED", "CANCELLED"];
+  const filters = [
+    "All",
+    "PENDING",
+    "ACCEPTED",
+    "ONGOING",
+    "COMPLETED",
+    "CANCELLED",
+  ];
 
   const getStatusVariant = (status) => {
     switch (status) {
@@ -75,7 +82,8 @@ export default function ServiceRequestsTable() {
      shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer`;
 
   // Helper to safely get counts
-  const getCount = (status) => requests.filter((r) => r.status === status).length;
+  const getCount = (status) =>
+    requests.filter((r) => r.status === status).length;
 
   if (isLoading) {
     return (
@@ -122,7 +130,7 @@ export default function ServiceRequestsTable() {
 
         <div className={cardStyles} onClick={() => setFilter("ACCEPTED")}>
           <p className="text-xs text-neutral-600 dark:text-neutral-300">
-             Accepted Requests
+            Accepted Requests
           </p>
           <p className="text-2xl font-bold mt-1 text-neutral-900 dark:text-neutral-100">
             {getCount("ACCEPTED")}
@@ -195,11 +203,11 @@ export default function ServiceRequestsTable() {
 
           <TableBody>
             {filteredRequests.length === 0 ? (
-               <TableRow>
-                 <TableCell colSpan={11} className="h-24 text-center">
-                   No requests found.
-                 </TableCell>
-               </TableRow>
+              <TableRow>
+                <TableCell colSpan={11} className="h-24 text-center">
+                  No requests found.
+                </TableCell>
+              </TableRow>
             ) : (
               filteredRequests.map((row) => (
                 <TableRow
@@ -233,7 +241,7 @@ export default function ServiceRequestsTable() {
                     </Badge>
                   </TableCell>
                   {/* Format date if needed, assuming ISO string or similar */}
-                  <TableCell>{row.createdAt || "N/A"}</TableCell>
+                  <TableCell>{row.createdOn || "N/A"}</TableCell>
 
                   <TableCell className="space-x-2">
                     {row.status === "PENDING" && (
@@ -246,7 +254,7 @@ export default function ServiceRequestsTable() {
                         >
                           {acceptMutation.isPending ? "..." : "Accept"}
                         </Button>
-                        <RejectReasonDialog 
+                        <RejectReasonDialog
                           onReject={(reason) => handleReject(row.id, reason)}
                           isPending={rejectMutation.isPending}
                         />
@@ -258,15 +266,17 @@ export default function ServiceRequestsTable() {
                         <ViewRequestDialog request={row} />
                         <AssignMechanicDialog
                           request={row}
-                          onAssign={(mechanicId) => handleAssign(row.id, mechanicId)}
+                          onAssign={(mechanicId) =>
+                            handleAssign(row.id, mechanicId)
+                          }
                           isPending={assignMutation.isPending}
                         />
                       </div>
                     )}
 
-                    {["ONGOING", "COMPLETED", "CANCELLED"].includes(row.status) && (
-                      <ViewRequestDialog request={row} />
-                    )}
+                    {["ONGOING", "COMPLETED", "CANCELLED"].includes(
+                      row.status,
+                    ) && <ViewRequestDialog request={row} />}
                   </TableCell>
                 </TableRow>
               ))
