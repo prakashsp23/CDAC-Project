@@ -9,7 +9,6 @@ pipeline {
     }
 
     environment {
-        IMAGE_TAG = "latest"
         MANIFESTS_REPO_URL = "https://github.com/prakashsp23/cdac-project-manifest"
     }
 
@@ -18,8 +17,8 @@ pipeline {
         stage('Prepare Build Variables') {
             steps {
                 script {
-                    env.IMAGE_TAG = env.BUILD_NUMBER ?: "latest"
-                    echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    echo "Using IMAGE_TAG=${env.IMAGE_TAG} (build number)"
                 }
             }
         }
@@ -32,6 +31,12 @@ pipeline {
                     def backendImage = "${dockerHubUser}/carservice-backend:${env.IMAGE_TAG}"
                     def frontendImage = "${dockerHubUser}/carservice-frontend:${env.IMAGE_TAG}"
 
+                    // Build args for frontend (Vite)
+                    def frontendBuildArgs = "--build-arg VITE_API_URL=/api"
+                    if (env.VITE_STRIPE_PUBLISHABLE_KEY) {
+                        frontendBuildArgs += " --build-arg VITE_STRIPE_PUBLISHABLE_KEY=${env.VITE_STRIPE_PUBLISHABLE_KEY}"
+                    }
+
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
 
                         echo "Building Backend Image: ${backendImage}"
@@ -40,7 +45,7 @@ pipeline {
                         backendBuild.push('latest')
 
                         echo "Building Frontend Image: ${frontendImage}"
-                        def frontendBuild = docker.build(frontendImage, '-f client/Dockerfile client/')
+                        def frontendBuild = docker.build(frontendImage, "${frontendBuildArgs} -f client/Dockerfile client/")
                         frontendBuild.push()
                         frontendBuild.push('latest')
                     }
@@ -95,6 +100,8 @@ pipeline {
         }
         always {
             cleanWs(deleteDirs: true)
+            // Free disk on Jenkins node: remove dangling images and stopped containers (prevents disk fill over time)
+            sh 'docker system prune -f || true'
         }
     }
 }
