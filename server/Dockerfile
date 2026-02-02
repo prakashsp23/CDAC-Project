@@ -1,14 +1,18 @@
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
+
+RUN chmod +x mvnw
+RUN ./mvnw -B dependency:go-offline
+
 COPY src src
+RUN ./mvnw -B clean package -DskipTests
 
-RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 COPY --from=builder /app/target/OnlineCarServiceStation-0.0.1.jar app.jar
