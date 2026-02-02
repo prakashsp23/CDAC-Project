@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -68,6 +69,8 @@ pipeline {
                               sed -i 's|DOCKER_HUB_PLACEHOLDER|${dockerHubUser}|g' \$f
                               sed -i 's|IMAGE_TAG_PLACEHOLDER|${IMAGE_TAG}|g' \$f
                             done
+                            sed -i 's|image: .*/carservice-backend:.*|image: ${dockerHubUser}/carservice-backend:${IMAGE_TAG}|g' \$MANIFEST_BASE/backend-deployment.yaml
+                            sed -i 's|image: .*/carservice-frontend:.*|image: ${dockerHubUser}/carservice-frontend:${IMAGE_TAG}|g' \$MANIFEST_BASE/frontend-deployment.yaml
 
                             git config user.email "jenkins@localhost"
                             git config user.name "Jenkins"
