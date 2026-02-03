@@ -111,7 +111,8 @@ export function useRejectServiceMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ serviceId, reason }) => ServiceApi.rejectService(serviceId, reason),
+    mutationFn: ({ serviceId, reason, rescheduledDate }) =>
+      ServiceApi.rejectService(serviceId, reason, rescheduledDate),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: serviceKeys.allServices() })

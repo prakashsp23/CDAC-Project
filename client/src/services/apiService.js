@@ -177,8 +177,11 @@ export const ServiceApi = {
   },
 
   // PUT /service/{serviceId}/reject - Reject a service request (Admin)
-  rejectService: async (serviceId, reason) => {
-    const response = await apiClient.put(`/service/${serviceId}/reject`, { reason })
+  rejectService: async (serviceId, reason, rescheduledDate) => {
+    const response = await apiClient.put(`/service/${serviceId}/reject`, {
+      reason,
+      rescheduledDate,
+    })
     return response.data
   },
 
