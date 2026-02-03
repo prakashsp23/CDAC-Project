@@ -71,6 +71,7 @@ export function useGetServiceById(serviceId, options = {}) {
  */
 
 // Create new service request (Customer)
+// expected variable: { catalogId, carId, bookingDate, customerNotes }
 export function useCreateServiceMutation() {
   const queryClient = useQueryClient()
 

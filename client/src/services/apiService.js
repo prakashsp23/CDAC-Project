@@ -129,6 +129,7 @@ export const ServiceCatalogApi = {
 // ==================== SERVICE REQUEST SERVICES ====================
 export const ServiceApi = {
   // POST /service - Create new service request (Customer)
+  // Payload: { catalogId, carId, bookingDate, customerNotes }
   createService: async (serviceData) => {
     const response = await apiClient.post('/service', serviceData)
     return response.data

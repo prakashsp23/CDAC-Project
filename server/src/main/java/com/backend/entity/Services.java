@@ -38,8 +38,7 @@ public class Services extends BaseEntity {
     @JoinColumn(name = "mechanic_id")
     private User mechanic;
 
-    // @CreationTimestamp
-    // private LocalDateTime createdAt;
+    private LocalDate bookingDate;
 
     @Enumerated(EnumType.STRING)
     private ServiceStatus status;
@@ -74,8 +73,7 @@ public class Services extends BaseEntity {
 
     @OneToOne(mappedBy = "service", cascade = CascadeType.ALL)
     private Payment payment;
-    
-    @Column(name = "rescheduled_date")
+
     private LocalDate rescheduledDate;
-    
+
 }
