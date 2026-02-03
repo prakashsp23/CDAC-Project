@@ -213,7 +213,7 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         @Override
-        public void rejectService(Long serviceId, String reason) {
+        public void rejectService(Long serviceId, String reason, String rescheduledDate) {
 
                 Services service = serviceRepository.findById(serviceId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
@@ -222,6 +222,10 @@ public class ServiceServiceImpl implements ServiceService {
                 service.setCancelledByAdmin(true);
                 service.setCancellationReason(reason);
                 service.setCancelledAt(LocalDateTime.now());
+
+                if (rescheduledDate != null && !rescheduledDate.trim().isEmpty()) {
+                        service.setRescheduledDate(java.time.LocalDate.parse(rescheduledDate));
+                }
 
                 serviceRepository.save(service);
         }

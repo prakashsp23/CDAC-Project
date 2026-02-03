@@ -23,7 +23,7 @@ public interface ServiceService {
 
     void assignMechanic(Long serviceId, Long mechanicId);
 
-    void rejectService(Long serviceId, String reason);
+        void rejectService(Long serviceId, String reason, String rescheduledDate);
 
     // Mechanic related methods
     List<WorkHistoryDto> getMechanicWorkHistory(Long mechanicId);
