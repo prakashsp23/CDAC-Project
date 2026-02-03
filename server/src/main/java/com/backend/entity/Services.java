@@ -74,4 +74,8 @@ public class Services extends BaseEntity {
 
     @OneToOne(mappedBy = "service", cascade = CascadeType.ALL)
     private Payment payment;
+    
+    @Column(name = "rescheduled_date")
+    private LocalDate rescheduledDate;
+    
 }
