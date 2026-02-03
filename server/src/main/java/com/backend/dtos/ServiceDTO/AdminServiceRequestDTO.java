@@ -30,4 +30,7 @@ public class AdminServiceRequestDTO {
     private PaymentStatus paymentStatus;
 
     private LocalDate createdOn;
+
+    private LocalDate rescheduledDate;
+    private String cancellationReason;
 }

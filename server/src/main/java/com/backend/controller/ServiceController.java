@@ -106,7 +106,7 @@ public class ServiceController {
     public ResponseEntity<?> rejectService(
             @PathVariable Long serviceId,
             @RequestBody Map<String, String> body) {
-        serviceService.rejectService(serviceId, body.get("reason"));
+        serviceService.rejectService(serviceId, body.get("reason"), body.get("rescheduledDate"));
         return ResponseBuilder.success("Service rejected successfully", null);
     }
 
