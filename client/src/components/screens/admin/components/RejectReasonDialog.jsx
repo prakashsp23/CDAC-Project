@@ -8,16 +8,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Frown } from "lucide-react";
+import { Frown, Calendar } from "lucide-react";
 
 export default function RejectReasonDialog({ onReject, isPending }) {
   const [reason, setReason] = useState("");
+  const [rescheduledDate, setRescheduledDate] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (reason.trim()) {
-      onReject(reason);
+      onReject(reason, rescheduledDate);
     }
   };
 
@@ -35,18 +38,39 @@ export default function RejectReasonDialog({ onReject, isPending }) {
             <DialogTitle>Reject Service Request</DialogTitle>
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <p className="text-sm text-neutral-500">
-              Please provide a reason for rejecting this service request.
-            </p>
-            <Textarea
-              placeholder="Enter rejection reason..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="resize-none"
-              required
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reason">Rejection Reason</Label>
+              <Textarea
+                id="reason"
+                placeholder="Enter rejection reason..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="resize-none"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="rescheduledDate"
+                className="flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4" />
+                Reschedule Date (Optional)
+              </Label>
+              <Input
+                id="rescheduledDate"
+                type="date"
+                value={rescheduledDate}
+                onChange={(e) => setRescheduledDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+              />
+              <p className="text-xs text-neutral-500">
+                Suggest an alternative date to the customer.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button

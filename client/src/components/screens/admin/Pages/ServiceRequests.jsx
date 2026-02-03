@@ -37,8 +37,8 @@ export default function ServiceRequestsTable() {
     acceptMutation.mutate(serviceId);
   };
 
-  const handleReject = (serviceId, reason) => {
-    rejectMutation.mutate({ serviceId, reason });
+  const handleReject = (serviceId, reason, rescheduledDate) => {
+    rejectMutation.mutate({ serviceId, reason, rescheduledDate });
   };
 
   const handleAssign = (serviceId, mechanicId) => {
@@ -255,7 +255,7 @@ export default function ServiceRequestsTable() {
                           {acceptMutation.isPending ? "..." : "Accept"}
                         </Button>
                         <RejectReasonDialog
-                          onReject={(reason) => handleReject(row.id, reason)}
+                          onReject={(reason, rescheduledDate) => handleReject(row.id, reason, rescheduledDate)}
                           isPending={rejectMutation.isPending}
                         />
                       </div>
