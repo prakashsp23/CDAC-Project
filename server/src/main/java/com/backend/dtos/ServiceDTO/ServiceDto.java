@@ -41,4 +41,7 @@ public class ServiceDto {
     // Timestamps
     private LocalDate createdOn;
     private LocalDateTime lastUpdated;
+    private LocalDate bookingDate;
+    private LocalDate completionDate;
+    private LocalDate rescheduledDate;
 }

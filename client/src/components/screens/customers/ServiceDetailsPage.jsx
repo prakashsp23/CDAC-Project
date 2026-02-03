@@ -251,6 +251,11 @@ export default function ServiceDetailsPage() {
               value={formatDate(service.createdOn)}
             />
             <InfoRow
+              icon={Calendar}
+              label="Booking Date"
+              value={formatDate(service.bookingDate)}
+            />
+            <InfoRow
               icon={Clock}
               label="Last Updated"
               value={formatDateTime(service.lastUpdated)}
@@ -316,7 +321,7 @@ export default function ServiceDetailsPage() {
                     {service.mechanic.phone && (
                       <p className="text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                        <span>
+                          <span>
                             <Phone className="inline w-4 h-4 mr-1 text-muted-foreground" />
                           </span>
                           {service.mechanic.phone}
@@ -444,6 +449,21 @@ export default function ServiceDetailsPage() {
                   label="Cancelled At"
                   value={formatDateTime(service.cancelledAt)}
                 />
+                {service.rescheduledDate && (
+                  <div className="flex items-center justify-between sm:items-start p-3 bg-muted/50 border rounded-lg md:col-span-2">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-0.5">Proposed Reschedule Date</p>
+                      <p className="text-base font-semibold text-foreground">{formatDate(service.rescheduledDate)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => { }}
+                      className="shadow-sm"
+                    >
+                      Accept New Date
+                    </Button>
+                  </div>
+                )}
               </div>
               {service.cancellationReason && (
                 <>
