@@ -63,9 +63,11 @@ public class PaymentService {
                                 .setDescription("Service Payment ID: " + service.getId())
                                 .setShipping(
                                                 PaymentIntentCreateParams.Shipping.builder()
-                                                                .setName(service.getUser().getName() != null
-                                                                                ? service.getUser().getName()
-                                                                                : "Customer")
+                                                                .setName(service.getUser() != null
+                                                                                && service.getUser().getName() != null
+                                                                                                ? service.getUser()
+                                                                                                                .getName()
+                                                                                                : "Customer")
                                                                 .setAddress(
                                                                                 PaymentIntentCreateParams.Shipping.Address
                                                                                                 .builder()

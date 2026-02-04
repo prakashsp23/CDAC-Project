@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
+// eslint-disable-next-line react/prop-types
 export default function CheckoutForm({ amount, serviceId }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -25,36 +26,41 @@ export default function CheckoutForm({ amount, serviceId }) {
 
         setIsLoading(true);
 
-        const { error, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: `${window.location.origin}/payment-success`, // Adjust as needed or handle inline
-            },
-            redirect: "if_required",
-        });
+        try {
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/payment-success`, // Adjust as needed or handle inline
+                },
+                redirect: "if_required",
+            });
 
-        if (error) {
-            toast.error(error.message);
-        } else if (paymentIntent && paymentIntent.status === "succeeded") {
-            toast.success("Payment successful!");
+            if (error) {
+                toast.error(error.message);
+            } else if (paymentIntent && paymentIntent.status === "succeeded") {
+                toast.success("Payment successful!");
 
-            // Update backend status
-            try {
-                // Call api with updated backend signature
-                await PaymentApi.confirmPaymentOnBackend(paymentIntent.id);
+                // Update backend status
+                try {
+                    // Call api with updated backend signature
+                    await PaymentApi.confirmPaymentOnBackend(paymentIntent.id);
 
-                // Invalidate keys to refresh data
-                await queryClient.invalidateQueries({ queryKey: serviceKeys.myServices() });
-                await queryClient.invalidateQueries({ queryKey: serviceKeys.detail(String(serviceId)) });
+                    // Invalidate keys to refresh data
+                    await queryClient.invalidateQueries({ queryKey: serviceKeys.myServices() });
+                    await queryClient.invalidateQueries({ queryKey: serviceKeys.detail(String(serviceId)) });
 
-                navigate(`/customers/services/${serviceId}`); // Redirect to Service Details page
-            } catch (err) {
-                console.error("Failed to update backend status", err);
-                toast.error("Payment successful but failed to update order status. Please contact support.");
+                    navigate(`/customers/services/${serviceId}`); // Redirect to Service Details page
+                } catch (err) {
+                    console.error("Failed to update backend status", err);
+                    toast.error("Payment successful but failed to update order status. Please contact support.");
+                }
+            } else {
+                // Unexpected state, maybe processing
+                console.log("Unexpected payment state:", paymentIntent);
             }
-        } else {
-            // Unexpected state, maybe processing
-            console.log("Unexpected payment state:", paymentIntent);
+        } catch (err) {
+            console.error("Payment confirmation failed:", err);
+            toast.error("An unexpected error occurred during payment. Please try again.");
         }
 
         setIsLoading(false);
