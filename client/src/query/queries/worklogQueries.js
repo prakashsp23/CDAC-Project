@@ -13,7 +13,11 @@ export const worklogKeys = {
 export function useGetWorklogsByBookingId(bookingId, options = {}) {
   return useQuery({
     queryKey: worklogKeys.byBooking(bookingId),
-    queryFn: () => WorklogApi.fetchWorklogsByBookingId(bookingId),
+    queryFn: async () => {
+      // WorklogApi.fetchWorklogsByBookingId is NOT implemented and returns undefined.
+      // This causes React Query to crash. Returning empty array as fallback.
+      return { data: [] }; 
+    },
     enabled: !!bookingId,
     ...options,
   })

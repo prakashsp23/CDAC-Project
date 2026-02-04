@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGetServiceById } from '../../../query/queries/serviceQueries'
-import { useGetWorklogsByBookingId } from '../../../query/queries/worklogQueries'
+
 import { Button } from '../../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
-import { Badge } from '../../ui/badge'
+
 import { Separator } from '../../ui/separator'
 import {
   ArrowLeft,
@@ -18,7 +18,7 @@ import {
   AlertCircle,
   CheckCircle2,
   XCircle,
-  ClipboardList,
+
   CreditCard,
   Ban,
   Phone
@@ -106,7 +106,7 @@ export default function ServiceDetailsPage() {
   const navigate = useNavigate()
 
   const { data: serviceData, isLoading: serviceLoading, error: serviceError } = useGetServiceById(serviceId)
-  const { data: worklogsData, isLoading: worklogsLoading } = useGetWorklogsByBookingId(serviceId)
+
 
   // Loading state
   if (serviceLoading) {
@@ -165,7 +165,7 @@ export default function ServiceDetailsPage() {
     )
   }
 
-  const worklogs = worklogsData?.data || []
+
 
   // Format dates safely
   const formatDate = (dateString) => {
@@ -481,58 +481,7 @@ export default function ServiceDetailsPage() {
         )
       }
 
-      {/* Work Logs */}
-      {
-        worklogs.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="w-5 h-5" />
-                Work Progress
-                <Badge variant="secondary" className="ml-2">{worklogs.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {worklogsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {worklogs.map((log, index) => (
-                    <div
-                      key={log.id || index}
-                      className="flex gap-4 p-4 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
-                    >
-                      <div className="shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Wrench className="w-4 h-4 text-primary" />
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <p className="font-semibold">{log.description || 'Work Update'}</p>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {formatDateTime(log.createdAt)}
-                          </span>
-                        </div>
-                        {log.notes && (
-                          <p className="text-sm text-muted-foreground">{log.notes}</p>
-                        )}
-                        {log.mechanicName && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            By: {log.mechanicName}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )
-      }
+
     </div >
   )
 }

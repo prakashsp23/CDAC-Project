@@ -8,8 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CreditCard, ShieldCheck, AlertCircle, Wallet } from "lucide-react";
 import { useStripeTheme } from "@/hooks/use-stripe-theme";
+import { toast } from "sonner";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch((err) => {
+    console.error("Failed to load Stripe:", err);
+    return null;
+});
 
 export default function PaymentPage() {
     const location = useLocation();
@@ -21,9 +25,24 @@ export default function PaymentPage() {
     // Use React Query for data fetching - handles loading, error, and caching automatically
     const { data, isLoading, error } = useCreatePaymentIntent(serviceId);
 
+    // Effect to handle "Payment already completed"
+    // Effect to handle "Payment already completed"
+    React.useEffect(() => {
+        if (error) {
+            const errorMessage = error.response?.data?.message || error.message;
+            if (errorMessage?.includes("Payment already completed")) {
+                toast.success("Payment has already been completed for this service.");
+                // Redirect back to details after a short delay
+                setTimeout(() => {
+                    navigate(`/customers/services/${serviceId}`);
+                }, 2000);
+            }
+        }
+    }, [error, navigate, serviceId]);
+
     // Derived state from query data
-    const clientSecret = data?.clientSecret;
-    const amount = data?.amount;
+    const clientSecret = data?.data?.clientSecret;
+    const amount = data?.data?.amount;
 
     // Show error if serviceId is missing from navigation state
     if (!serviceId) {

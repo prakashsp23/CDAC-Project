@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.backend.util.ResponseBuilder;
+import com.backend.dtos.ApiResponse;
 import java.util.Map;
 
 @RestController
@@ -21,22 +23,18 @@ public class PaymentController {
 
     @Customer
     @PostMapping("/create-payment-intent")
-    public ResponseEntity<PaymentResponse> createPaymentIntent(@RequestBody PaymentRequest paymentRequest)
-            throws StripeException {
+    public ResponseEntity<ApiResponse<PaymentResponse>> createPaymentIntent(
+            @RequestBody PaymentRequest paymentRequest) throws StripeException {
         PaymentResponse response = paymentService.createPaymentIntent(paymentRequest);
-        return ResponseEntity.ok(response);
+        return ResponseBuilder.success("Payment intent created successfully", response);
     }
 
     @Customer
     @PostMapping("/confirm-payment")
-    public ResponseEntity<?> confirmPayment(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<ApiResponse<Object>> confirmPayment(@RequestBody Map<String, String> payload)
+            throws StripeException {
         String paymentIntentId = payload.get("paymentIntentId");
-
-        try {
-            paymentService.updatePaymentStatus(paymentIntentId);
-            return ResponseEntity.ok().body(Map.of("message", "Payment status updated"));
-        } catch (StripeException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to verify with Stripe: " + e.getMessage()));
-        }
+        paymentService.updatePaymentStatus(paymentIntentId);
+        return ResponseBuilder.success("Payment status updated", null);
     }
 }
