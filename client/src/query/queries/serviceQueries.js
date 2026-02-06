@@ -144,6 +144,32 @@ export function useAssignMechanicMutation() {
   })
 }
 
+
+// Accept reschedule request (Customer)
+export function useAcceptRescheduleMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (serviceId) => ServiceApi.acceptReschedule(serviceId),
+
+    onSuccess: (data, serviceId) => {
+      // Ensure serviceId is a string to match the query key
+      const id = String(serviceId)
+      
+      // Refetch the service details to get updated data from server
+      queryClient.refetchQueries({ queryKey: serviceKeys.detail(id) })
+      
+      // Invalidate list queries to ensure they're fresh when accessed
+      queryClient.invalidateQueries({ queryKey: serviceKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: serviceKeys.myServices() })
+      toast.success(data?.message || 'Reschedule accepted successfully')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to accept reschedule')
+    },
+  })
+}
+
 // Update service execution (Mechanic)
 export function useUpdateServiceExecutionMutation() {
   const queryClient = useQueryClient()

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useParams, useNavigate } from 'react-router-dom'
-import { useGetServiceById } from '../../../query/queries/serviceQueries'
+import { useGetServiceById, useAcceptRescheduleMutation } from '../../../query/queries/serviceQueries'
 
 import { Button } from '../../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
@@ -106,6 +106,13 @@ export default function ServiceDetailsPage() {
   const navigate = useNavigate()
 
   const { data: serviceData, isLoading: serviceLoading, error: serviceError } = useGetServiceById(serviceId)
+
+  const acceptRescheduleMutation = useAcceptRescheduleMutation()
+
+  const handleAcceptReschedule = () => {
+    if (!serviceData?.data) return
+    acceptRescheduleMutation.mutate(serviceData.data.id)
+  }
 
 
   // Loading state
@@ -456,11 +463,13 @@ export default function ServiceDetailsPage() {
                       <p className="text-base font-semibold text-foreground">{formatDate(service.rescheduledDate)}</p>
                     </div>
                     <Button
+
                       size="sm"
-                      onClick={() => { }}
+                      onClick={handleAcceptReschedule}
+                      disabled={acceptRescheduleMutation.isPending}
                       className="shadow-sm"
                     >
-                      Accept New Date
+                      {acceptRescheduleMutation.isPending ? 'Accepting...' : 'Accept New Date'}
                     </Button>
                   </div>
                 )}

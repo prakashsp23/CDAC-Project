@@ -186,6 +186,12 @@ export const ServiceApi = {
     return response.data
   },
 
+  // PUT /service/{serviceId}/accept-reschedule - Accept reschedule date (Customer)
+  acceptReschedule: async (serviceId) => {
+    const response = await apiClient.put(`/service/${serviceId}/accept-reschedule`)
+    return response.data
+  },
+
   // PUT /service/{serviceId}/update-execution - Update service execution details (Mechanic)
   updateServiceExecution: async (serviceId, executionData) => {
     const response = await apiClient.put(`/service/${serviceId}/update-execution`, executionData)
