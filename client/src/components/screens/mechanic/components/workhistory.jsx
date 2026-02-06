@@ -7,12 +7,11 @@ export default function WorkHistory() {
     queryKey: ["mechanicWorkLogs"],
     queryFn: MechanicApi.fetchWorkLogs,
   });
-  console.log(workLogs)
-
   if (isLoading) {
     return (
-      <div className="py-6 px-8 w-[90%] mx-auto">
-        <p className="text-center text-muted-foreground">Loading work history...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+        <span className="text-lg text-muted-foreground">Loading work history...</span>
       </div>
     );
   }

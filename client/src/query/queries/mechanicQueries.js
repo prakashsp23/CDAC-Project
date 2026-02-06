@@ -40,6 +40,9 @@ export const useGetMechanicWorkHistory = useGetMechanicWorkLogs
  * MECHANIC MUTATIONS
  */
 
+import { serviceKeys } from './serviceQueries'
+import { partKeys } from './partQueries'
+
 // Update service execution
 export function useUpdateServiceExecutionMutation() {
   const queryClient = useQueryClient()
@@ -47,9 +50,14 @@ export function useUpdateServiceExecutionMutation() {
   return useMutation({
     mutationFn: ({ serviceId, executionData }) => 
       MechanicApi.updateServiceExecution(serviceId, executionData),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: mechanicKeys.assignedJobs() })
       queryClient.invalidateQueries({ queryKey: mechanicKeys.workLogs() })
+      // Invalidate service details to show updated parts/status
+      queryClient.invalidateQueries({ queryKey: serviceKeys.detail(String(variables.serviceId)) })
+      // Invalidate parts list to show updated stock
+      queryClient.invalidateQueries({ queryKey: partKeys.lists() })
+      
       toast.success(data?.message || 'Service execution updated')
     },
     onError: (err) => {

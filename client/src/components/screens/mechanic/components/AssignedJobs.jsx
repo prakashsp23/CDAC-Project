@@ -1,63 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "../../../ui/card";
 import { Button } from "../../../ui/button";
-import { Search, Filter, Calendar } from "lucide-react";
-import UpdateServiceModal from "./UpdateServiceModal";
-import {
-  useGetMechanicAssignedJobs,
-  useUpdateServiceExecutionMutation,
-  useAddMechanicNoteMutation
-} from "../../../../query/queries/mechanicQueries";
+import { Search, Filter, Calendar, Eye } from "lucide-react";
+import { useGetMechanicAssignedJobs } from "../../../../query/queries/mechanicQueries";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 export default function AssignedJobs() {
   const [filterStatus, setFilterStatus] = useState("All");
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
-  const [noteDrafts, setNoteDrafts] = useState({});
+  const navigate = useNavigate();
 
-  // Queries & Mutations
+  // Queries
   const { data: jobsList = [], isLoading } = useGetMechanicAssignedJobs();
-  const updateMutation = useUpdateServiceExecutionMutation();
-  const addNoteMutation = useAddMechanicNoteMutation();
-
-  const handleJobUpdate = (updatedJob) => {
-    const payload = {
-      serviceId: updatedJob.id,
-      executionData: {
-        status: updatedJob.status,
-        parts: updatedJob.parts.map(p => ({
-          id: p.id,
-          quantity: p.quantity
-        }))
-      }
-    };
-
-    updateMutation.mutate(payload, {
-      onSuccess: () => {
-        setOpenModal(false);
-        setSelectedJob(null);
-      }
-    });
-  };
-
-  const saveNote = (jobId) => {
-    const noteContent = noteDrafts[jobId] ?? jobsList.find(j => j.id === jobId)?.notes;
-    if (!noteContent?.trim()) return;
-
-    addNoteMutation.mutate({
-      serviceId: jobId,
-      noteData: noteContent
-    }, {
-      onSuccess: () => {
-        setNoteDrafts(prev => {
-          const newState = { ...prev };
-          delete newState[jobId];
-          return newState;
-        });
-      }
-    });
-  };
 
   const filteredJobs =
     filterStatus === "All"
@@ -101,108 +55,69 @@ export default function AssignedJobs() {
       {/* Jobs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {isLoading ? (
-          <p className="text-muted-foreground">Loading assigned jobs...</p>
+          <div className="col-span-full flex flex-col items-center justify-center min-h-[300px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+            <span className="text-lg text-muted-foreground">Loading assigned jobs...</span>
+          </div>
         ) : filteredJobs.length === 0 ? (
           <p className="text-muted-foreground">No assigned jobs found.</p>
         ) : filteredJobs.map((job) => (
-          <Card key={job.id} className="rounded-xl">
-            <CardContent className="p-4">
-              {/* Header */}
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="font-semibold text-lg">{job.customerName}</h2>
-                  <p className="text-xs text-muted-foreground">ID: {job.id}</p>
+          <Card key={job.id} className="rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+            <CardContent className="p-0">
+              {/* Status Header */}
+
+
+              <div className="p-5">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="font-semibold text-lg max-w-[200px] truncate" title={job.customerName}>{job.customerName}</h2>
+                    <p className="text-xs text-muted-foreground">ID: #{job.id}</p>
+                  </div>
+
+                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${job.status === 'COMPLETED'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}>
+                    {job.status}
+                  </span>
                 </div>
 
-                <span className="px-3 py-1 text-xs rounded-full bg-muted/50">
-                  {job.status}
-                </span>
-              </div>
-
-              {/* Vehicle */}
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground">{job.carBrand} {job.carModel}</p>
-                <span className="inline-block mt-2 bg-muted/50 px-3 py-1 text-xs rounded-md">
-                  {job.carPlate}
-                </span>
-              </div>
-
-              {/* Service */}
-              <div className="mt-4 bg-muted/20 p-3 rounded-lg">
-                <p className="text-sm font-medium">{job.serviceName}</p>
-              </div>
-
-              {/* Time */}
-              <div className="flex justify-between mt-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Assigned: {job.createdOn ? format(new Date(job.createdOn), 'PPP') : 'N/A'}
+                {/* Service Info */}
+                <div className="bg-muted/30 p-3 rounded-lg mb-4">
+                  <p className="font-medium text-sm text-primary mb-1">{job.serviceName}</p>
+                  <div className="flex items-center text-xs text-muted-foreground gap-2">
+                    <Calendar className="w-3 h-3" />
+                    {job.createdOn ? format(new Date(job.createdOn), 'PPP') : 'N/A'}
+                  </div>
                 </div>
-              </div>
 
-              {/* ✅ Service Notes / Updates */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">
-                    Service Notes / Updates
-                  </p>
+                {/* Vehicle */}
+                <div className="flex justify-between items-end text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wide">Vehicle</p>
+                    <p className="font-medium">{job.carBrand} {job.carModel}</p>
+                  </div>
+                  <span className="bg-muted px-2 py-1 text-xs rounded font-mono text-muted-foreground">
+                    {job.carPlate}
+                  </span>
+                </div>
 
+                {/* Action Button */}
+                <div className="mt-5 pt-4 border-t">
                   <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => saveNote(job.id)}
-                    disabled={!noteDrafts[job.id]}
+                    className="w-full gap-2"
+                    onClick={() => navigate(`/mechanic/service/${job.id}`)}
                   >
-                    Save Note
+                    <Eye className="w-4 h-4" />
+                    View Details & Update
                   </Button>
                 </div>
-
-                <textarea
-                  placeholder={job.notes || "e.g. Oil filter replaced, diagnostics completed..."}
-                  className="w-full border rounded-lg px-3 py-2 text-sm bg-muted/50"
-                  value={noteDrafts[job.id] ?? job.notes ?? ""}
-                  onChange={(e) =>
-                    setNoteDrafts({
-                      ...noteDrafts,
-                      [job.id]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              {/* Button */}
-              <div className="mt-5">
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedJob({
-                      id: job.id,
-                      customer: job.customerName,
-                      car: `${job.carBrand} ${job.carModel}`,
-                      plate: job.carPlate,
-                      service: job.serviceName,
-                      status: job.status,
-                    });
-                    setOpenModal(true);
-                  }}
-                >
-                  View / Update Service
-                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Modal */}
-      {openModal && (
-        <UpdateServiceModal
-          job={selectedJob}
-          isOpen={openModal}
-          onClose={() => setOpenModal(false)}
-          onUpdate={handleJobUpdate}
-        />
-      )}
     </div>
   );
 }

@@ -23,7 +23,6 @@ import {
 import { Loader2 } from "lucide-react";
 
 export default function PartsManagement() {
-    const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
 
     // React Query Hooks
@@ -172,10 +171,12 @@ export default function PartsManagement() {
                 <div className="flex flex-col gap-1">
                     <h2 className="text-2xl font-bold tracking-tight">Parts Management</h2>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Manage spare parts inventory
+                        Manage inventory
                     </p>
                 </div>
-                <Button onClick={handleAddClick}>+ Add Part</Button>
+                <div className="flex gap-2">
+                    <Button onClick={handleAddClick}>+ Add Part</Button>
+                </div>
             </div>
 
             {/* SEARCH BAR */}

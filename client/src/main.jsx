@@ -32,6 +32,7 @@ import PaymentPage from "./components/payment/PaymentPage.jsx"
 import Dashboard from "./components/screens/mechanic/components/dashboard.jsx"
 import WorkHistory from "./components/screens/mechanic/components/workhistory.jsx"
 import AssignedJobs from "./components/screens/mechanic/components/AssignedJobs.jsx"
+import MechanicServiceDetails from "./components/screens/mechanic/components/MechanicServiceDetails.jsx"
 import { Provider } from 'react-redux'
 import { store } from './store'
 import { QueryClientProvider } from "@tanstack/react-query"
@@ -84,6 +85,7 @@ const router = createBrowserRouter(
           <Route index element={<Dashboard />} />
           <Route path="work-history" element={<WorkHistory />} />
           <Route path="assigned-jobs" element={<AssignedJobs />} />
+          <Route path="service/:serviceId" element={<MechanicServiceDetails />} />
         </Route>
 
         {/* Profile - accessible by all authenticated users */}

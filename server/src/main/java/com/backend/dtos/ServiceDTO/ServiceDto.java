@@ -3,10 +3,14 @@ package com.backend.dtos.ServiceDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.backend.dtos.PartDTOs.ServicePartDto;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +30,7 @@ public class ServiceDto {
     private Double partsTotal;
     private Double totalAmount;
     private String customerNotes;
+    private String mechanicNotes;
 
     // Payment
     private String paymentStatus;
@@ -44,4 +49,7 @@ public class ServiceDto {
     private LocalDate bookingDate;
     private LocalDate completionDate;
     private LocalDate rescheduledDate;
+
+    // Parts
+    private List<ServicePartDto> usedParts;
 }

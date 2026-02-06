@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.custom_exceptions.ResourceNotFoundException;
+import com.backend.dtos.PartDTOs.ServicePartDto;
 import com.backend.dtos.ServiceDTO.AdminServiceRequestDTO;
 import com.backend.dtos.ServiceDTO.CreateServiceDto;
 import com.backend.dtos.ServiceDTO.CustomerInfo;
@@ -16,7 +17,6 @@ import com.backend.dtos.ServiceDTO.ServiceCatalogInfo;
 import com.backend.dtos.ServiceDTO.ServiceDto;
 import com.backend.dtos.ServiceDTO.VehicleInfo;
 import com.backend.entity.Car;
-import com.backend.entity.PaymentStatus;
 import com.backend.entity.Role;
 import com.backend.entity.ServiceCatalog;
 import com.backend.entity.ServiceStatus;
@@ -178,6 +178,28 @@ public class ServiceServiceImpl implements ServiceService {
                 // Set hasFeedback flag
                 dto.setHasFeedback(feedbackRepo.existsByService(service));
 
+                // Populate used parts
+                List<ServicePart> parts = servicePartRepo.findByService_Id(service.getId());
+                List<ServicePartDto> partsDto = parts.stream()
+                                .map(sp -> ServicePartDto.builder()
+                                                .id(sp.getId())
+                                                .partId(sp.getPart().getId())
+                                                .partName(sp.getPart().getPartName())
+                                                .quantity(sp.getQuantity())
+                                                .priceAtTime(sp.getPriceAtTime())
+                                                .totalCost(sp.getPriceAtTime() * sp.getQuantity())
+                                                .build())
+                                .collect(Collectors.toList());
+                dto.setUsedParts(partsDto);
+
+                // Populate mechanic notes
+                List<MechanicNote> notes = mechanicNoteRepo.findByService_Id(service.getId());
+                if (!notes.isEmpty()) {
+                        dto.setMechanicNotes(notes.get(notes.size() - 1).getNotes());
+                } else {
+                        dto.setMechanicNotes("");
+                }
+
                 return dto;
         }
 
@@ -311,6 +333,20 @@ public class ServiceServiceImpl implements ServiceService {
                         }
                         dto.setCreatedOn(s.getCreatedOn());
 
+                        // Fetch used parts
+                        List<ServicePart> parts = servicePartRepo.findByService_Id(s.getId());
+                        List<ServicePartDto> partsDto = parts.stream()
+                                        .map(sp -> ServicePartDto.builder()
+                                                        .id(sp.getId())
+                                                        .partId(sp.getPart().getId())
+                                                        .partName(sp.getPart().getPartName())
+                                                        .quantity(sp.getQuantity())
+                                                        .priceAtTime(sp.getPriceAtTime())
+                                                        .totalCost(sp.getPriceAtTime() * sp.getQuantity())
+                                                        .build())
+                                        .collect(Collectors.toList());
+                        dto.setUsedParts(partsDto);
+
                         assignedJobs.add(dto);
                 }
 
@@ -356,17 +392,28 @@ public class ServiceServiceImpl implements ServiceService {
                                 part.setStockQuantity(part.getStockQuantity() - quantity);
                                 partRepo.save(part);
 
-                                ServicePart servicePart = new ServicePart();
-                                servicePart.setService(service);
-                                servicePart.setPart(part);
-                                servicePart.setQuantity(quantity);
+                                // Check if part already exists for this service
+                                java.util.Optional<ServicePart> existingPartOpt = servicePartRepo
+                                                .findByService_IdAndPart_Id(service.getId(), part.getId());
 
-                                // SECURITY FIX: Always use current part price from database
-                                // Prevents price manipulation by mechanics
                                 Double partPrice = part.getUnitPrice();
-                                servicePart.setPriceAtTime(partPrice);
 
-                                servicePartRepo.save(servicePart);
+                                if (existingPartOpt.isPresent()) {
+                                        ServicePart existingPart = existingPartOpt.get();
+                                        existingPart.setQuantity(existingPart.getQuantity() + quantity);
+                                        // We keep the original priceAtTime or should we update?
+                                        // Keeping original to avoid changing history of past added items,
+                                        // effectively averaging would require more complex logic.
+                                        // For now, we just update quantity.
+                                        servicePartRepo.save(existingPart);
+                                } else {
+                                        ServicePart servicePart = new ServicePart();
+                                        servicePart.setService(service);
+                                        servicePart.setPart(part);
+                                        servicePart.setQuantity(quantity);
+                                        servicePart.setPriceAtTime(partPrice);
+                                        servicePartRepo.save(servicePart);
+                                }
 
                                 currentPartsTotal += (partPrice * quantity);
                         }
