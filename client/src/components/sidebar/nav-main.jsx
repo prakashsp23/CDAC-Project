@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 
 const navItems = [
   {
-    title: "Admin Page",
+    title: "Dashboard",
     url: "/admin",
     icon: BarChart3,
     allowedRoles: ["ADMIN"],
@@ -30,17 +30,17 @@ const navItems = [
   },
   { title: "Feedback", url: "/admin/feedback", icon: Inbox, allowedRoles: ["ADMIN"] },
   {
-    title: "Mechanic Page",
+    title: "Dashboard",
     url: "/mechanic",
-    icon: FileText,
+    icon: BarChart3,
     allowedRoles: ["MECHANIC"],
   },
   { title: "Work History", url: "/mechanic/work-history", icon: Table, allowedRoles: ["MECHANIC"] },
   { title: "Assigned Jobs", url: "/mechanic/assigned-jobs", icon: Users, allowedRoles: ["MECHANIC"] },
   {
-    title: "Customer Page",
+    title: "Dashboard",
     url: "/customers",
-    icon: Users,
+    icon: BarChart3,
     allowedRoles: ["CUSTOMER"],
   },
   { title: "Customer Table", url: "/customers/table", icon: Table, allowedRoles: ["CUSTOMER"] },

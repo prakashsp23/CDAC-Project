@@ -62,7 +62,10 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {isLoadingJobs ? (
-          <p className="text-muted-foreground">Loading jobs...</p>
+          <div className="col-span-full flex flex-col items-center justify-center min-h-[200px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary/60 mb-3"></div>
+            <span className="text-sm text-muted-foreground">Loading jobs...</span>
+          </div>
         ) : assignedJobs?.length === 0 ? (
           <p className="text-muted-foreground">No active jobs assigned.</p>
         ) : (
