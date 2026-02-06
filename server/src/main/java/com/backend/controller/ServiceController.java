@@ -85,6 +85,14 @@ public class ServiceController {
         return ResponseBuilder.success("Completed services retrieved successfully", completedServices);
     }
 
+    @Customer
+    @PutMapping("/{serviceId}/accept-reschedule")
+    public ResponseEntity<?> acceptReschedule(@PathVariable Long serviceId) {
+        Long userId = AuthUtil.getAuthenticatedUserId();
+        serviceService.acceptReschedule(serviceId, userId);
+        return ResponseBuilder.success("Reschedule accepted successfully", null);
+    }
+
     @Admin
     @PutMapping("/{serviceId}/accept")
     public ResponseEntity<?> acceptService(@PathVariable Long serviceId) {

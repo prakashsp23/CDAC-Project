@@ -1,5 +1,7 @@
 package com.backend.dtos.ServiceCatalogDTO;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +17,5 @@ public class ServiceCatalogDto {
     private String description;
     private String fullDetails;
     private Double basePrice;
+    private LocalDate createdOn;
 }

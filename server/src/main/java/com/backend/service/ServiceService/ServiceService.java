@@ -23,7 +23,9 @@ public interface ServiceService {
 
     void assignMechanic(Long serviceId, Long mechanicId);
 
-        void rejectService(Long serviceId, String reason, String rescheduledDate);
+    void rejectService(Long serviceId, String reason, String rescheduledDate);
+
+    void acceptReschedule(Long serviceId, Long userId);
 
     // Mechanic related methods
     List<WorkHistoryDto> getMechanicWorkHistory(Long mechanicId);

@@ -89,9 +89,10 @@ export default function MyServicesPage() {
         paymentStatus: s.paymentStatus,
         totalAmount: s.totalAmount,
         mechanic: s.mechanic,
-        hasFeedback: s.hasFeedback
+        hasFeedback: s.hasFeedback,
+        createdOn: s.createdOn
       }
-    })
+    }).sort((a, b) => new Date(b.createdOn || 0) - new Date(a.createdOn || 0))
   }, [servicesData])
 
   const TABS = [

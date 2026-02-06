@@ -42,8 +42,9 @@ export default function AllServicesPage() {
     price: s.basePrice,
     coveredPoints: s.fullDetails ? s.fullDetails.split(', ') : [],
     Icon: iconMap[s.serviceName] || Wrench,
-    value: s.id
-  })) || []
+    value: s.id,
+    createdOn: s.createdOn
+  })).sort((a, b) => new Date(b.createdOn || 0) - new Date(a.createdOn || 0)) || []
 
   // Transform vehicles data
   const vehicles = vehiclesData?.data?.map(v => ({

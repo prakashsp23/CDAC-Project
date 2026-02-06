@@ -231,6 +231,38 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         @Override
+        public void acceptReschedule(Long serviceId, Long userId) {
+                Services service = serviceRepository.findById(serviceId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+                // Check if the service belongs to the current user
+                if (!service.getUser().getId().equals(userId)) {
+                        throw new SecurityException("You can only accept reschedule for your own services");
+                }
+
+                if (service.getStatus() != ServiceStatus.CANCELLED) {
+                        throw new IllegalStateException("Service is not in cancelled state");
+                }
+
+                if (service.getRescheduledDate() == null) {
+                        throw new IllegalStateException("No reschedule date proposed for this service");
+                }
+
+                // Update service details
+                service.setBookingDate(service.getRescheduledDate());
+                service.setStatus(ServiceStatus.ACCEPTED); // Or PENDING based on flow, but ACCEPTED makes sense for a
+                                                           // re-booking
+
+                // Clear cancellation details
+                service.setRescheduledDate(null);
+                service.setCancelledByAdmin(null);
+                service.setCancellationReason(null);
+                service.setCancelledAt(null);
+
+                serviceRepository.save(service);
+        }
+
+        @Override
         public List<WorkHistoryDto> getMechanicWorkHistory(Long mechanicId) {
                 List<WorkHistoryDto> workHistory = new ArrayList<>();
                 List<Services> services = serviceRepository.findByStatusAndMechanic_Id(ServiceStatus.COMPLETED,
