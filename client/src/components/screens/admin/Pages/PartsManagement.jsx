@@ -23,6 +23,8 @@ import {
 import { Loader2 } from "lucide-react";
 
 export default function PartsManagement() {
+    const [filter, setFilter] = useState("All");
+
     const [searchQuery, setSearchQuery] = useState("");
 
     // React Query Hooks
